@@ -5,9 +5,11 @@
 > registro dinâmico de LLMs OpenAI-compatible, webhooks idempotentes e auditoria.
 >
 > **O que NÃO é:** ainda não é o produto. Não contém código de `OARANHA/crises`,
-> não tem banco real, não tem UI. É o **alicerce** sobre o qual o H0 importa o
-> Radar existente sem reescrevê-lo. Ver `../vigiaplus-arquitetura.md` (SAD) e
-> `../vigiaplus-roadmap.md`.
+> não tem banco real, não tem UI em Next.js. É o **alicerce** sobre o qual o H0
+> importa o Radar existente sem reescrevê-lo.
+>
+> Documentação completa em `docs/` (SAD, roadmap, protótipo navegável, análise
+> do `crises` e dossiê de remodelagem) — o repositório é autocontido.
 >
 > **Dependências externas: zero.** Só módulos built-in do Node ≥ 20.
 
@@ -47,7 +49,19 @@ curl -s localhost:3000/api/me/permissions \
 
 ---
 
-## 2. Mapa do código
+## 2. Documentação (`docs/`)
+
+| Arquivo | Conteúdo |
+|---|---|
+| `vigiaplus-arquitetura.md` | SAD v1.0 — C4, 13 ADRs, modelo de dados, RLS, §12 com A1–A10 |
+| `vigiaplus-roadmap.md` | Planejamento H0–H6, DoD, governança e status real medido (§14) |
+| `prototipo-v3.html` | Protótipo navegável: 3 superfícies, 18 áreas no console, 2 eixos |
+| `analise-crises-pt.md` | Revisão de código/arquitetura do `OARANHA/crises` |
+| `remodelagem.md` | Dossiê de produto e engenharia do Vigia |
+
+---
+
+## 3. Mapa do código
 
 | Arquivo | Responsabilidade | Decisão do SAD |
 |---|---|---|
@@ -69,7 +83,7 @@ Nenhuma etapa é opcional e nenhuma confia em dado do request.
 
 ---
 
-## 3. Três superfícies
+## 4. Três superfícies
 
 | Superfície | Quem | Onde |
 |---|---|---|
@@ -84,7 +98,7 @@ compara o fingerprint de permissões nos dois modos. Isso é o que impede o
 
 ---
 
-## 4. Cadastrar qualquer LLM sem editar código
+## 5. Cadastrar qualquer LLM sem editar código
 
 O problema original estava em `lib/ai-provider.ts` do `crises`:
 
@@ -123,7 +137,7 @@ Regras que não são negociáveis:
 
 ---
 
-## 5. Suíte adversarial A1–A10
+## 6. Suíte adversarial A1–A10
 
 | # | Ataque | Defesa | Onde |
 |---|---|---|---|
@@ -147,7 +161,7 @@ npm run test:adversarial
 
 ---
 
-## 6. Docker + Traefik
+## 7. Docker + Traefik
 
 ```bash
 export SESSION_SECRET=$(openssl rand -hex 32)
@@ -170,7 +184,7 @@ e **resolver o gate AGPL** (`NOTICE.md`).
 
 ---
 
-## 7. Push para `OARANHA/vigiaplus`
+## 8. Push para `OARANHA/vigiaplus`
 
 Neste ambiente **não há autenticação GitHub** (`gh auth status` retorna "not logged
 into any GitHub hosts"). Por isso o push não foi executado. O repositório local
@@ -188,7 +202,7 @@ git push -u origin main
 
 ---
 
-## 8. Limites honestos (o que falta para H1)
+## 9. Limites honestos (o que falta para H1)
 
 | Limite | Próximo passo |
 |---|---|
