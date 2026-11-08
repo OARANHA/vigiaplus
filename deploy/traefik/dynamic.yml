@@ -1,0 +1,40 @@
+# Configuração DINÂMICA: middlewares de borda e dashboard.
+# O roteamento da aplicação vem por labels Docker no compose.
+http:
+  middlewares:
+    security-headers:
+      headers:
+        frameDeny: true
+        contentTypeNosniff: true
+        browserXssFilter: true
+        referrerPolicy: "strict-origin-when-cross-origin"
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        forceSTSHeader: true
+
+    rate-limit:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1m
+
+    compress:
+      compress: {}
+
+    vigia-chain:
+      chain:
+        middlewares:
+          - security-headers
+          - rate-limit
+          - compress
+
+  routers:
+    traefik-dashboard:
+      rule: "Host(`traefik.vigiaplus.local`)"
+      entryPoints:
+        - websecure
+      service: api@internal
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - vigia-chain
