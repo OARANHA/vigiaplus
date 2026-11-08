@@ -184,21 +184,27 @@ e **resolver o gate AGPL** (`NOTICE.md`).
 
 ---
 
-## 8. Push para `OARANHA/vigiaplus`
+## 8. Repositório publicado
 
-Neste ambiente **não há autenticação GitHub** (`gh auth status` retorna "not logged
-into any GitHub hosts"). Por isso o push não foi executado. O repositório local
-já está com commit inicial; um `vigiaplus.bundle` portável acompanha a entrega.
+O código **já está no GitHub**: <https://github.com/OARANHA/vigiaplus>, ramo `main`.
 
-Com credenciais disponíveis:
+O push foi feito com um token pessoal **temporário** fornecido pelo dono, usado
+apenas em memória: não foi gravado em `.git/config`, em arquivo ou em log. O
+remote ficou com a URL limpa, sem credencial embutida.
 
 ```bash
-cd vigiaplus
-git remote add origin https://github.com/OARANHA/vigiaplus.git
-git push -u origin main
-# ou, sem rede no destino:
-#   git clone /caminho/vigiaplus.bundle vigiaplus && cd vigiaplus && git push -u origin main
+git remote -v
+# origin  https://github.com/OARANHA/vigiaplus.git (fetch)
+# origin  https://github.com/OARANHA/vigiaplus.git (push)
+
+git status   # working tree limpo; main sincronizada com origin/main
 ```
+
+Para os próximos pushes, configure sua própria credencial (PAT, chave SSH ou
+`gh auth login`). **Não reutilize o token temporário: revogue-o** em
+<https://github.com/settings/tokens> assim que conferir esta entrega.
+
+O `vigiaplus.bundle` em `/workspace/` permanece como cópia offline do histórico.
 
 ---
 

@@ -1,7 +1,8 @@
-# VigiaPlus — Planejamento de desenvolvimento a longo prazo v1.1
+# VigiaPlus — Planejamento de desenvolvimento a longo prazo v1.2
 
 > **Complemento de:** `vigiaplus-arquitetura.md` (SAD)
 > **Revisão 1.1:** protótipo v3, fundação executável, Docker/Traefik e commit local implementados e medidos (§14)
+> **Revisão 1.2:** push realizado para `OARANHA/vigiaplus` (`main`); status atualizado no §14 e §14.2
 > **Horizonte:** ~12 meses em 7 horizontes, revisados a cada 4 semanas
 > **Princípio:** cada horizonte é **testável, reversível e demonstrável**. Nada se declara pronto sem teste + validação na interface.
 > **Sequência definida pelo dono, respeitada:** *testar uma → teste adversarial → capacidade de planos → cliente ter área de plano e aviso → pagamentos → pt-BR → Docker/Traefik*.
@@ -284,10 +285,10 @@ H6  Docker + Traefik + operação        █████   semanas 39–44   (co
 | `vigiaplus-arquitetura.md` (SAD v1.0) | ✅ entregue | 15 seções, 13 ADRs, C4, modelo de dados, RLS, A1–A10 no §12 |
 | `vigiaplus-roadmap.md` (este, v1.1) | ✅ entregue | H0–H6, DoD, governança, anti-metas, esta tabela corrigida |
 | `vigia-prototipo.html` **v3** | ✅ entregue e validado | 6 abas · **18 áreas** no console · 4 subáreas em «Minha conta» · **2 eixos independentes** · 4 blocos de densidade avançada · 611/611 `<div>` balanceadas · 93 KB |
-| `vigiaplus/` **fundação executável** | ✅ entregue e testada | 22 arquivos · **38/38 testes verdes** (19 unitários + 19 adversariais) · `npm run demo` OK · servidor HTTP OK · **imagem Docker construída** e contêiner respondeu `/health` |
+| `vigiaplus/` **fundação executável** | ✅ entregue e testada | 27 arquivos · **38/38 testes verdes** (19 unitários + 19 adversariais) · `npm run demo` OK · servidor HTTP OK · **imagem Docker construída** e contêiner respondeu `/health` |
 | `deploy/` Docker + Traefik | ✅ entregue e validado | 3 YAML parseados · `docker compose config` OK · `docker build` OK · smoke test do contêiner OK |
-| Commit local + `vigiaplus.bundle` | ✅ pronto | ramo `main`, 27 arquivos (inclui `docs/` com SAD, roadmap e protótipo), bundle portável em `/workspace/` |
-| Repositório `OARANHA/vigiaplus` | ⏳ **push pendente** | `gh auth status` sem autenticação neste ambiente. O repo remoto está vazio; nenhum push foi feito |
+| Histórico Git + `vigiaplus.bundle` | ✅ publicado | ramo `main`, 27 arquivos (inclui `docs/`); bundle como redundância offline |
+| Repositório `OARANHA/vigiaplus` | ✅ **publicado** | ramo `main` conferido via `ls-remote` e API; 27 arquivos. O repo estava vazio — nada foi sobrescrito |
 | Importação dos 245 testes e 64 páginas de `crises` | ⏳ **H0, não iniciado** | A fundação é código **novo e isolado**; ainda não deriva de `crises`. Aguarda aprovação do SAD |
 | Gate jurídico AGPL-3.0 | ⏳ **aberto** | `vigiaplus/NOTICE.md` registra a decisão pendente antes de qualquer cobrança |
 
@@ -323,7 +324,7 @@ H6  Docker + Traefik + operação        █████   semanas 39–44   (co
 | Banco Postgres com RLS real | **NÃO TESTADO** — store em memória; é o E1.2 |
 | Migrações versionadas | **PENDENTE** — E1.8 |
 | UI em pt-BR integrada ao Next.js | **PENDENTE** — H5; hoje existe protótipo HTML |
-| Push para o GitHub | **PENDENTE** — sem credenciais no ambiente |
+| Push para o GitHub | **APROVADO** — `main` publicado e conferido na API |
 | Conformidade AGPL/LGPD | **PENDENTE** — gate antes de cobrar |
 
 > Nada acima é «aprovado porque compila». Cada linha **APROVADO** tem um teste

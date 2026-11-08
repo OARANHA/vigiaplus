@@ -416,11 +416,16 @@ Este SAD é complementado por:
 | `vigiaplus-roadmap.md` | H0–H6, DoD, governança, anti-metas | v1.1 com status real medido |
 | `vigia-prototipo.html` | v3 navegável: 3 superfícies, 18 áreas no console, 2 eixos de visualização, Meu plano/Avisos | estrutura validada (611/611 tags, 18/18 subnavs) |
 | `vigiaplus/` | Código executável do núcleo + suíte A1–A10 + Docker/Traefik | **38/38 testes**, demo, HTTP, `docker build` e contêiner no ar |
-| `vigiaplus.bundle` | Histórico Git portátil para o push | ramo `main`, inclui `docs/` autocontido |
+| `OARANHA/vigiaplus` (GitHub) | Repositório publicado, ramo `main` | ✅ publicado e verificado via API; 27 arquivos, `docs/` autocontido |
+| `vigiaplus.bundle` | Cópia portátil do histórico Git (redundância offline) | bundle verificado, histórico completo |
 
 O **§12 (A1–A10)** deixou de ser desenho: está implementado em
 `vigiaplus/tests/adversarial.test.js` e passou integralmente.
 
-**Nenhum arquivo de `crises` foi alterado; nenhum push foi feito** (sem
-autenticação GitHub neste ambiente). O gate AGPL-3.0 segue aberto e registrado
-em `vigiaplus/NOTICE.md`.
+**Nenhum arquivo de `crises` foi alterado.** O push para `OARANHA/vigiaplus`
+foi realizado com um token pessoal **temporário** fornecido pelo dono, usado
+apenas em memória — não gravado em `.git/config`, nem em arquivo, nem em log.
+O remote ficou com a URL limpa `https://github.com/OARANHA/vigiaplus.git`.
+Esse token **deve ser revogado** em <https://github.com/settings/tokens>.
+
+O gate AGPL-3.0 segue aberto e registrado em `vigiaplus/NOTICE.md`.
