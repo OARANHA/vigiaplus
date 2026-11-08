@@ -1,0 +1,85 @@
+[
+  {
+    "route": "/tv",
+    "status": 200,
+    "text": "LIVE\n\nArtificial Intelligence\n\nRADAR · SIGNAL OVER NOISE · WAR ROOM\n\n01:18:09 AM\n\nMENTIONS · 7 DAYS\n\n110\n\nof which 41 in the last 24 hours\n\nSENTIMENT\n\nneutral\n\nscore 0.09\n\nACTIVE SOURCES\n\n8\n\n◆ai safety 20\n◆ai ethics 20\n◆job impact 19\n◆enterprise adoption 15\n◆ai chips 14\n◆open source ai 14\n◆funding 13\n◆chatbots 12\n◆ai regulation 11\n◆model release 9\n◆ai safety 20\n◆ai ethics 20\n◆job impact 19\n◆enterprise adoption 15\n◆ai chips 14\n◆open source ai 14\n◆funding 13\n◆chatbots 12\n◆ai regulation 11\n◆model release 9",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=iTHopKv0dh2cdFSk",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=iTHopKv0dh2cdFSk",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=iTHopKv0dh2cdFSk",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=iTHopKv0dh2cdFSk",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=fVLmyrGAmESE6yhl",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=fVLmyrGAmESE6yhl",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=fVLmyrGAmESE6yhl",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/source/reddit",
+    "status": 200,
+    "text": "Deep-dive: Reddit\n\nHow the conversation on Reddit compares with the whole project — same data, filtered by channel\n\nMENTIONS 7D · REDDIT\n\n13\n\n11.8% of the project's 110\n\nAVG SENTIMENT · CHANNEL\n\n-0.06\n\nwhole project: +0.09\n\nACTIVE AUTHORS 7D\n\n6\n\ndistinct authors on this channel\n\nTOPICS 30D\n\n10\n\ntopics detected on this channel\n\nVolume: channel vs whole project (14 days)\n25/10\n27/10\n29/10\n31/10\n01/11\n02/11\n03/11\n04/11\n05/11\n06/11\n07/11\n0\n10\n20\n30\n40\nSentiment: channel vs whole project (7 days)\n\nReddit\n13 analyzed mentions\n\nwhole project\n110 analyzed mentions\n\n■ positive · ■ neutral · ■ negative — share of the mentions analyzed by the AI in the last 7 days.\n\nChannel topics (30 days)\njob impact\n8/31 · 26%\nenterprise adoption\n4/28 · 14%\nfunding\n4/28 · 14%\nmodel release\n3/16 · 19%\nai chips\n2/24 · 8%\nopen source ai\n2/22 · 9%\nai ethics\n1/32 · 3%\nchatbots\n1/19 · 5%\nai regulation\n1/25 · 4%\nai safety\n1/30 · 3%\nTop authors on Reddit (30 days)\n@futureofwork ×5\n@ml_daily ×4\n@openai_watch ×4\n@builder_dao ×3\n@ai_researcher ×2\n@safety_first ×1\n@deepmind_fan ×1\nEmerging on Reddit (7 days)\nfunding\n↑ 6.0×\n3\nenterprise adoption\n↑ 6.0×\n3\nmodel release\n↑ 4.0×\n2\nopen source ai\nNEW\n2\njob impact\n↑ 2.7×\n4\nChannel identity (30 days)\n\nMost active moment\n\nFriday · 05:00\n\nLanguages\n\nEN · DE · ES\n\nVoice concentration\n\ntop 3 authors = 65% · few voices dominate\n\nRelevance to your topic\n\n★ 3.5 vs ★ 3.3 project\n\nWhere Reddit disagrees (30 days)\nmodel release\n+0.36\nvs\n-0.16\nfunding\n-0.31\nvs\n+0.12\njob impact\n-0.06\nvs\n+0.16\nenterprise adoption\n+0.14\nvs\n-0.04\nLatest from Reddit\nall Reddit mentions →\nReddit\nneutro\nFR\n06 de nov., 19:33\nr/OpenAI\nAnalysts debate net effect of AI on employment\n\nAnalysts debate net effect of AI on employment. The move is expected to pressure competitors on both price and capability",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=reddit&q=ai%20regulation&_rsc=OXvl8Cy2H3oacvqb",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=OXvl8Cy2H3oacvqb",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=OXvl8Cy2H3oacvqb",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=OXvl8Cy2H3oacvqb",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  }
+]

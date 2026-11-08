@@ -1,0 +1,25 @@
+[
+  {
+    "name": "Filtro de fonte Reddit",
+    "pass": true,
+    "details": {
+      "cards": 20
+    }
+  },
+  {
+    "name": "Busca e estado vazio",
+    "pass": true
+  },
+  {
+    "name": "Seletor EN → pt-BR",
+    "pass": true
+  },
+  {
+    "name": "Menu mobile navega e fecha",
+    "pass": true
+  },
+  {
+    "name": "Sem exceções JS nos fluxos testados",
+    "pass": true
+  }
+]

@@ -1,0 +1,3604 @@
+[
+  {
+    "route": "/alerts",
+    "status": 200,
+    "text": "Alertas\n\nOn every update, Radar checks whether the volume or tone of conversations departs from the week's norm. When an alert fires, here you find what caused it: the explanation, topics, sources and key news.\n\nVolume spikeSEVERITY HIGH07 de nov., 00:16\n\nVolume spike: 41 mentions in the last 24h vs an average of 9/day.\n\nA major model launch triggered a burst of news and developer commentary; coverage is broad and still rising.\n\nTopics:\nmodel release\nchatbots\nai chips\nSources: Reddit 12 · GDELT 10 · Bluesky 7\n\nKEY CONTENT\n\nGDELT\nNew frontier model beats prior benchmarks across reasoning tasks\n\nSentiment dropSEVERITY MEDIUM07 de nov., 00:16\n\nSharp sentiment drop: average -0.22 in the last 24h (baseline 0.06).\n\nA safety red-teaming report and pushback on training-data consent shifted the tone more negative.\n\nTopics:\nai safety\nai ethics\nSources: Mastodon 6 · Hacker News 5\n\nKEY CONTENT\n\nHacker News\n●\nRed-teaming report finds jailbreaks still slip through filters",
+    "charts": 0,
+    "errors": [],
+    "lang": "pt"
+  },
+  {
+    "route": "/ask",
+    "status": 200,
+    "text": "Pergunte aos dados\n\nAsk questions in plain language about the data for “Artificial Intelligence”: the AI analyst answers with numbers and evidence\n\na IA escreve em\n🇬🇧\n🇮🇹\n🇧🇷\n\n✨ The conversational analyst is a live AI feature — self-host with your own Anthropic key to try it.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=JF0E-R0oFR3BR0MY",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=9ZC8VOswwzw7omIf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=9ZC8VOswwzw7omIf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=9ZC8VOswwzw7omIf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=9ZC8VOswwzw7omIf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=nYzaen3a2Q6OoqBQ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=nYzaen3a2Q6OoqBQ",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/audience",
+    "status": 200,
+    "text": "Análise de público\n\nQuem discute o tema: comunidades, idiomas e vozes mais influentes (últimos 14 dias)\n\nMost active communities\nReddit\nr/OpenAI\n5 mentions\n-0.18\nGoogle News\nFinancial Times\n4 mentions\n0.56\nYouTube\nMarco Reyes\n4 mentions\n-0.12\nReddit\nr/singularity\n3 mentions\n0.07\nYouTube\nSam Okonkwo\n3 mentions\n0.36\nReddit\nr/artificial\n3 mentions\n0.43\nGoogle News\nThe Verge\n3 mentions\n0.47\nGDELT\nArs Technica\n3 mentions\n-0.24\nRSS\nBloomberg\n3 mentions\n0.22\nGDELT\nThe Guardian\n3 mentions\n0.08\nGDELT\nTechCrunch\n3 mentions\n0.12\nRSS\nFinancial Times\n3 mentions\n-0.23\nRSS\nWired\n3 mentions\n0.03\nYouTube\nLena Novak\n3 mentions\n-0.02\nReddit\nr/technology\n3 mentions\n0.23\nConversation languages\nEN\n69\nES\n25\nDE\n23\nFR\n21\nMost influential authors\n\nClick the magnifier for the AI profile with a personalized outreach draft.\n\nYouTube\nGrace Lin\n@techanalyst\n2 posts · engagement 2,069\nReddit\nAda Whitfield\n@futureofwork\n2 posts · engagement 1,864\nHacker News\nElena Rossi\n@deepmind_fan\n2 posts · engagement 1,764\nYouTube\nGrace Lin\n@deepmind_fan\n1 posts · engagement 1,619\nMastodon\nMarco Reyes\n@futureofwork\n2 posts · engagement 1,617\nYouTube\nDavid Cohen\n@ai_researcher\n2 posts · engagement 1,576\nYouTube\nDavid Cohen\n@reg_watch\n1 posts · engagement 1,525\nYouTube\nYuki Tanaka\n@techanalyst\n1 posts · engagement 1,419\nBluesky\nMarco Reyes\n@safety_first\n2 posts · engagement 1,336\nYouTube\nYuki Tanaka\n@openai_watch\n1 posts · engagement 1,330\nReddit\nTomás Berg\n@openai_watch\n1 posts · engagement 1,321\nMastodon\nMarco Reyes\n@ai_researcher\n1 posts · engagement 1,290\nBluesky\nElena Rossi\n@reg_watch\n1 posts · engagement 1,237\nYouTube\nSam Okonkwo\n@ml_daily\n1 posts · engagement 1,236\nReddit\nAda Whitfield\n@safety_first\n1 posts · engagement 1,210\nTopics by community\nArs Technica\nfunding\n3\nr/singularity\nfunding\n2\nFinancial Times\nai",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=98AxpYnxFZDoh0fn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=98AxpYnxFZDoh0fn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=98AxpYnxFZDoh0fn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=98AxpYnxFZDoh0fn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=98AxpYnxFZDoh0fn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=LenK4crJa_EbUkfj",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=fd8asJuPMAL87Xyd",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/benchmark",
+    "status": 200,
+    "text": "Benchmark\n\nShare of voice e comparação de sentimento entre as entidades do setor (últimos 14 dias)\n\nShare of voice\nMeta\nOpenAI\nAnthropic\nGoogle\nTendência de volume\nAnthropicGoogleMetaOpenAI\n24/10\n25/10\n26/10\n27/10\n28/10\n29/10\n30/10\n31/10\n01/11\n02/11\n03/11\n04/11\n05/11\n06/11\n07/11\n0\n4\n8\n12\n16\nDetalhe\nENTIDADE\tPALAVRAS-CHAVE\tMENÇÕES\tSHARE OF VOICE\tSENTIMENTO MÉDIO\nOpenAI\tOpenAI, ChatGPT, GPT\t38\t27.5%\t0.20\nAnthropic\tAnthropic, Claude\t34\t24.6%\t0.11\nGoogle\tGemini, DeepMind\t23\t16.7%\t0.14\nMeta\tMeta AI, Llama\t43\t31.2%\t0.01\n\nGerencie as entidades comparadas em Projetos.",
+    "charts": 6,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=X6V2RlbRInuGpeA3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=X6V2RlbRInuGpeA3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=X6V2RlbRInuGpeA3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=X6V2RlbRInuGpeA3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=X6V2RlbRInuGpeA3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=X6V2RlbRInuGpeA3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=XMXhBZWOLTFo6nQR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=XMXhBZWOLTFo6nQR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=XMXhBZWOLTFo6nQR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=XMXhBZWOLTFo6nQR",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/brief",
+    "status": 200,
+    "text": "Brief diário\n\nBriefing executivo gerado toda manhã pela IA sobre os dados das últimas 24 horas\n\na IA escreve em\n🇬🇧\n🇮🇹\n🇧🇷\n\nSÁBADO, 7 DE NOVEMBRO DE 2026\n\ncopiar\nAt a glance\nA major frontier model launch drove a 41-mention spike (vs ~9/day), with broad, mostly positive coverage.\nSentiment dipped on AI safety after a red-teaming report and consent pushback.\nAI chips discussion rose on renewed supply-constraint reports.\nWhat happened\n\nThe dominant story was the new flagship model, praised for reasoning and long-context handling. In parallel, a regulator opened a consultation on transparency, keeping AI regulation in the conversation.\n\nSentiment and conversations\n\nOverall tone is mildly positive, led by developer communities on Reddit and Bluesky. The main negative pull came from safety and ethics threads on Hacker News and Mastodon.\n\nRisks and opportunities\nRisk: a \"safety is being sidelined for speed\" narrative shows signs of coordinated amplification — worth monitoring.\nOpportunity: strong interest in open-weights models is a timely hook for content and positioning.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=A_IPGwTXX3DbpE-x",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=A_IPGwTXX3DbpE-x",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=Xo_VSf6w1K1u8jVE",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/changes",
+    "status": 200,
+    "text": "O que mudou\n\nComparação inteligente: os últimos 7 dias contra os 7 anteriores, explicado em palavras\n\n✨ The weekly comparison is a live AI feature — self-host with your own Anthropic key to try it.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=Xo_VSf6w1K1u8jVE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=Xo_VSf6w1K1u8jVE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=Xo_VSf6w1K1u8jVE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=Xo_VSf6w1K1u8jVE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=XVmOJD6Twk-WkOHl",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=qKzrN_-f7mvJjTw_",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=qKzrN_-f7mvJjTw_",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=qKzrN_-f7mvJjTw_",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/content",
+    "status": 200,
+    "text": "Avaliação de conteúdos\n\nConteúdos com mais engajamento (7 dias): percentil por plataforma + avaliação de IA\n\nCONTENT\tSOURCE\tENGAGEMENT\tPERCENTILE\tAI SCORE\tVIRALITY\tRISK\n\n\nPermissive license sparks debate over commercial use \n\n@deepmind_fan · 06 de nov., 08:10 — Well-sourced and timely; strong hook for the topic.\n\n\t\nYouTube\t1,619\t100°\t68\t79\tmedium\n\n\nStartup unveils a smaller model that rivals the giants on coding \n\n@reg_watch · 07 de nov., 00:10 — Well-sourced and timely; strong hook for the topic.\n\n\t\nYouTube\t1,525\t94°\t92\t66\tmedium\n\n\nRed-teaming report finds jailbreaks still slip through filters \n\n@techanalyst · 05 de nov., 12:03 — Well-sourced and timely; strong hook for the topic.\n\n\t\nYouTube\t1,419\t88°\t61\t92\tlow\n\n\nRegulators weigh disclosure requirements for training data \n\n@openai_watch · 01 de nov., 12:38 — Well-sourced and timely; strong hook for the topic.\n\n\t\nYouTube\t1,330\t81°\t74\t52\tlow\n\n\nChip challenger secures funding to take on incumbents \n\n@openai_watch · 03 de nov., 17:46 — Well-sourced and timely; strong hook for the topic.\n\n\t\nReddit\t1,321\t100°\t82\t51\tlow\n\n\nArtists push back over training-data consent \n\n@reg_watch · 02 de nov., 22:31 — Well-sourced and timely; strong hook for the topic.\n\n\t\nBluesky\t1,237\t100°\t92\t70\tlow\n\n\nCommunity fine-tune tops leaderboards weeks after base release \n\n@ml_daily · 01 de nov., 05:51 — Well-sourced and timely; strong hook for the topic.\n\n\t\nYouTube\t1,236\t75°\t91\t61\tlow\n\n\nRetailer credits AI for faster content production \n\n@safety_first · 06 de nov., 00:36 — Well-sourced and timely; strong hook for the topic.\n\n\t\nReddit\t1,210\t92°\t80\t61\tmedium\n\n\nReport estimates which tasks are most exposed to automation \n\n@ml_daily · 01 de nov., 22:27 — Well-sourced and timely; strong hook for the topic.\n\n\t\nReddit\t1,208\t83°\t93\t42\tmedium\n\n\nAnalysts deba",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=vdMZzJRwgHIHmGPA",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=vdMZzJRwgHIHmGPA",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/emv",
+    "status": 200,
+    "text": "Valor de mídia ganho\n\nThe question management always asks: what is this coverage worth? Here is a defensible answer — with every assumption on the table, because an EMV without its assumptions is just a number to argue about.\n\nFalam de você — e você não pagou por isso. Jornalistas que escrevem artigos, usuários que publicam, comunidades que discutem: toda essa atenção alcançou pessoas reais. Se quisesse a mesma atenção com publicidade, teria que comprá-la. Esta página estima essa conta: quanto teria custado sua cobertura se fosse paga.\n\n1 · A COBERTURA\n\n189 conteúdos que falam do seu tema\n\n2 · QUANTAS PESSOAS VIRAM\n\n3,746,026 visualizações estimadas\n\n3 · QUANTO TERIA CUSTADO\n\n€16,527 em publicidade\n\nÉ uma estimativa, não uma fatura — e deliberadamente conservadora: aqui cobertura negativa não vale nada, e nenhum dos truques de inflar números da velha métrica AVE é aplicado. O método completo está no fim da página.\n\nEARNED MEDIA VALUE\n\n€16,527\n\nlast 30 days\n\nIMPRESSIONS\n\n3,746,026\n\n189 pieces of coverage\n\nNEGATIVE EXPOSURE\n\n900,129\n\n43 pieces · valued at €0\n\nESTIMATED REACH\n\n87%\n\n24 had real reach\n\nWhere the value comes from\n\nBy source, over the period.\n\nYouTube\n€3,940\nMastodon\n€3,615\nBluesky\n€2,464\nReddit\n€2,099\nHacker News\n€2,069\nGoogle News\n€930\nRSS\n€720\nGDELT\n€690\nValue earned day by day\n\nSpikes mark the days that paid off.\n\n2026-10-08 → 2026-11-07\n\nTop earning coverage\n\nThe pieces that generated most of the value — click to open.\n\n€520\nPermissive license sparks debate over commercial use\nYouTube\n€494\nCommunity fine-tune tops leaderboards weeks after base release\nYouTube\n€300\nRegulators weigh disclosure requirements for training data\nReddit\n€297\nArtists push back over training-data consent\nBluesky\n€288\nResearchers publish new evaluations for deceptive behavior\nYouTub",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=r2r8YiNGJwmvfSE3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=r2r8YiNGJwmvfSE3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=r2r8YiNGJwmvfSE3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=r2r8YiNGJwmvfSE3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/source/hackernews?_rsc=7wM8MgvuPJdl-DWZ",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/evidenze",
+    "status": 200,
+    "text": "Cross-checks\nFact checks\nClinical trials\nPodcasts\nClinical trials\n\nThe evidence behind health news: where the trials stand, and where the story runs ahead of the data.\n\nWhat to follow\n\nDrugs, conditions or sponsors, comma-separated (up to 5). They differ from the project keywords: a clinical trial registry needs medical terms.\n\nSave and search\n\nThis section stays off until you choose what to follow: the project keywords would only find noise in a clinical trial registry.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?ids=29&_rsc=6PU0-MWngVHsMKbH",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?ids=96&_rsc=6PU0-MWngVHsMKbH",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?ids=84&_rsc=6PU0-MWngVHsMKbH",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?ids=172&_rsc=6PU0-MWngVHsMKbH",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/verifiche?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=N0UFCBNECba6Dq_E",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/evidenze?_rsc=vdAUkBzbhMW7BtWd",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/graph",
+    "status": 200,
+    "text": "Studio Graph\n\nCostruisci il grafico che ti serve\n\nStudio Graph è riservato agli amministratori. I grafici salvati restano poi visibili a tutti dentro il report personalizzato.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=vdAUkBzbhMW7BtWd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=vdAUkBzbhMW7BtWd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=vdAUkBzbhMW7BtWd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=vdAUkBzbhMW7BtWd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=vQi2bJoPgk2Lx-LP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=vQi2bJoPgk2Lx-LP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=vQi2bJoPgk2Lx-LP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=vQi2bJoPgk2Lx-LP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=-zawKI3osFAMCCH1",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=-zawKI3osFAMCCH1",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=-zawKI3osFAMCCH1",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/import",
+    "status": 200,
+    "text": "Importing data is available to admins.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=m9R-wef6jQlf2psS",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=m9R-wef6jQlf2psS",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=m9R-wef6jQlf2psS",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=m9R-wef6jQlf2psS",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=-xBKD8-28OWPVmq7",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/impostazioni/account",
+    "status": 200,
+    "text": "My account\nSources\nBudget\nCredits & Legal\nMinha conta\n\nNome: Demo viewer\n\nEmail: demo@radar.app\n\nRuolo: MembroAI attiva\n\nCambia password\nUpdate password",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=OiqrdK-H2KyujU6G",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=OiqrdK-H2KyujU6G",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=OiqrdK-H2KyujU6G",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/impostazioni/budget",
+    "status": 200,
+    "text": "My account\nSources\nBudget\nCredits & Legal\nOrçamento e custos\n\nThe AI key that powers analysis, its spend cap, and where your paid data-source costs come from.\n\nAI spend & budget\n\nThe active AI engine has no key yet: add one above. Data collection works, but sentiment, briefs and ratings stay pending.\n\nPaid data sources\n\nThe budget above meters only the AI spend, because Radar makes those calls itself and can count the tokens. Paid data sources are different: they are billed directly by each provider as a flat subscription or a request quota — Radar can’t meter that cost. You control it by entering or removing the key (in the Sources tab) and by managing limits on the provider’s own dashboard.\n\nNo paid source is active. All data currently comes from free sources — your only metered cost is the AI budget on the left.\n\nREFERENCE — HOW EACH PAID SOURCE IS BILLED\n\nX (Twitter): X API — Basic plan, a flat ~$200/month subscription billed by X.\n\nNewsAPI: NewsAPI — free developer tier, paid plans for production. Billed by newsapi.org.\n\nInstagram: Meta Graph API — free to call, but requires a Business account. No per-call fee.\n\nFacebook: Meta Graph API — free to call, tied to your Page/token. No per-call fee.\n\nTikTok: TikTok Research API — free, approval-gated by TikTok. No per-call fee.\n\nLinkedIn (page): LinkedIn — free, limited to your own organization page.\n\nManage source keys in the\nSources\ntab.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=WtCB4QNKZtqHWMp9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/fonti?_rsc=8ym6CFZFwVThnqQJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=8ym6CFZFwVThnqQJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=8ym6CFZFwVThnqQJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=8ym6CFZFwVThnqQJ",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/impostazioni/credits",
+    "status": 200,
+    "text": "My account\nSources\nBudget\nCredits & Legal\nCréditos e notas legais\n\nWho built Radar, what it's made of, and the terms it's released under.\n\nMade by\n\nCreator & product: Massimo Scognamiglio — idea, design, direction and every decision behind Radar.\n\nBuilt in pair with: Claude by Anthropic\n — the AI collaborator that wrote and shaped the code side by side with the author, and that also powers Radar’s in-app AI features (sentiment, emotion, briefs, clustering, Content Studio…).\n\nA one-person team plus an AI partner — enterprise-grade media intelligence at a thousandth of the price. And yes, we had a lot of fun together. 🐣\n\nLicense\n\nRadar is free and open source under the GNU AGPL-3.0\n license. © 2026 Massimo Scognamiglio and contributors.\n\nIf you run a modified version as a network service, the AGPL requires you to make your source available under the same license. Source code: github.com/Scognamiglio1969/radar-intelligence\n.\n\nBuilt with open source\n\nRadar stands on the shoulders of these projects. Each package’s authoritative license text ships in its own folder under node_modules/.\n\nNext.js\nMIT\nReact\nMIT\nthree.js\nMIT\nRecharts\nMIT\nTailwind CSS\nMIT\nDrizzle ORM\nApache-2.0\nPGlite\nApache-2.0\nNeon serverless driver\nMIT\n@anthropic-ai/sdk\nMIT\nlucide-react (icons)\nISC\nExcelJS\nMIT\nPptxGenJS\nMIT\ndocx\nMIT\nPDFKit\nMIT\njsPDF\nMIT\nmarked\nMIT\nfast-xml-parser\nMIT\ndate-fns\nMIT\nMedia & assets\nPlanet, sun and moon textures in the Conversation Galaxy — © Solar System Scope\n, licensed CC BY 4.0.\nEgg photo (easter egg) — “White chicken egg” via Wikimedia Commons\n, CC BY 2.0.\nChick photo (easter egg) — “Day old chick” via Wikimedia Commons\n, GFDL 1.2.\nData sources\n\nRadar reads publicly available data from: GDELT · Google News · Bluesky · Mastodon · Hacker News (Algolia) · Telegram · RSS/Atom · Re",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=8ym6CFZFwVThnqQJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/budget?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/fonti?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/impostazioni/fonti",
+    "status": 200,
+    "text": "My account\nSources\nBudget\nCredits & Legal\nFontes\n\nStatus of the listening sources and their API keys. AI spend and budget are in the Budget tab.\n\nSource status\n\nFREE\n\nGeneral & news\n\nGoogle News\n26 new · 07 de nov., 00:16\nGDELT (worldwide news)\n23 new · 07 de nov., 00:16\nCustom RSS feeds\n25 new · 07 de nov., 00:16\n\nFinancial & corporate\n\nSEC EDGAR\nawaiting first collection\n\nAcademic\n\narXiv\nawaiting first collection\n\nTech & developer\n\nHacker News\n19 new · 07 de nov., 00:16\nStack Exchange\nawaiting first collection\nGitHub\nawaiting first collection\n\nSocial & messaging\n\nBluesky\n25 new · 07 de nov., 00:16\nMastodon\n28 new · 07 de nov., 00:16\nTelegram (channels)\nawaiting first collection\nLemmy\nawaiting first collection\n\nFREE · REQUIRES A FREE KEY\n\nFree, but you need to register a free API key with the service. Enter it here: the source turns on right away.\n\nGeneral & news\n\nNewsData.io\nMissing NEWSDATA_API_KEY (free at newsdata.io/register)\n\nSocial & messaging\n\nReddit\nRequires a free Reddit app (type \"script\"): enter Client ID and Secret here\nLinkedIn (web)\nRequires a free Tavily API key (app.tavily.com, 1,000 searches/month): enter it here\nDiscord\nRequires a Discord bot token (invited to your server, with the Message Content Intent enabled) and the channel IDs to read: enter them here\n\nVideo\n\nYouTube\nRequires a YouTube API key (free from Google Cloud Console): enter it here\n\nPodcasts & audio\n\nPodcast Index\nMissing PODCASTINDEX_API_KEY / PODCASTINDEX_API_SECRET (free at api.podcastindex.org)\n\nPREMIUM — PAID\n\nConnectors are ready: enter your API keys here, without touching code. They turn on right away and apply to the whole account. Their cost is billed by each provider — see the Budget tab.\n\nGeneral & news\n\nNewsAPI (150k outlets)\nRequires a NewsAPI key (newsapi.org): enter it h",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=bjbIm9Yivll4jLEZ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=dkQTdcN6zXmnI3xR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=uAJILZjWW6OO4jC3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=uAJILZjWW6OO4jC3",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/impostazioni",
+    "status": 200,
+    "text": "My account\nSources\nBudget\nCredits & Legal\nMinha conta\n\nNome: Demo viewer\n\nEmail: demo@radar.app\n\nRuolo: MembroAI attiva\n\nCambia password\nUpdate password",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=uAJILZjWW6OO4jC3"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=sllPB93KewxpJFUh",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=sllPB93KewxpJFUh",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=sllPB93KewxpJFUh",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=sllPB93KewxpJFUh",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/impostazioni/team",
+    "status": 200,
+    "text": "My account\nSources\nBudget\nCredits & Legal\nMinha conta\n\nNome: Demo viewer\n\nEmail: demo@radar.app\n\nRuolo: MembroAI attiva\n\nCambia password\nUpdate password",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=-Lk2IkWE5FBM1TOJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=-Lk2IkWE5FBM1TOJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=-Lk2IkWE5FBM1TOJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=-Lk2IkWE5FBM1TOJ",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=OiqrdK-H2KyujU6G",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/fonti?_rsc=OiqrdK-H2KyujU6G",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=OiqrdK-H2KyujU6G",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/causal",
+    "status": 200,
+    "text": "Gráfico causa-efeito\n\nThe AI's reconstruction of how events produced consequences: volume spikes, sentiment shifts, new narratives. An interpretive reading of the links, not statistical proof.\n\nCAUSE · 11/5/2026\n\nMajor frontier model launched\n\n+41 mentions in 24h (volume spike)\nSentiment turned more positive in developer communities\nOpen models are catching up fast\n\nCAUSE · 11/3/2026\n\nRed-teaming safety report published\n\nSentiment drop of ~0.28 on safety topics\nIncreased Hacker News discussion\nSafety is being sidelined for speed\n\nCAUSE · 11/1/2026\n\nRegulator opened transparency consultation\n\nRegulation mentions above baseline for 3 days\nRegulation will slow innovation\nRegenerate",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=-R5b-jBUP9KHBtN9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=CDVx9CvTC7m1_bWb",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=LnIW3-tuo_BtSodG",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/clusters",
+    "status": 200,
+    "text": "Clusters de conversa\n\nThe families of discourse used to talk about the topic: not the subject (the topics), but the frame — price, scandal, irony, quality, politics, customer care… Size = weight in the conversation, color = tone.\n\n0%\ninnovation/technology\n32%\nbusiness/market\n22%\npolitics/regulation\n16%\nsafety/risks\n14%\nethics/values\n10%\nirony/meme\n6%\nFamily detail\nInnovation/Technology\n32% · positive\n\n«The new model is a genuine step up on hard reasoning.»\n\nBusiness/Market\n22% · neutral\n\n«This will pressure competitors on price and capability.»\n\nPolitics/Regulation\n16% · neutral\n\n«Disclosure rules could reshape how models ship.»\n\nSafety/Risks\n14% · negative\n\n«Red-teaming still finds jailbreaks slipping through.»\n\nEthics/Values\n10% · negative\n\n«Artists want consent over training data.»\n\nIrony/Meme\n6% · neutral\n\n«Another week, another \"AGI is near\" thread.»\n\nRegenerate",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=aW0tqfw6EGZwG41N",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=aW0tqfw6EGZwG41N",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=aW0tqfw6EGZwG41N",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/constellation",
+    "status": 200,
+    "text": "Constelação semântica\n\nThe language of the conversation as a map of stars: each term sized by frequency, colored by sentiment, and linked to the terms it co-occurs with (last 14 days). Clusters of connected stars reveal the recurring framings.\n\nSENTIMENT:\nPositive\nNeutral\nNegative\n— line thickness = how often two terms appear together; hover a line for details\nai safety\nai ethics\njob impact\nenterprise adoption\nai chips\nfunding\nai regulation\nopen source ai\nchatbots\nmodel release\npositive\nneutral\nnegative\nStar size = frequency · line thickness = how often two terms appear together.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=njg52eNI5oQPNAFd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=njg52eNI5oQPNAFd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=njg52eNI5oQPNAFd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=njg52eNI5oQPNAFd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=njg52eNI5oQPNAFd",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=njg52eNI5oQPNAFd",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/crisis",
+    "status": 200,
+    "text": "Radar de crise e anatomia do pico\n\nOne risk number, the autopsy of the biggest spike, and where the trend leads if nothing changes — with an early warning if negativity is climbing fast enough to matter.\n\n56\nELEVATED\nRisk index\nNegative share (48h)\n+16\nVolume spike\n+30\nActive severe alerts\n+10\nPeak anatomy\n\nBiggest day: 06 de nov., 00:00 · 37 mentions · 19% negative · avg sentiment 0.11\n\nWHAT DROVE IT — TOPICS\n\nai safety · 8\nopen source ai · 8\nenterprise adoption · 7\njob impact · 6\nfunding · 5\n\nCONTENT THAT WEIGHED MOST\n\nReddit\n●\nRetailer credits AI for faster content production\nYouTube\n●\nSurvey: most enterprises now run at least one AI pilot\nBluesky\n●\nSurvey: most enterprises now run at least one AI pilot\nMastodon\n●\nCommunity fine-tune tops leaderboards weeks after base release\nYouTube\n●\nWorkers describe reskilling amid AI rollouts\nPara onde vai\n+55%/week\nmedium confidence\n\nO ritmo recente, projetado para frente — não é uma previsão de eventos, apenas a tendência se nada mudar. A faixa sombreada é o quanto os últimos 30 dias realmente variaram: uma projeção fora dessa faixa seria uma verdadeira surpresa.\n\n10-09\n10-11\n10-13\n10-15\n10-17\n10-19\n10-21\n10-23\n10-25\n10-27\n10-29\n10-31\n11-02\n11-04\n11-06\n11-08\n11-10\n11-12\n11-14\n0\n10\n20\n30\n40\ntoday",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=PqbPb84CpHNv4ANE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=PqbPb84CpHNv4ANE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=PqbPb84CpHNv4ANE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=R0UCs_NNh-BtyV5O",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/emotions",
+    "status": 200,
+    "text": "Radar das emoções\n\nBeyond positive/negative: the emotional fingerprint of the conversation (last 30 days). It separates a crisis driven by fear from one driven by anger — very different responses. Emotions are AI-tagged on newly analyzed mentions.\n\nJoy\nTrust\nFear\nAnger\nSadness\nSurprise\n0\n8\n16\n24\n32\nBreakdown\n\nDominant emotion: Joy (29.6%).\n\nJoy\n29.6%\nSurprise\n22.2%\nFear\n15.3%\nTrust\n14.3%\nAnger\n12.7%\nSadness\n5.8%",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=odP8vZyPiOU6_o8a",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=odP8vZyPiOU6_o8a",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=odP8vZyPiOU6_o8a",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/flow",
+    "status": 200,
+    "text": "Fluxo da conversa\n\nHow the conversation flows from source to topic to sentiment (last 14 days). Read the ribbons to see, at a glance, which sources drive which topics and where the negativity concentrates.\n\nSOURCE\nTOPIC\nSENTIMENT\nSOURCES:\nRSS\nBluesky\nYouTube\nMastodon\nHacker News\nReddit\nSENTIMENT:\nneutral\npositive\nnegative\nRSS\nMastodon\nBluesky\nYouTube\nReddit\nHacker News\nai ethics\nai safety\njob impact\nfunding\nenterprise adoption\nai chips\nai regulation\nopen source ai\npositive\nneutral\nnegative\n\nRibbon thickness = number of mentions. Hover a node for its total.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=AXh8blXffvVnu3GK",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=AXh8blXffvVnu3GK",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=AXh8blXffvVnu3GK",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=AXh8blXffvVnu3GK",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=AXh8blXffvVnu3GK",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=6C4jpUBeD7W5HcTR",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/galaxy",
+    "status": 200,
+    "text": "Galáxia da conversa\n\nYour conversation as a real solar system (last 14 days). Each planet is a source — sized by volume — orbiting the sun, whose glow reflects your Health Index. Every planet has three moons sized 1–10 by its sentiment split. Around it all, an outer belt of topics (what's discussed) and golden comets for emerging trends — switch any layer on or off. Drag to orbit, scroll to fly closer.\n\nSOURCES:\nMastodon\nRSS\nBluesky\nYouTube\nGoogle News\nReddit\nGDELT\nHacker News\nSENTIMENT:\npositive\nneutral\nnegative\nLAYERS:\nTopics\nTrends\n\nCONVERSATION GALAXY\n\nArtificial Intelligence\n\nhealth 68 · Good\n138 mentions\nsentiment +0.11\n\ndrag to orbit · scroll to zoom toward the cursor (point at an outer belt to fly to it) · right-drag or two fingers to pan · planets = sources · moons = sentiment · outer belt = topics · golden comets = trends\n\nTextures © Solar System Scope · CC BY 4.0\n\nConstellations (sources):\nMastodon\n20\nRSS\n19\nBluesky\n19\nYouTube\n18\nGoogle News\n16\nReddit\n16\nGDELT\n15\nHacker News\n15",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/geo",
+    "status": 200,
+    "text": "Studio Graph\n\nCostruisci il grafico che ti serve\n\nStudio Graph è riservato agli amministratori. I grafici salvati restano poi visibili a tutti dentro il report personalizzato.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=2Fw0kQ1x7hPa-YwP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=2Fw0kQ1x7hPa-YwP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=2Fw0kQ1x7hPa-YwP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=2Fw0kQ1x7hPa-YwP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=PHKJLnBXeoi_raLc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=vQi2bJoPgk2Lx-LP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=-zawKI3osFAMCCH1",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/health",
+    "status": 200,
+    "text": "Índice de saúde da marca\n\nHow your brand “Anthropic” is doing versus the market and the competitors (last 14 days). One 0–100 score combining sentiment, positive share, momentum and resonance.\n\nMarket health · the whole theme\n68\nGOOD\nMarket Health\n\n138 mentions analyzed\n\nWhat drives the score\nSentiment\n55\n35% wt\nPositive share\n65\n25% wt\nMomentum\n100\n20% wt\nResonance\n64\n20% wt\n14-day sentiment trend\nBrand health · Anthropic\n69\nGOOD\nAnthropic\n\n34 brand mentions · +1 vs market\n\nSentiment\n55\n35% wt\nPositive share\n62\n25% wt\nMomentum\n100\n20% wt\nResonance\n71\n20% wt\n14-day sentiment trend\nHealth ranking · your brand vs competitors\nOpenAI\n74\n★ Anthropic\n69\nGoogle\n67\nMeta\n63",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=ZyBZQy9TZnmRknef",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=ai0exm67VyG-ygxA",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=ai0exm67VyG-ygxA",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=ai0exm67VyG-ygxA",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=ai0exm67VyG-ygxA",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/heatmap",
+    "status": 200,
+    "text": "Mapa por hora e dia da semana\n\nWhen conversations explode: intensity by day of week and hour (last 30 days). Useful to know when to monitor and when to publish.\n\n0\n3\n6\n9\n12\n15\n18\n21\nLun\nMar\nMer\nGio\nVen\nSab\nDom\n\nLocal time. Color = intensity of conversations.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=KF226w5jeCEa_K0j",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=KF226w5jeCEa_K0j",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=KF226w5jeCEa_K0j",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=11J8qeJmHKacF2Ix",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/momentum",
+    "status": 200,
+    "text": "Quadrante do momentum\n\nA strategic 2×2 of topics by volume (how big) and acceleration (how fast it is moving), last 14 days. Rising stars are big and still growing; Emerging are small but surging; Steady are big but flat; Declining are fading.\n\n0\n6\n12\n18\n24\n← smaller Volume (mentions, 14d) bigger →\n57%\n97%\n137%\n177%\n200%\n← declining Acceleration accelerating →\nRising stars\nEmerging\nSteady\nDeclining\nBubble size = volume · hover to read a label · use the Zoom buttons when a corner is crowded.",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=yVTIl_mbGCoDx4ga",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=yVTIl_mbGCoDx4ga",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=yVTIl_mbGCoDx4ga",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=yVTIl_mbGCoDx4ga",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=iDnLJSzWqQWztBWK",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=iDnLJSzWqQWztBWK",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/network",
+    "status": 200,
+    "text": "Rede de influenciadores\n\nThe people driving the conversation (last 14 days). Each dot is an author, sized by engagement, filled by the topic they focus on and ringed by their average sentiment. Links connect people around the same topic — the clusters are the tribes forming around each subject. Click anyone (dot or list) to open their posts.\n\n@futureofwork\n@techanalyst\n@ml_daily\n@safety_first\n@openai_watch\n@ai_researcher\n@vc_insider\n@reg_watch\n@deepmind_fan\n@builder_dao\n\nTOP VOICES — CLICK TO READ THEIR POSTS\n\n1\n@futureofwork\npositive\n16p\n13,250\n2\n@techanalyst\nneutral\n10p\n9,992\n3\n@ml_daily\nneutral\n12p\n9,882\n4\n@safety_first\npositive\n9p\n7,982\n5\n@openai_watch\nneutral\n9p\n7,927\n6\n@ai_researcher\nneutral\n9p\n6,848\n7\n@vc_insider\nneutral\n6p\n5,461\n8\n@reg_watch\npositive\n6p\n5,385\n9\n@deepmind_fan\nneutral\n5p\n4,774\n10\n@builder_dao\npositive\n6p\n4,575\nTopic clusters:\nai safety\nai ethics\njob impact\nfunding\nchatbots\nai chips\nopen source ai\nai regulation\nFill = topic · ring = sentiment · size = engagement",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=7kYA-xv6pmVm9BIA",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/owned",
+    "status": 200,
+    "text": "Owned vs Earned\n\nAre your own posts working, or is all the conversation happening without you? Owned channels compared with everything said about you elsewhere.\n\nNenhum canal próprio conectado ainda. O Radar pode comparar seus posts com a conversa apenas quando puder lê-los.\n\nConnect your Facebook Page or LinkedIn company page — both are official, free APIs, just your own credentials.\n\nConectar um canal",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=sSgKtlbGaPGXyftT",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights",
+    "status": 200,
+    "text": "Explorar insights\n\n16 maneiras de ler a mesma conversa, agrupadas pela pergunta que você quer responder. Cada cartão diz para que serve: escolha a pergunta, não o gráfico.\n\nFormato da conversa\nSobre o que se fala, e como os temas se conectam\nMapa Temas × Sentimento\nQuais temas são grandes, quais são amados ou odiados, quais estão crescendo?\nConstelação semântica\nQuais palavras viajam juntas, e com que tom?\nFluxo da conversa\nQual fonte alimenta qual tema, e como isso termina em sentimento?\nClusters de conversa\nQuais famílias de discurso (os enquadramentos) dividem a conversa?\nPessoas\nQuem carrega a conversa\nRede de influenciadores\nQuem são as vozes mais altas, e quais tribos de temas elas formam?\nPirâmide de influência dos autores\nO alcance está concentrado em poucas grandes vozes ou distribuído?\nMomentum e saúde\nPara onde vai, e quão saudável está\nÍndice de saúde\nUm escore 0–100: quão saudável está a conversa — e a sua marca nela?\nQuadrante do momentum\nQuais temas são estrelas em ascensão e quais estão apagando?\nShare of Voice\nQuanto da conversa cada jogador possui ao longo do tempo?\nCascata do sentimento\nDia a dia, o que empurrou o humor para cima ou para baixo?\nRadar das emoções\nAlém de positivo/negativo: alegria, confiança, medo, raiva, tristeza, surpresa?\nContexto\nOnde e quando acontece\nMapa por hora e dia\nEm quais dias e horas a conversa realmente acontece?\nSeus canais\nComo seus posts performam, contra tudo o que dizem de você\nOwned vs Earned\nSeus posts funcionam, ou a conversa acontece inteiramente sem você?\nRisco\nO que pode dar errado, e o que causou o quê\nRadar de crise\nQuão exposto você está agora, e o que impulsionou o último pico?\nCausa e efeito\nQuais eventos produziram consequências mensuráveis?\nO quadro inteiro\nTudo junto, para um mural ou uma demo\nGaláxia ",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=X6_sSp4sKdtiZkyL"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=X6_sSp4sKdtiZkyL"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=X6_sSp4sKdtiZkyL",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/pyramid",
+    "status": 200,
+    "text": "Pirâmide de influência dos autores\n\nHow concentrated your conversation is (last 14 days): authors ranked into influence tiers, with the share of total reach each tier holds. A top-heavy pyramid means you depend on a few big voices; a broad base means resilience.\n\n20 authors · the top tier holds 17.4% of all reach — reach is fairly distributed.\n\nMega voices\n1 author · 17.4% of reach\nMacro\n3 authors · 36.6% of reach\nMicro\n6 authors · 46% of reach\nLong tail\n10 authors · 0% of reach\n\nTOP VOICES — CLICK AN AUTHOR TO SEE THEIR POSTS\n\n@futureofwork\n· 16\n@techanalyst\n· 10\n@ml_daily\n· 12\n@safety_first\n· 9\n@openai_watch\n· 9\n@ai_researcher\n· 9\n@vc_insider\n· 6\n@reg_watch\n· 6\n@deepmind_fan\n· 5\n@builder_dao\n· 6\nWired\n· 6\nArs Technica\n· 4\nAxios\n· 3\nBloomberg\n· 9\nFinancial Times\n· 3\nMIT Tech Review\n· 4\nReuters\n· 6\nTechCrunch\n· 5\nThe Guardian\n· 6\nThe Verge\n· 4\n\nMega voices\nMacro\nMicro\nLong tail\n· number = posts in the last 14 days",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/sov?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/momentum?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/health?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/pyramid?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/network?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=Financial%20Times&_rsc=MAEUWQb83U33HMXI",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40vc_insider&_rsc=MAEUWQb83U33HMXI",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40ai_researcher&_rsc=MAEUWQb83U33HMXI",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=MAEUWQb83U33HMXI",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=TechCrunch&_rsc=RHr-CHeQKxu8465F",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/sov",
+    "status": 200,
+    "text": "Share of Voice no tempo\n\nHow much of the conversation each entity owns over the last 30 days. The bars up top are the 30-day totals; the chart below shows the movement day by day — switch between Volume (absolute mentions, the real peaks and dips) and Share (each day as 100%, who's gaining ground). Hover any band for that day's mentions and percentage.\n\nOVERALL SHARE OF VOICE · LAST 30 DAYS\n\nOpenAI\n29%\n55\nMeta\n28%\n53\nAnthropic\n24%\n44\nGoogle\n19%\n35\nVolume\nShare (100%)\nAnthropicGoogleMetaOpenAI\n10-10\n10-12\n10-14\n10-16\n10-18\n10-20\n10-22\n10-24\n10-26\n10-28\n10-30\n11-01\n11-03\n11-05\n11-07\n0\n10\n20\n30\n40\n\nRead it as: a taller stack (Volume) means more total conversation that day; a widening band (Share) means that entity is gaining ground. Empty days at the start/end are trimmed. Manage entities in Settings.",
+    "charts": 5,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=Wired&_rsc=RHr-CHeQKxu8465F",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40builder_dao&_rsc=RHr-CHeQKxu8465F",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40deepmind_fan&_rsc=RHr-CHeQKxu8465F",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40reg_watch&_rsc=RHr-CHeQKxu8465F",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40vc_insider&_rsc=RHr-CHeQKxu8465F",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=puZQhUPJ4awD8khM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=puZQhUPJ4awD8khM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=puZQhUPJ4awD8khM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=V1b9IBgOOrXbXr3L",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/topics",
+    "status": 200,
+    "text": "Mapa Temas × Sentimento\n\nEach bubble is a topic: horizontal = sentiment, vertical = how much it is gaining or losing weight in the conversation, size = volume. Topics gaining importance are at the top, declining ones at the bottom.\n\n-1\n-0.5\n0\n0.5\n1\n← negative Sentiment positive →\n-57%\n-2%\n53%\n108%\n150%\n← in calo peso relativo in crescita →\npositive\nneutral\nnegative\nRelative weight: share of conversation in the second half vs the first half of the analyzed period.",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=VPkiBnPwGYkECGN7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=VPkiBnPwGYkECGN7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=VPkiBnPwGYkECGN7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=00QVpMDGVICcx_XR",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/insights/waterfall",
+    "status": 200,
+    "text": "Cascata do sentimento\n\nHow sentiment moved day by day: the green/red bars are each day's net contribution, the blue line the cumulative balance. Below, the content that weighed most on the turning-point days.\n\n10-24\n10-25\n10-26\n10-27\n10-28\n10-29\n10-30\n10-31\n11-01\n11-02\n11-03\n11-04\n11-05\n11-06\n11-07\n0\n2\n4\n6\n8\ndaily net (pos − neg)\n0\n6\n12\n18\n24\ncumulative balance\ngreen bar = that day had more positive than negative posts\nred bar = more negative than positive\nblue line = running balance since the start of the window\nHover any day for the exact numbers.\nWhat moved the sentiment\n11/6/2026\npositivo\nPermissive license sparks debate over commercial use\n11/4/2026\npositivo\nRegulators weigh disclosure requirements for training data",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=XBHCPbfC-cDLbqrA",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=XBHCPbfC-cDLbqrA",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=Cc5BWiHVrrVTt0vc",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/kpi",
+    "status": 200,
+    "text": "KPIs e confiabilidade\n\nIndicadores padrão de social listening, com a fórmula e o julgamento sobre o quanto sustentam.\n\nPeríodo\n7 dias\n15 dias\n30 dias\n90 dias\n08/10/2026 → 07/11/2026 · vs 08/09/2026 → 08/10/2026 · Europe/Rome\nDados adequados com ressalvas\n— 1 ressalva a declarar no relatório\nKPIs do período\nKPI\tVALOR\tANTERIOR\tΔ\tΔ%\tCONFIABILIDADE\nMenções\nconteúdos que correspondem ao projeto no período\n\t189\t1\t+188\t+18.800,0%\tcom cautela\na comparação inclui fontes novas\n\nVelocidade (menções/dia)\nMenções / dias do período\n\t6,3\t0,0\t+6,3\t+18.800,0%\tcom cautela\na comparação inclui fontes novas\n\nAutores únicos\ncontas distintas (handle, senão nome)\n\t20\t1\t+19\t+1.900,0%\tcom cautela\na comparação inclui fontes novas\n\nAlcance potencial\nsoma do alcance estimado pelas fontes: é um público potencial, não pessoas alcançadas · calculado sobre 13% das menções (24 de 189): as demais não trazem o valor\n\t1.090.046\tn/d\t—\t—\tnão usar\nbase de 24 menções: pequena demais\n\nEngajamento total\nlikes/reações + comentários + compartilhamentos (salvamentos n/d: nenhuma fonte os reporta)\n\t70.396\t0\t+70.396\t—\tcom cautela\na comparação inclui fontes novas\n\n· likes / reações\t52.285\t0\t+52.285\t—\t\n· comentários\t10.808\t0\t+10.808\t—\t\n· compartilhamentos\t7.303\t0\t+7.303\t—\t\nEngajamento médio por menção\nEngajamento total / menções que trazem engajamento\n\t372,47\t0,00\t+372,47\t—\tconfiável\nTaxa de engajamento sobre o alcance\nEngajamento / Alcance potencial × 100, apenas nas menções que trazem ambos · calculado sobre 13% das menções (24 de 189): as demais não trazem o valor\n\t1,3%\tn/d\t—\t—\tnão usar\nbase de 24 menções: pequena demais\n\nTaxa de amplificação\nCompartilhamentos / menções que trazem engajamento\n\t38,64\t0,00\t+38,64\t—\tconfiável\nTaxa de conversação\nComentários / menções que trazem engajamento\n\t57,19\t0,00\t+57,19\t—\tconfiáve",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?days=30&_rsc=h19TrYCK-eyGK1Zl",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=FJW-_m_sBc4biT60",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=FJW-_m_sBc4biT60",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=FJW-_m_sBc4biT60",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=FJW-_m_sBc4biT60",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=FJW-_m_sBc4biT60",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=FJW-_m_sBc4biT60",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/listening",
+    "status": 200,
+    "text": "Escuta\n\n190 menções encontradas\n\nsemântica\nBuscar\nidioma original\ntraduzir para Italiano\ntraduzir para English\ntraduzir para Español\ntraduzir para Français\ntraduzir para Deutsch\ntraduzir para Português\ntraduzir para 中文\ntraduzir para العربية\nTipo:\nartigos\nposts\nFonte:\nMastodon\nGoogle News\nBluesky\nRSS\nYouTube\nGDELT\nReddit\nHacker News\nSentimento:\npositivo\nneutro\nnegativo\nPeríodo:\n24 horas\n7 dias\n30 dias\n90 dias\nIdioma:\nEN\nFR\nES\nDE\nRelevância:\n★ ≥ 4\n★ 5\nOrdenar:\nengajamento\nrelevância\n\n74 de 74 artigos podem ser lidos na íntegra aqui.\n\nRSS\npositivo\nDE\n07 de nov., 00:12\nTechCrunch\nBank deploys AI assistants across customer support\n\nBank deploys AI assistants across customer support. Analysts caution that headline benchmarks may not reflect real-world use. Llama is part of the discussion.\n\ntraduzir · Português\nLer a matéria completa\n· 1k caracteres, 3 ocorrências\nReuters\n0\n0\n0\nenterprise adoption\nabrir\nYouTube\nneutro\nEN\n07 de nov., 00:10\nDavid Cohen\nStartup unveils a smaller model that rivals the giants on coding\n\nStartup unveils a smaller model that rivals the giants on coding. Critics argue the rollout raises fresh questions about oversight. ChatGPT is part of the discussion.\n\ntraduzir · Português\n@reg_watch\n865\n9\n107\nmodel release\nabrir\nGoogle News\npositivo\nEN\n06 de nov., 23:59\nThe Verge\nWatchdog calls for clearer AI content labeling\n\nWatchdog calls for clearer AI content labeling. Early testers say the improvement is noticeable on complex, multi-step problems. DeepMind is part of the discussion.\n\ntraduzir · Português\nLer a matéria completa\n· 1k caracteres, 3 ocorrências\nWired\n0\n0\n0\nai ethics\nabrir\nGoogle News\nneutro\nDE\n06 de nov., 23:53\nReuters\nCloud providers expand capacity to meet AI workloads\n\nCloud providers expand capacity to meet AI workloads. Analysts caution that",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=gdelt&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=youtube&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=mastodon&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/login",
+    "status": 200,
+    "text": "SIGNAL OVER NOISE\n\nAcesso exclusivo da equipe\n\nEntrar",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?giorni=90&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?giorni=30&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?giorni=7&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?giorni=1&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=_H_fFy2_Q06N8BA7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=_H_fFy2_Q06N8BA7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=_H_fFy2_Q06N8BA7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=_H_fFy2_Q06N8BA7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=_H_fFy2_Q06N8BA7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=sW2A7HEmFQnSVIMx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=sW2A7HEmFQnSVIMx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=sW2A7HEmFQnSVIMx",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/mcp",
+    "status": 200,
+    "text": "MCP\n\nRadar inside Claude and Copilot: the same data, queried in conversation.\n\nStatus\n\nOff: no token\n\nEndpoint address (streamable HTTP)\n\nhttps://bkthpn-ip-90-96-179-26.tunnelmole.net/api/mcp\ncopiar\nTurn MCP on: generate the token\nHow to connect it\n\nReplace YOUR_TOKEN with the token. If you lost it, generate a new one.\n\nClaude Code\n\nclaude mcp add --transport http radar https://bkthpn-ip-90-96-179-26.tunnelmole.net/api/mcp \\\n  --header \"Authorization: Bearer YOUR_TOKEN\"\ncopiar\n\nThen, inside Claude Code, /mcp shows whether it is connected.\n\nClaude Desktop\n\n{\n  \"mcpServers\": {\n    \"radar\": {\n      \"command\": \"npx\",\n      \"args\": [\n        \"-y\",\n        \"mcp-remote\",\n        \"https://bkthpn-ip-90-96-179-26.tunnelmole.net/api/mcp\",\n        \"--header\",\n        \"Authorization:${RADAR_AUTH}\"\n      ],\n      \"env\": {\n        \"RADAR_AUTH\": \"Bearer YOUR_TOKEN\"\n      }\n    }\n  }\n}\ncopiar\n\nIn claude_desktop_config.json (Settings → Developer). Requires Node.js.\n\nMicrosoft Copilot Studio\n\nAgent → Tools → Add a tool → Model Context Protocol → New.\nServer URL: the address above.\nAuthentication: API key, in the header, named x-api-key.\nWhen the connection asks for it, paste the token.\n\nclaude.ai\n\nclaude.ai custom connectors currently accept only OAuth, not a static token: Radar cannot be connected from there. Use Claude Code or Claude Desktop. open issue\n\nTools (11)\n\nAll read-only and free.\n\nradar_projects\nList Radar projects\n\tLists the projects with their id, kind (listening / upload / talkwalker), query keywords and languages. Start here: every other tool takes a project_id.\nradar_overview\nProject overview\n\tThe dashboard in numbers: mentions over the last 7 days, average sentiment, active sources, daily volume by source over 14 days, sentiment split, top topics and the latest daily bri",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=fbvhn5OfxSvE6A4i",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=fbvhn5OfxSvE6A4i",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=fbvhn5OfxSvE6A4i",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=y1-aU2NSKv8UpH5i",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=y1-aU2NSKv8UpH5i",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/measures",
+    "status": 200,
+    "text": "Measures are available to admins.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=4spNJR6sePuaOIT_",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=NaH0I1W6znLcz03K",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=NaH0I1W6znLcz03K",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=NaH0I1W6znLcz03K",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/media",
+    "status": 200,
+    "text": "Monitoramento de mídia\n\nNotícias e imprensa dos últimos 7 dias, agrupadas por história\n\nidioma original\ntraduzir para Italiano\ntraduzir para English\ntraduzir para Español\ntraduzir para Français\ntraduzir para Deutsch\ntraduzir para Português\ntraduzir para 中文\ntraduzir para العربية\nTop stories\nNew frontier model launch\n\nA flagship model release with stronger reasoning and long-context support drew broad coverage and developer reactions.\n\n05 de nov., 21:59\nArs Technica\nStartup unveils a smaller model that rivals the giants on coding\n05 de nov., 15:32\nThe Guardian\nInterpretability work maps features inside a production model\n02 de nov., 19:48\nTechCrunch\nOpen-weights model release reshapes the competitive landscape\n02 de nov., 19:18\nAxios\nOpen-source tooling makes self-hosting large models practical\n19 de out., 19:52\nAxios\nOpen-source tooling makes self-hosting large models practical\n\n5 articles\n\nAll news\nRSS\npositivo\nDE\n07 de nov., 00:12\nTechCrunch\nBank deploys AI assistants across customer support\n\nBank deploys AI assistants across customer support. Analysts caution that headline benchmarks may not reflect real-world use. Llama is part of the discussion.\n\ntraduzir · Português\nLer a matéria completa\n· 1k caracteres\nReuters\n0\n0\n0\nenterprise adoption\nabrir\nGoogle News\npositivo\nEN\n06 de nov., 23:59\nThe Verge\nWatchdog calls for clearer AI content labeling\n\nWatchdog calls for clearer AI content labeling. Early testers say the improvement is noticeable on complex, multi-step problems. DeepMind is part of the discussion.\n\ntraduzir · Português\nLer a matéria completa\n· 1k caracteres\nWired\n0\n0\n0\nai ethics\nabrir\nGoogle News\nneutro\nDE\n06 de nov., 23:53\nReuters\nCloud providers expand capacity to meet AI workloads\n\nCloud providers expand capacity to meet AI workloads. Analysts caution that",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=prZMPqhnfd3eFqce",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=N5Ihdn6thO8g7Di0",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=N5Ihdn6thO8g7Di0",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=N5Ihdn6thO8g7Di0",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=N5Ihdn6thO8g7Di0",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/messages",
+    "status": 200,
+    "text": "Narratives\nTimeline\nStakeholders\nMessage pull-through\nRetomada de mensagens\n\nVolume tells you how much they talk about you. This tells you whether they say what you wanted said — which of your key messages get picked up, by which sources, with what tone.\n\nWrite the messages you want to land\n\nOne per line — the way you would say them. Radar then measures how much of your coverage actually carries them. Without an AI key the matching uses the words of the message itself.\n\nStart measuring",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=jdIj7OpSJrBiTWnp",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=bT28To5ZNpN6NysY",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=bT28To5ZNpN6NysY",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=bT28To5ZNpN6NysY",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/narratives",
+    "status": 200,
+    "text": "Narratives\nTimeline\nStakeholders\nMessage pull-through\nNarrativas\n\nQuem empurra o quê: grupos de mensagens que defendem a mesma tese, com sinalização de padrões coordenados\n\nSafety is being sidelined for speed\npolarizing\npossible coordination →\n11 post · 07 de nov., 00:16\n\nSeveral accounts amplify near-identical claims that shipping cadence is outpacing evaluation, with unusually repetitive phrasing.\n\nMost active accounts: @safety_first@ai_researcher\n\nOpen models are catching up fast\npositive\n24 post · 07 de nov., 00:16\n\nA cluster of posts argues that open-weights releases now rival closed models on many tasks, framing it as a turning point for cost and control.\n\nMost active accounts: @ml_daily@builder_dao@openai_watch\n\nRegulation will slow innovation\nnegative\n15 post · 07 de nov., 00:16\n\nA recurring thesis that proposed disclosure rules are burdensome and will push research elsewhere.\n\nMost active accounts: @reg_watch@vc_insider",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=bT28To5ZNpN6NysY",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40openai_watch&_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40ai_researcher&_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40safety_first&_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/",
+    "status": 200,
+    "text": "Artificial Intelligence\n\nMonitorando: artificial intelligence, generative AI, LLM\n\nRadar — tendências emergentes nas últimas 24 horas\n×4.5\nmodel release\n41 menções em 24h (norm 9.2/dia)\n— A major model launch drove a burst of coverage and developer reactions in the last day.\n×3.6\nai chips\n22 menções em 24h (norm 6.1/dia)\n— Renewed supply-constraint reports pushed accelerator discussion above its usual baseline.\n×2.6\nai regulation\n18 menções em 24h (norm 7.0/dia)\n— A new consultation reignited debate about transparency requirements.\n\nMENÇÕES (7 DIAS)\n\n110\n\nSENTIMENTO MÉDIO\n\nneutro\n\nescore 0.09\n\nFONTES ATIVAS\n\n8\n\nTEMAS DETECTADOS\n\n10\n\nVolume por fonte (14 dias)\nBlueskyGDELTGoogle NewsHacker NewsMastodonRedditRSSYouTube\n24/10\n25/10\n26/10\n27/10\n28/10\n29/10\n30/10\n31/10\n01/11\n02/11\n03/11\n04/11\n05/11\n06/11\n07/11\n0\n10\n20\n30\n40\nSentimento (7 dias)\nnegativoneutropositivo\nTemas emergentes\nai safety 20\nai ethics 20\njob impact 19\nenterprise adoption 15\nai chips 14\nopen source ai 14\nfunding 13\nchatbots 12\nai regulation 11\nmodel release 9\nÚltimas menções\nver tudo →\nRSS\npositivo\nDE\n07 de nov., 00:12\nTechCrunch\nBank deploys AI assistants across customer support\n\nBank deploys AI assistants across customer support. Analysts caution that headline benchmarks may not reflect real-world use. Llama is part of the discussion.\n\ntraduzir · Português\nLer a matéria completa\n· 1k caracteres\nReuters\n0\n0\n0\nenterprise adoption\nabrir\nYouTube\nneutro\nEN\n07 de nov., 00:10\nDavid Cohen\nStartup unveils a smaller model that rivals the giants on coding\n\nStartup unveils a smaller model that rivals the giants on coding. Critics argue the rollout raises fresh questions about oversight. ChatGPT is part of the discussion.\n\ntraduzir · Português\n@reg_watch\n865\n9\n107\nmodel release\nabrir\nGoogle News\npositivo\nEN\n06 de no",
+    "charts": 13,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=tXyZJ52UQVBCVsD3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=tXyZJ52UQVBCVsD3",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/people",
+    "status": 200,
+    "text": "Available to admins.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=yIT_ZQnNvCuWbE3R",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=yIT_ZQnNvCuWbE3R",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/podcast",
+    "status": 200,
+    "text": "Cross-checks\nFact checks\nClinical trials\nPodcasts\nPodcast\n\nShows that talk about the topic, and those that keep coming back to it.\n\nPodcasts need a free Podcast Index key and secret (api.podcastindex.org). Once saved above, episodes arrive with the next collection.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=cW0bXFL0cn2Esv5e"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=cW0bXFL0cn2Esv5e"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/verifiche?_rsc=cW0bXFL0cn2Esv5e",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=cW0bXFL0cn2Esv5e",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=XrP-QzZequ0LL3eR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=XrP-QzZequ0LL3eR",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/pov",
+    "status": 200,
+    "text": "Point of View\n\nThe thesis you can take into a meeting: what is shifting over the last 90 days, the numbers that prove it, the posts that evidence it — plus what research says and what argues against it. Each block is slide-ready. Click any citation number to read the source post.\n\nVOLUME · LAST 30D\n\n189\n\n+18800% vs previous 30d\n\nSENTIMENT · LAST 30D\n\n+0.06\n\nwas +0.79\n\nEVIDENCE BASE\n\n190\n\nmentions · 90 days\n\nRESEARCH\n\n0\n\npapers\n\nThe argument needs an AI key (or the spend cap was reached). The verified figures above stay available.\n\nMarket × Research\n\nWhat the market talks about crossed with what research is publishing. The gap between the two is where a non-obvious point of view lives: something the labs are already working on but the market has not priced in, or something loud online that no research backs.\n\nUNKNOWN\nai ethics\nmarket new\nresearch —(0 papers)\nresearch signal unavailable — no conclusion drawn\nUNKNOWN\njob impact\nmarket new\nresearch —(0 papers)\nresearch signal unavailable — no conclusion drawn\nUNKNOWN\nai safety\nmarket new\nresearch —(0 papers)\nresearch signal unavailable — no conclusion drawn\nUNKNOWN\nenterprise adoption\nmarket +2700%\nresearch —(0 papers)\nresearch signal unavailable — no conclusion drawn\nUNKNOWN\nfunding\nmarket new\nresearch —(0 papers)\nresearch signal unavailable — no conclusion drawn\nUNKNOWN\nai regulation\nmarket new\nresearch —(0 papers)\nresearch signal unavailable — no conclusion drawn\nThe evidence behind it\n\nTopic by topic: last 30 days vs the 30 before. These are the figures the argument had to use — computed by the database, not by the AI.\n\nai ethics\nnew\n0 → 32\n— → +0.08\njob impact\nnew\n0 → 31\n— → +0.11\nai safety\nnew\n0 → 30\n— → +0.04\nenterprise adoption\n+2700%\n1 → 28\n+0.79 → -0.01\nfunding\nnew\n0 → 28\n— → +0.05\nai regulation\nnew\n0 → 25\n— → +0.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=XrP-QzZequ0LL3eR",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=ai%20chips&_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=ai%20regulation&_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=funding&_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=enterprise%20adoption&_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=ai%20safety&_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=IluHKZx2102C3-L3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=model%20release&_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=open%20source%20ai&_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=ai%20chips&_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=job%20impact&_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/query",
+    "status": 200,
+    "text": "Query\n\nWhat “Artificial Intelligence” listens to: write it in words, Radar builds and tests the queries.\n\n1\nWhat do you want to monitor?\n\nWrite it as you would tell a colleague: the subject, the facts or themes to relate it to, the competitors. Radar turns it into building blocks and queries.\n\nRebuild from the request\n\nThis is the project’s current query, turned into building blocks. Collection does not change until you save.\n\n2\nThe building blocks\n— each concept is an OR of its terms; edit it and every query using it changes.\nSubject\nContext\nCompetitor\nExclude\n\nDai termini “almeno uno” della vecchia query.\n\nartificial intelligence\ngenerative AI\nLLM\nSubject\nContext\nCompetitor\nExclude\nOpenAI\nChatGPT\nGPT\nSubject\nContext\nCompetitor\nExclude\nGemini\nDeepMind\nSubject\nContext\nCompetitor\nExclude\nMeta AI\nLlama\nSubject\nContext\nCompetitor\nExclude\n3\nThe queries (4 active of 8)\nactive\n\nFinds what talks about Artificial Intelligence.\n\nArtificial Intelligence\nOpenAI\nGoogle\nMeta\n(\"artificial intelligence\" OR \"generative AI\" OR LLM)\ncopiar\nactive\n\nFinds what talks about OpenAI.\n\nArtificial Intelligence\nOpenAI\nGoogle\nMeta\n(OpenAI OR ChatGPT OR GPT)\ncopiar\nactive\n\nFinds what talks about Google.\n\nArtificial Intelligence\nOpenAI\nGoogle\nMeta\n(Gemini OR DeepMind)\ncopiar\nactive\n\nFinds what talks about Meta.\n\nArtificial Intelligence\nOpenAI\nGoogle\nMeta\n(\"Meta AI\" OR Llama)\ncopiar\nAdd a query\nTest on real news\nSave and activate",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=DNL9ofBUZqDsVpob",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=-2j0OueeUZCyePNg",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=-2j0OueeUZCyePNg",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=-2j0OueeUZCyePNg",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=hzB0qcI8fQ0jXwMD",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=hzB0qcI8fQ0jXwMD",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/report",
+    "status": 200,
+    "text": "Building reports is available to admins.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=DNM5hvddAV47DuU3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=DNM5hvddAV47DuU3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=DNM5hvddAV47DuU3",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/report/periodic",
+    "status": 200,
+    "text": "Building reports is available to admins.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=EkoiQ48aCFKPplAE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=EkoiQ48aCFKPplAE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=EkoiQ48aCFKPplAE",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/reviews",
+    "status": 200,
+    "text": "Avaliações\n\nWhat people rate you, not what they say about you elsewhere: App Store, Google Places, and anything you import — kept apart from the rest of the app on purpose.\n\nVerificar fontes agora\nFontes\n\nAI Copilot — Daily Assistant (demo)\n\nApp Store · 0000000000 · US\n\n3.5 · 26\nchecked 07 de nov., 00:16\n\nAI Copilot HQ (demo)\n\nGoogle Places · demo-place-id\n\n3.2 · 16\nneeds API key ↓\nchecked 07 de nov., 00:16\n\n Apple App Storefree · no key\n\nAdd app\n\nThe App ID is the number in the App Store URL: apps.apple.com/…/id389801252\n\n Google Placesfree tier · needs key\n\nAdd place\n\nGoogle returns at most 5 reviews per place (its own limit, not ours) — the most relevant ones, not necessarily the most recent.\n\n Yelpfree tier · needs key\n\nAdd business\n\nYelp returns at most 3 review excerpts per business (its own limit, not ours), truncated — not the full text.\n\nImport a file (NPS export, survey results, anything with a rating)\n\nDrop or choose an .xlsx or .csv file\n\n3.4\n\n42 reviews\n\nlast 30d 3.54 vs previous 30d 3.65→ steady\n\nDistribuição de notas\n5\n11 · 26%\n4\n14 · 33%\n3\n4 · 10%\n2\n7 · 17%\n1\n6 · 14%\nEvolução semanal\n\nAverage rating per week — the direction matters more than any single review.\n\n08-24\n08-31\n09-07\n09-14\n09-21\n09-28\n10-05\n10-12\n10-19\n10-26\n11-02\n1\n2\n3\n4\n5\nAvaliações recentes\nApp Store · AI Copilot — Daily Assistant (demo)\n05 de nov., 08:42\n\nReally solid overall, a couple of rough edges but nothing major.\n\nAnya\nGoogle Places · AI Copilot HQ (demo)\n04 de nov., 03:08\n\nCrashes about once a day since the last update.\n\nJ. Park\nApp Store · AI Copilot — Daily Assistant (demo)\n01 de nov., 01:10\n\nSupport never replied to my ticket after a week.\n\nthebuilder22\nApp Store · AI Copilot — Daily Assistant (demo)\n31 de out., 04:46\n\nBest productivity app I have installed this year. Worth ever",
+    "charts": 1,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=s8hIq-_fDwZDx3yq",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=s8hIq-_fDwZDx3yq",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=s8hIq-_fDwZDx3yq",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=viAWsxivAtCSlMr5",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=viAWsxivAtCSlMr5",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=viAWsxivAtCSlMr5",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=viAWsxivAtCSlMr5",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/riscontri",
+    "status": 200,
+    "text": "Cross-checks\nFact checks\nClinical trials\nPodcasts\nCross-checks\n\nWhat is being said, next to what is known: checks, evidence and voices on the same topics.\n\nFact-checkers’ verdicts — not active\nClinical trials — not active\nPodcasts — not active\nNewsData.io news — not active\nLemmy discussions\n\nDEBUNKED, STILL CIRCULATING\n\n0\n\nHOT TOPICS NEVER CHECKED\n\n10\n\nout of 10 topics this week\n\nNEWS AHEAD OF EVIDENCE\n\n0\n\nRECURRING AUDIO VOICES\n\n0\n\nDebunked claims still going around\n\nWhere a correction really matters: the check exists, the conversation has not read it yet.\n\nTurn on Fact checks to see this panel.\n\nHot topics with no check at all\n\nThe topics most present in this week’s mentions on which no fact-checker has published anything: where a wrong claim can spread unopposed.\n\nai safety\n20 +400% · never checked\nai ethics\n20 +400% · never checked\njob impact\n19 +375% · never checked\nenterprise adoption\n15 +275% · never checked\nai chips\n14 +180% · never checked\nopen source ai\n14 +600% · never checked\nfunding\n13 +117% · never checked\nchatbots\n12 +1100% · never checked\nai regulation\n11 +57% · never checked\nmodel release\n9 +200% · never checked\nWhere the news runs ahead of the evidence\n\nChoose what to follow in Clinical trials.\n\nWho talks about it every week, in audio\n\nTurn on Podcast.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=chatbots&giorni=7&_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=funding&giorni=7&_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=open%20source%20ai&giorni=7&_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=xvNenCsUqpYXTVvn",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/podcast?_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/evidenze?_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=model%20release&giorni=7&_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?q=ai%20ethics&giorni=7&_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/settings",
+    "status": 200,
+    "text": "Projetos\n\nEach project is an independent listening scope: query, languages, geographies and entities to compare\n\nArtificial Intelligence\nAurora Mobility\nGroup reputation (Talkwalker)\nQuarterly survey exports\nNew project\nProject name\nShare this project with the whole team (read-only for others)\n\nWhat this project listens to\n\nOld-style query (artificial intelligence, generative AI, LLM). Open the query builder to turn it into building blocks.\n\nOpen the query builder\nLanguages (news editions and search)\nItalian\nEnglish\nSpanish\nFrench\nGerman\nPortuguese\nGeographies (applies to news sources; no selection = worldwide)\nItaly\nUnited States\nUnited Kingdom\nFrance\nGermany\nSpain\nBrazil\nMexico\nCanada\nAustralia\nIndia\nNetherlands\nPoland\nJapan\nTelegram channels to watch (comma-separated usernames, e.g. @reuters)\nRSS/Atom feeds to follow (URLs comma- or newline-separated) — outlets, blogs, Google Alerts…\nBrand tone of voice — used by Content Studio to write drafts\nSave changes\nBenchmark entities\n\nBrands or competitors to compare on the Benchmark page: mentions citing these keywords are attributed to the entity. Saving a query plan updates the subject and the competitors here automatically; the others stay as they are. Mark one with the  to set it as your brand — this unlocks the Brand Health Index (your brand vs the market and the competitors).\n\nOpenAI\nOpenAI, ChatGPT, GPT\nAnthropic\nYOUR BRAND\nAnthropic, Claude\nGoogle\nGemini, DeepMind\nMeta\nMeta AI, Llama\nAdd\nSharing\n\nCreate a read-only link to show the report to managers or clients without sharing the password. It expires on its own.\n\nNo active link.\n\n1 day\n7 days\n30 days\nCreate shareable link\nDelete “Artificial Intelligence” and all its data\n\nNote: every active project consumes API quota on each update — with the current budget, keep fe",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=lxirXFIzS26bLwLi",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/settings?p=2&_rsc=DQxjArDrgutTG17x",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/settings?p=1&_rsc=DQxjArDrgutTG17x",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/settings?p=new&_rsc=j-_vjoKOn8bxlRO7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/settings?p=4&_rsc=j-_vjoKOn8bxlRO7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=j-_vjoKOn8bxlRO7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=j-_vjoKOn8bxlRO7",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/kpi?_rsc=j-_vjoKOn8bxlRO7",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/sport",
+    "status": 200,
+    "text": "Esporte\n\nDoes winning actually move the needle? Match results crossed with fan sentiment and, for listed clubs, the share price — not just a scoreboard.\n\nVerificar atualizações\nTimes acompanhados\n(1, click to edit)\nThe season on one axis\n· Juventus\n\nLeague points, fan mood and — for listed clubs — the share price, on the same timeline. Three different units, so the question isn’t the height of each line but whether they move together.\n\npoints (league form)\nfan sentiment (7-day avg)\nshare price (indexed)\nAug 22\nAug 29\nSep 05\nSep 11\nSep 17\nSep 24\nOct 01\nOct 07\nOct 13\nOct 19\nOct 25\nOct 31\nNov 07\nVencer muda as coisas?\n\nAverage shift in fan sentiment (match day + the day after, vs the week before), share price (next trading day vs the one before) and how much people talk at all, grouped by result.\n\nW\n4 matches\nsentiment\n+0.29\nstock\n-0.41%\n1 mentions\nD\n2 matches\nsentiment\n-0.12\nstock\n-0.31%\n5 mentions\nL\n2 matches\nsentiment\n—\nstock\n+0.37%\n4 mentions\n\nPITCH → MOOD LINK\n\nnot enough matches yet\n\nHOME\n\n2/4 won+0.29\n\nAWAY\n\n2/4 won-0.12\n\nHow long does it last?\n\nFan mood day by day around the match, measured against the week before it (the zero line). Euphoria and disappointment rarely fade at the same speed.\n\nafter a win\n-3\n-2\n-1\nmatch\n+1\n+2\n+3\n+4\n+5\n+6\n+7\n-0.15\n0\n+0.15\n+0.3\n+0.45\nDoes the margin matter?\n\nOne dot per match: goal difference across, mood shift up. If a thrashing moves people more than a narrow win, the dots climb left to right.\n\nAt least 3 analyzed matches are needed to plot this.\n\nPróximas partidas\nJuventus — Torino\nSerie A · 13 de nov., 00:16\nReal Madrid — Juventus\nChampions League · 27 de nov., 00:16\nPartidas recentes\n\nSentiment comes from this project’s own analyzed mentions — so the crossover only means something if the project is actually listening to this club",
+    "charts": 2,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/query?_rsc=DQxjArDrgutTG17x",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/stakeholders",
+    "status": 200,
+    "text": "Narratives\nTimeline\nStakeholders\nMessage pull-through\nMapa de atores\n\nWho matters in the conversation: size = weight, color = sentiment. The most influential are at the center.\n\nWho is discussed (5)\nWho is talking (22)\npositive\nneutral\nnegative\nOpenAI\nNvidia\nGoogle\nMeta\nAnthropic\n\n“Who is discussed”: people, companies and products cited in the content (extracted by AI). “Who is talking”: the accounts with the most engagement. Hover for details, click a bubble to see its mentions.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=EFXWSat9s75_tWiE",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/stakeholders?_rsc=81E3L9JAmKnAHlXZ",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/story",
+    "status": 200,
+    "text": "Narratives\nTimeline\nStakeholders\nMessage pull-through\nNarrativas\n\nQuem empurra o quê: grupos de mensagens que defendem a mesma tese, com sinalização de padrões coordenados\n\nSafety is being sidelined for speed\npolarizing\npossible coordination →\n11 post · 07 de nov., 00:16\n\nSeveral accounts amplify near-identical claims that shipping cadence is outpacing evaluation, with unusually repetitive phrasing.\n\nMost active accounts: @safety_first@ai_researcher\n\nOpen models are catching up fast\npositive\n24 post · 07 de nov., 00:16\n\nA cluster of posts argues that open-weights releases now rival closed models on many tasks, framing it as a turning point for cost and control.\n\nMost active accounts: @ml_daily@builder_dao@openai_watch\n\nRegulation will slow innovation\nnegative\n15 post · 07 de nov., 00:16\n\nA recurring thesis that proposed disclosure rules are burdensome and will push research elsewhere.\n\nMost active accounts: @reg_watch@vc_insider",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=wv5g4qtC1OYfh5vf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=wv5g4qtC1OYfh5vf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=wv5g4qtC1OYfh5vf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=wv5g4qtC1OYfh5vf",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/studio",
+    "status": 200,
+    "text": "Content Studio\n\nFrom a concept to content ready for every channel: generate the multi-format kit, explore alternative hooks and refine each draft by voice.\n\na IA escreve em\n🇬🇧\n🇮🇹\n🇧🇷\n\n✨ Content Studio is a live AI feature — self-host with your own Anthropic key to generate kits, hooks and drafts.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=PS_Ko5hDAWaIjWyP",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40reg_watch&_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autori=%40reg_watch|%40vc_insider&_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40openai_watch&_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?autore=%40builder_dao&_rsc=Bo9LgkFdveGMEnrv",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=1xkjR6qovEdN5-_9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=1xkjR6qovEdN5-_9",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/emv?_rsc=qvajPJFzoPGNrtRf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=qvajPJFzoPGNrtRf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/audience?_rsc=qvajPJFzoPGNrtRf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=qvajPJFzoPGNrtRf",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/changes?_rsc=qvajPJFzoPGNrtRf",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/timeline",
+    "status": 200,
+    "text": "Narratives\nTimeline\nStakeholders\nMessage pull-through\nLinha do tempo\n\nA memória histórica do seu monitoramento: eventos relevantes, extraídos todo dia pela IA. Cresce sozinha com o tempo.\n\nNOVEMBER 2026\n\nNovember 5\nTURNING POINT\nMajor frontier model launched\n\nA new flagship model was released with stronger reasoning and long-context support.\n\nNovember 1\nRegulator opens AI transparency consultation\n\nPublic consultation on disclosure of training data and model capabilities.\n\nOCTOBER 2026\n\nOctober 27\nLarge AI-infrastructure funding round\n\nAn accelerator-focused startup raised a sizable round amid strong demand.\n\nOctober 20\nOpen-weights model tops leaderboard\n\nA community fine-tune reached the top of a popular benchmark.\n\nOctober 12\nEnterprise adoption survey published\n\nReport finds most enterprises now run at least one AI pilot.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/stakeholders?_rsc=EeLehXQdWNMyPHo3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=EeLehXQdWNMyPHo3",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=dXOdsVf4b8R2opT_",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=dXOdsVf4b8R2opT_",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/tv",
+    "status": 503,
+    "text": "upstream connect error or disconnect/reset before headers. reset reason: remote refused stream reset",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "http",
+        "status": 503,
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/tv"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/?_rsc=dXOdsVf4b8R2opT_",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "console",
+        "message": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)"
+      }
+    ],
+    "lang": null
+  },
+  {
+    "route": "/verifiche",
+    "status": 200,
+    "text": "Cross-checks\nFact checks\nClinical trials\nPodcasts\nFact checks\n\nClaims on the topic already checked by fact-checkers, and how much they still circulate in the conversation.\n\nFact checks need a Google key with the “Fact Check Tools API” enabled (free). Add it above: the YouTube key works too if you add that API to its restrictions.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=JLfjslKjaeYJ-I13",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=JLfjslKjaeYJ-I13",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=JLfjslKjaeYJ-I13",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/content?_rsc=JLfjslKjaeYJ-I13",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights?_rsc=JLfjslKjaeYJ-I13",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/pov?_rsc=DX0lu2CCvP8Tvsk0",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/graph?_rsc=DX0lu2CCvP8Tvsk0",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/alerts?_rsc=DX0lu2CCvP8Tvsk0",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/wikipedia",
+    "status": 200,
+    "text": "Wikipedia\n\nWho is editing this page, and does it look like an edit war? An early-warning signal Talkwalker doesn't have.\n\nCheck for updates\nPages followed\n\n Follow a pagefree · no key\n\nFollow page\n\nFollow a Wikipedia page above to start — who edits it, how often, and whether it looks like a fight.",
+    "charts": 0,
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/measures?_rsc=hXSEwApnQDFo9WEp",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=sa1JlfDfhMX54mft",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/benchmark?_rsc=sa1JlfDfhMX54mft",
+        "error": "net::ERR_ABORTED"
+      }
+    ],
+    "lang": "pt"
+  },
+  {
+    "route": "/",
+    "width": 768,
+    "overflow": {
+      "width": 768,
+      "scroll": 768,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/listening",
+    "width": 768,
+    "overflow": {
+      "width": 768,
+      "scroll": 768,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=bluesky&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?lingua=en&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=rss&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/benchmark",
+    "width": 768,
+    "overflow": {
+      "width": 768,
+      "scroll": 768,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/kpi",
+    "width": 768,
+    "overflow": {
+      "width": 768,
+      "scroll": 768,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/insights",
+    "width": 768,
+    "overflow": {
+      "width": 768,
+      "scroll": 768,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/heatmap?_rsc=X6_sSp4sKdtiZkyL",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/pyramid?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/insights/constellation?_rsc=1fHYPW8gRvmfGtoM",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/query",
+    "width": 768,
+    "overflow": {
+      "width": 768,
+      "scroll": 768,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/",
+    "width": 390,
+    "overflow": {
+      "width": 390,
+      "scroll": 390,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/listening",
+    "width": 390,
+    "overflow": {
+      "width": 390,
+      "scroll": 390,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?rilevanza=5&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?ordina=engagement&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?giorni=90&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?sentiment=negative&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=reddit&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=bluesky&_rsc=vwKO9AP-Bc4nVvNx",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/benchmark",
+    "width": 390,
+    "overflow": {
+      "width": 390,
+      "scroll": 390,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=reddit&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=youtube&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=bluesky&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/listening?fonte=googlenews&_rsc=vqlujeFbx-ySIcnc",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/kpi",
+    "width": 390,
+    "overflow": {
+      "width": 390,
+      "scroll": 390,
+      "elements": [
+        {
+          "tag": "TABLE",
+          "cls": "mt-3 w-full min-w-[46rem] text-left text-xs",
+          "text": "KPIValorAnteriorΔΔ%ConfiabilidadeMençõesconteúdos que correspondem ao projeto no",
+          "w": 736
+        },
+        {
+          "tag": "THEAD",
+          "cls": "",
+          "text": "KPIValorAnteriorΔΔ%Confiabilidade",
+          "w": 736
+        },
+        {
+          "tag": "TR",
+          "cls": "border-b border-[var(--border)] text-[10px] uppercase tracking-wider text-slate-500",
+          "text": "KPIValorAnteriorΔΔ%Confiabilidade",
+          "w": 736
+        },
+        {
+          "tag": "TH",
+          "cls": "px-3 py-2 text-right font-semibold",
+          "text": "Anterior",
+          "w": 78.875
+        },
+        {
+          "tag": "TH",
+          "cls": "px-3 py-2 text-right font-semibold",
+          "text": "Δ",
+          "w": 70.4375
+        },
+        {
+          "tag": "TH",
+          "cls": "px-3 py-2 text-right font-semibold",
+          "text": "Δ%",
+          "w": 88.5625
+        },
+        {
+          "tag": "TH",
+          "cls": "px-3 py-2 font-semibold",
+          "text": "Confiabilidade",
+          "w": 132
+        },
+        {
+          "tag": "TBODY",
+          "cls": "",
+          "text": "Mençõesconteúdos que correspondem ao projeto no período1891+188+18.800,0%com cau",
+          "w": 736
+        },
+        {
+          "tag": "TR",
+          "cls": "border-b border-[var(--border)]/60 align-top last:border-0",
+          "text": "Mençõesconteúdos que correspondem ao projeto no período1891+188+18.800,0%com cau",
+          "w": 736
+        },
+        {
+          "tag": "TD",
+          "cls": "px-3 py-1.5 text-right tabular-nums text-slate-400",
+          "text": "1",
+          "w": 78.875
+        },
+        {
+          "tag": "TD",
+          "cls": "px-3 py-1.5 text-right tabular-nums text-slate-300",
+          "text": "+188",
+          "w": 70.4375
+        },
+        {
+          "tag": "TD",
+          "cls": "px-3 py-1.5 text-right tabular-nums text-slate-300",
+          "text": "+18.800,0%",
+          "w": 88.5625
+        },
+        {
+          "tag": "TD",
+          "cls": "px-3 py-1.5",
+          "text": "com cautelaa comparação inclui fontes novas",
+          "w": 132
+        },
+        {
+          "tag": "SPAN",
+          "cls": "inline-block rounded-full px-2 py-0.5 text-[10px] bg-amber-500/15 text-amber-300",
+          "text": "com cautela",
+          "w": 73.125
+        },
+        {
+          "tag": "SPAN",
+          "cls": "mt-0.5 block text-[10px] leading-snug text-slate-500",
+          "text": "a comparação inclui fontes novas",
+          "w": 108
+        }
+      ]
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/insights",
+    "width": 390,
+    "overflow": {
+      "width": 390,
+      "scroll": 390,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  },
+  {
+    "route": "/query",
+    "width": 390,
+    "overflow": {
+      "width": 390,
+      "scroll": 390,
+      "elements": []
+    },
+    "errors": [
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      },
+      {
+        "type": "requestfailed",
+        "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967",
+        "error": "net::ERR_ABORTED"
+      }
+    ]
+  }
+]

@@ -1,0 +1,80 @@
+{
+  "source_commit": "746e509320fe72bd91981f740d19127b4c4ec4d1",
+  "desktop_pages": 61,
+  "responsive_captures": 12,
+  "initial_document_statuses": {
+    "200": 60,
+    "503": 1
+  },
+  "rechecked_routes": [
+    {
+      "route": "/tv",
+      "status": 200
+    },
+    {
+      "route": "/source/reddit",
+      "status": 200
+    }
+  ],
+  "js_exceptions": 0,
+  "horizontal_overflow": [],
+  "failed_http_events": [
+    {
+      "route": "/impostazioni",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/media?_rsc=uAJILZjWW6OO4jC3"
+    },
+    {
+      "route": "/insights",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967"
+    },
+    {
+      "route": "/insights",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/impostazioni/account?_rsc=X6_sSp4sKdtiZkyL"
+    },
+    {
+      "route": "/insights",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/ask?_rsc=X6_sSp4sKdtiZkyL"
+    },
+    {
+      "route": "/podcast",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/story?_rsc=cW0bXFL0cn2Esv5e"
+    },
+    {
+      "route": "/podcast",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/riscontri?_rsc=cW0bXFL0cn2Esv5e"
+    },
+    {
+      "route": "/podcast",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967"
+    },
+    {
+      "route": "/podcast",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/icon.svg?066737015afbb967"
+    },
+    {
+      "route": "/tv",
+      "type": "http",
+      "status": 503,
+      "url": "https://bkthpn-ip-90-96-179-26.tunnelmole.net/tv"
+    }
+  ],
+  "request_failure_types": {
+    "net::ERR_ABORTED": 550
+  }
+}

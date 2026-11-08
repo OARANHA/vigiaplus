@@ -1,0 +1,51 @@
+[
+  {
+    "name": "demo studio requires admin",
+    "pass": true,
+    "detail": {
+      "status": 403
+    }
+  },
+  {
+    "name": "demo createProject",
+    "pass": true,
+    "detail": {
+      "status": 403
+    }
+  },
+  {
+    "name": "demo addEntity",
+    "pass": true,
+    "detail": {
+      "status": 403
+    }
+  },
+  {
+    "name": "demo createShareLink",
+    "pass": true,
+    "detail": {
+      "status": 403
+    }
+  },
+  {
+    "name": "admin action persists on own project",
+    "pass": true,
+    "detail": {
+      "persisted": true
+    }
+  },
+  {
+    "name": "member cannot mutate another project",
+    "pass": true,
+    "detail": {
+      "persisted": false
+    }
+  },
+  {
+    "name": "revoked HMAC-valid session cannot mutate action",
+    "pass": true,
+    "detail": {
+      "persisted": false
+    }
+  }
+]

@@ -1,8 +1,42 @@
-node_modules/
+/build
+*.bundle
+/coverage
+coverage/
+.data/
+# Database locale PGlite
+# debug
+# dependencies
+dist/
+.DS_Store
 .env
+.env*
+!.env.example
+# env files (never commit real secrets); the example template IS committed
 .env.local
 *.log
-coverage/
-.DS_Store
-dist/
-*.bundle
+# misc
+/.next/
+next-env.d.ts
+# next.js
+/node_modules
+node_modules/
+npm-debug.log*
+/out/
+*.pem
+.pnp.*
+/.pnp
+.pnpm-debug.log*
+# production
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# testing
+*.tsbuildinfo
+# typescript
+# vercel
+.vercel
+.yarn/*
+yarn-debug.log*
+yarn-error.log*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
