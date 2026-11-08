@@ -7,11 +7,16 @@ import { readViewPrefs } from '@/lib/view-prefs';
 
 export type User = typeof users.$inferSelect;
 
-// Synthetic viewer for the public demo: em modo demo, o usuario e o owner
-// para poder acessar todas as superficies (console, portal, dashboard).
+// Usuario sintetico da demonstracao publica. Os DOIS papeis sao independentes:
+// - globalRole 'owner' -> roteamento e RBAC multi-tenant (console, portal,
+//   dashboard e a visao de carteira continuam acessiveis na demo).
+// - role 'member' -> guards legados do Radar (isAdmin/requireAdminProject).
+//   Manter 'member' e deliberado: em DEMO_MODE nao ha login, entao promover
+//   o visitante anonimo a admin daria privilegio administrativo real a
+//   qualquer pessoa. O teste "demo studio requires admin" protege isso.
 const DEMO_USER: User = {
   id: 1, name: 'Demo owner', email: 'demo@vigiaplus.app', passwordHash: '',
-  role: 'admin', globalRole: 'owner', aiEnabled: 1, mustChangePassword: 0, sessionVersion: 0,
+  role: 'member', globalRole: 'owner', aiEnabled: 1, mustChangePassword: 0, sessionVersion: 0,
   viewDensity: 'basico', viewVocabulary: 'leigo', locale: 'pt-BR', twoFactorEnabled: 0,
   createdAt: new Date(),
 };
