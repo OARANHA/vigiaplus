@@ -701,6 +701,14 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS incidents_tenant ON incidents (tenant_id, status)`,
   `CREATE INDEX IF NOT EXISTS reputation_targets_tenant ON reputation_targets (tenant_id)`,
   `CREATE INDEX IF NOT EXISTS subscriptions_tenant ON subscriptions (tenant_id, status)`,
+  `CREATE TABLE IF NOT EXISTS auth_login_limits (
+    key_hash TEXT PRIMARY KEY,
+    failed_count INTEGER NOT NULL DEFAULT 0,
+    window_start TIMESTAMPTZ NOT NULL DEFAULT now(),
+    locked_until TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS auth_login_limits_lock ON auth_login_limits (locked_until)`,
   // ---- H2/H3: cobranca, dunning e historico de avisos -------------------
   `ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS gateway_customer_id TEXT`,
   `ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS grace_until TIMESTAMPTZ`,
