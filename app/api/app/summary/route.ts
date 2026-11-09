@@ -7,9 +7,9 @@
 //   - linguagem de gente no vocabulario leigo, termos tecnicos no tecnico,
 //     com EXATAMENTE os mesmos dados (ADR-03).
 import { NextResponse } from 'next/server';
-import { eq, and, ne } from 'drizzle-orm';
+import { eq, and, ne, gte, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { reputationTargets, incidents, notificationChannels } from '@/lib/db/schema';
+import { reputationTargets, incidents, notificationChannels, mentions, projects } from '@/lib/db/schema';
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction, requireSurface } from '@/lib/tenant/rbac';
 import { requireFeature, enabledFeatures } from '@/lib/tenant/entitlements';
@@ -50,30 +50,43 @@ export async function GET(request: Request) {
     .where(eq(notificationChannels.tenantId, ctx.tenantId));
   const features = await enabledFeatures(ctx);
 
-  // "As vezes o pouco e muito": prova de trabalho, nao grafico.
-  // H0: valores de exemplo; no H2 passam a vir de collection_runs/mentions reais.
+  // Evidência real do tenant na janela de 14 dias, não números sintéticos.
+  const since = new Date(Date.now() - WINDOW_DAYS * 86_400_000);
+  const [observed] = await db.select({
+    received: sql<number>`count(${mentions.id})::int`,
+    analyzed: sql<number>`count(${mentions.analyzedAt})::int`,
+    sources: sql<number>`count(distinct ${mentions.source})::int`,
+    latest: sql<Date | null>`max(${mentions.fetchedAt})`,
+  }).from(mentions).innerJoin(projects, eq(mentions.projectId, projects.id))
+    .where(and(eq(projects.tenantId, ctx.tenantId), gte(mentions.publishedAt, since)));
+
+  const sampleSize = Number(observed?.analyzed ?? 0);
+  const sourceCount = Number(observed?.sources ?? 0);
+  const lastCollected = observed?.latest ? new Date(observed.latest).toISOString() : null;
   const workEvidence = {
-    sources_monitored: 24,
-    comments_analyzed: 1240,
-    detection_minutes: 11,
+    sources_monitored: sourceCount,
+    comments_analyzed: sampleSize,
+    mentions_collected: Number(observed?.received ?? 0),
+    detection_minutes: null, // sem SLA medido e verificável
     subjects_tracked: targets.length,
+    updated_at: lastCollected,
   };
-
   const market = targets.find((t) => t.kind === 'market') ?? null;
-  const sampleSize = workEvidence.comments_analyzed;
-  const confidence = sampleSize >= 200
-    ? { level: 'consolidado', sample_size: sampleSize,
-        note: `Base ampla: ${fmtPtBr(sampleSize)} comentários analisados.` }
-    : { level: 'preliminar', sample_size: sampleSize,
-        note: `Poucos dados (${fmtPtBr(sampleSize)} comentários): resultado preliminar.` };
-
-  const updatedAt = new Date().toISOString();
+  const confidence = sampleSize === 0
+    ? { level: 'sem_dados', sample_size: 0, note: 'Nenhuma menção analisada no período.' }
+    : sampleSize >= 200
+      ? { level: 'consolidado', sample_size: sampleSize,
+          note: `Amostra observada: ${fmtPtBr(sampleSize)} menções analisadas.` }
+      : { level: 'preliminar', sample_size: sampleSize,
+          note: `Amostra pequena: ${fmtPtBr(sampleSize)} menções analisadas.` };
+  const demo = process.env.DEMO_MODE === '1';
 
   const reputations = targets.map((t) => {
-    const score = t.score == null ? null : Math.round(t.score);
+    // O score cadastrado ainda não é derivado de menções por alvo.
+    const score = !demo || sampleSize === 0 || t.score == null ? null : Math.round(t.score);
     const isBrand = t.kind === 'brand';
     const reference = isBrand && market && market.id !== t.id ? market : null;
-    const referenceScore = reference?.score == null ? null : Math.round(reference.score);
+    const referenceScore = demo && sampleSize > 0 && reference?.score != null ? Math.round(reference.score) : null;
     const delta = score != null && referenceScore != null ? score - referenceScore : null;
 
     // Frase curta, respeitosa e COMPARATIVA. Nunca um rotulo vazio tipo "boa e estavel".
@@ -111,14 +124,16 @@ export async function GET(request: Request) {
         comments: sampleSize,
         sources: workEvidence.sources_monitored,
         window_days: WINDOW_DAYS,
-        updated_at: updatedAt,
-        note: `${fmtPtBr(sampleSize)} comentários lidos em ${workEvidence.sources_monitored} jornais e redes nos últimos ${WINDOW_DAYS} dias.`,
+        updated_at: lastCollected,
+        note: sampleSize === 0
+          ? 'Sem menções analisadas nesta janela; última coleta indisponível.'
+          : `${fmtPtBr(sampleSize)} menções analisadas em ${sourceCount} fontes com dados nos últimos ${WINDOW_DAYS} dias.`,
       },
       confidence,
       composition: COMPOSITION,
       // Valores dos componentes so aparecem quando houver mencoes reais (H2).
       component_values: null,
-      component_note: 'Os valores de cada componente aparecem quando a coleta do período estiver consolidada.',
+      component_note: demo ? 'Pontuação demonstrativa, não representa monitoramento real.' : 'Pontuação indisponível até existir cálculo auditável por alvo.',
     };
   });
 
