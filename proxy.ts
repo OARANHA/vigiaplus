@@ -30,6 +30,7 @@ export function proxy(req: NextRequest) {
   }
   if (pathname.startsWith('/landing') || pathname.startsWith('/login')
     || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron/')
+    || pathname.startsWith('/api/health')
     || pathname.startsWith('/share/') || pathname.startsWith('/api/mcp')) {
     return NextResponse.next();
   }
