@@ -1,0 +1,3 @@
+CANDIDATA RLS — NÃO EXECUTAR AUTOMATICAMENTE
+
+lib/tenant/rls-policy-candidate.ts gera SQL PostgreSQL default-deny quando app.tenant_id está ausente, com USING e WITH CHECK, inclusive nas tabelas filhas por project_id e incident_actions. Não há DDL ou migration executados neste ciclo. tests/rls-policy-candidate.test.ts testa duas organizações e role restrita em PGlite descartável (SELECT e INSERT). O catálogo ainda precisa de inventário completo, inclusive schedules da PR #11, testes de PostgreSQL real com grants e de todas as rotas/serviços que usam getDb(). Somente após homologação criar migration versionada e solicitar autorização de produção.

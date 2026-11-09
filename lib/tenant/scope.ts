@@ -6,6 +6,7 @@
  */
 import { sql } from 'drizzle-orm';
 import { getDb, type DB } from '@/lib/db';
+import { withTenantTransactionConnection, verifyRestrictedRuntimeRole } from './transaction-gateway';
 
 type Executor = Pick<DB, 'execute'>;
 export type TransactionProvider<T> = {
@@ -53,6 +54,15 @@ export async function runInTenantScope<T>(
   tenantId: number,
   fn: (tx: Executor) => Promise<T>,
 ): Promise<T> {
+  if (process.env.DATABASE_URL || process.env.NODE_ENV === 'production') {
+    return withTenantTransactionConnection(async (db) =>
+      executeTenantScope(db, tenantId, async (tx) => {
+        await verifyRestrictedRuntimeRole(tx);
+        return fn(tx);
+      }),
+    );
+  }
+  // Fallback somente PGlite local, sem conexão externa.
   const db = await getDb();
   return executeTenantScope(db as unknown as TransactionProvider<T>, tenantId, fn);
 }
