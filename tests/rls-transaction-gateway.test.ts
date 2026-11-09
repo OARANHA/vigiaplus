@@ -19,3 +19,20 @@ test('normaliza linhas PostgreSQL sem supor resultados inexistentes', () => {
   assert.deepEqual(rowsOf([{ role: 'x' }]), [{ role: 'x' }]);
   assert.throws(() => rowsOf({ other: true }), /retorno inesperado/);
 });
+
+test('catálogo recusa superuser antes de executar queries de cliente', async () => {
+  const { verifyRestrictedRuntimeRole } = await import('../lib/tenant/transaction-gateway');
+  let queries = 0;
+  const fake = {
+    execute: async () => {
+      queries++;
+      if (queries === 1) return { rows: [{ role: 'postgres', superuser: true, bypass_rls: true }] };
+      return { rows: [] };
+    },
+  };
+  await assert.rejects(
+    () => verifyRestrictedRuntimeRole(fake as never),
+    /RLS NO-GO/,
+  );
+  assert.equal(queries, 3);
+});
