@@ -8,8 +8,9 @@ import { googleNews } from '@/lib/connectors/googlenews';
 import { gdelt } from '@/lib/connectors/gdelt';
 import { rss } from '@/lib/connectors/rss';
 import { booleanQuery, type ListeningQuery, type RawMention } from '@/lib/connectors/types';
-import { canonicalArticleUrl, classifyEntities, discardReason, PILOT_ENTITIES,
+import { canonicalArticleUrl, classifyEntities, discardReason, PILOT_ENTITIES, PILOT_KEY,
   safeSourceError, validateSourceIds, type PilotSource } from './core';
+import { projectQuery, genericDiscardReason, matchingEntityIds, type GenericEntity } from './generic';
 
 type Project = typeof projects.$inferSelect;
 export class CollectionAlreadyRunning extends Error {
@@ -24,19 +25,28 @@ const ENDPOINTS: Record<PilotSource, string> = {
 
 type SourceJob = { query: string; fetch: () => Promise<RawMention[]> };
 
-function sourceJobs(source: PilotSource, project: Project): SourceJob[] {
-  const base: ListeningQuery = {
-    anyTerms: [], allTerms: [], excludeTerms: [], languages: ['pt'], countries: ['BR'],
-    rssFeeds: project.rssFeeds ?? [], strict: true,
-  };
+function sourceJobs(source: PilotSource, project: Project, entities: readonly GenericEntity[]): SourceJob[] {
+  const pilot = project.pilotKey === PILOT_KEY;
+  const base: ListeningQuery = pilot
+    ? { anyTerms: [], allTerms: [], excludeTerms: [], languages: ['pt'], countries: ['BR'],
+        rssFeeds: project.rssFeeds ?? [], strict: true }
+    : projectQuery(project, entities);
   if (source === 'rss') {
-    // Um feed inexistente ou não validado NÃO é substituído por um URL fictício.
     return project.rssFeeds.length === 0 ? [] : [{
       query: project.rssFeeds.join(' | '), fetch: () => rss.fetchMentions(base),
     }];
   }
+  if (!pilot) {
+    if (!base.anyTerms.length && !base.allTerms.length) return [];
+    const bounded = { ...base, anyTerms: base.anyTerms.slice(0, 6) };
+    const text = booleanQuery(bounded);
+    if (!text) return [];
+    return [{
+      query: text + (source === 'gdelt' ? ' (timespan=3d)' : ' when:90d'),
+      fetch: () => source === 'gdelt' ? gdelt.fetchMentions(bounded) : googleNews.fetchMentions(bounded),
+    }];
+  }
   if (source === 'gdelt') {
-    // Uma consulta GDELT por execução respeita o limite conhecido de taxa.
     const query = { ...base, anyTerms: ['CRF-RS', 'CRF/RS',
       'Conselho Regional de Farmácia do Rio Grande do Sul',
       'Giovana Ranquetat Fernandes', 'giovanaranquetat', 'funcionarioscrfrs'] };
@@ -60,7 +70,7 @@ function uniqueExternal(items: RawMention[]): { unique: RawMention[]; repeats: n
 }
 
 /** Coleta manual sem pipeline de IA, relatórios, notificações ou descarte. */
-export async function collectProject(project: Project) {
+export async function collectProject(project: Project, options: { trigger?: 'manual' | 'cron' } = {}) {
   const sources = validateSourceIds(project.enabledSources);
   if (sources.length === 0) throw new Error('Projeto sem fontes habilitadas');
   if (sources.includes('rss') && !project.rssFeeds.length) {
@@ -79,7 +89,7 @@ export async function collectProject(project: Project) {
     }
   }
   const [run] = await db.insert(collectionRuns)
-    .values({ projectId: project.id, trigger: 'manual', status: 'running' })
+    .values({ projectId: project.id, trigger: options.trigger ?? 'manual', status: 'running' })
     .onConflictDoNothing().returning();
   if (!run) throw new CollectionAlreadyRunning();
 
@@ -91,7 +101,7 @@ export async function collectProject(project: Project) {
   try {
     // Fontes sequenciais: quota, timeout e histórico por tentativa.
     for (const source of sources) {
-      const jobs = sourceJobs(source, project);
+      const jobs = sourceJobs(source, project, entityRows);
       const started = new Date();
       const [prior] = await db.select().from(collectionRunSources)
         .where(and(eq(collectionRunSources.projectId, project.id),
@@ -109,7 +119,7 @@ export async function collectProject(project: Project) {
       let error: string | null = null;
       let httpStatus: number | null = null;
       try {
-        if (jobs.length === 0) throw new Error('Nenhum feed RSS real configurado');
+        if (jobs.length === 0) throw new Error('Fonte sem query verificável ou RSS sem feed configurado');
         const all: RawMention[] = [];
         for (const job of jobs) {
           const found = await job.fetch();
@@ -119,7 +129,7 @@ export async function collectProject(project: Project) {
         const unique = uniqueExternal(all);
         duplicates += unique.repeats;
         for (const m of unique.unique) {
-          const reason = discardReason(m);
+          const reason = project.pilotKey === PILOT_KEY ? discardReason(m) : genericDiscardReason(m, project, entityRows);
           if (reason) {
             discarded++;
             reasons[reason] = (reasons[reason] ?? 0) + 1;
@@ -161,14 +171,16 @@ export async function collectProject(project: Project) {
             source, externalId: m.externalId.slice(0, 500), url: m.url,
             duplicate: duplicate ? 1 : 0,
           }).onConflictDoNothing();
-          for (const key of classifyEntities(m)) {
-            const entity = PILOT_ENTITIES.find((item) => item.key === key);
-            const entityId = entity && entityIdByName.get(entity.name);
-            if (entityId) {
-              await db.insert(mentionEntities).values({
-                projectId: project.id, mentionId, entityId,
-              }).onConflictDoNothing();
-            }
+          const entityIds = project.pilotKey === PILOT_KEY
+            ? classifyEntities(m).map((key) => {
+              const def = PILOT_ENTITIES.find((item) => item.key === key);
+              return def ? entityIdByName.get(def.name) : undefined;
+            }).filter((id): id is number => typeof id === 'number')
+            : matchingEntityIds(m, entityRows);
+          for (const entityId of new Set(entityIds)) {
+            await db.insert(mentionEntities).values({
+              projectId: project.id, mentionId, entityId,
+            }).onConflictDoNothing();
           }
         }
       } catch (e) {
