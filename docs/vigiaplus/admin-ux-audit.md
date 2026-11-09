@@ -32,6 +32,8 @@ captura da aplicação real.
 - Tratamento do status financeiro como **MRR contratual**, sem afirmar receita
   recebida. Configuração de credenciais não é homologação de pagamentos.
 - Textos, tooltips, abas e principais rótulos da sidebar em pt-BR.
+- Componentes reutilizados para equipe, orçamento, motor de IA, chaves de API,
+  edição de entidades e alteração de senha também traduzidos.
 - Páginas de Projetos, Fontes, Orçamento, Minha conta, Equipe e Créditos traduzidas
   para português brasileiro, preservando identificadores de serviços e atribuições
   legais do projeto original. Novo projeto começa com idioma português selecionado.

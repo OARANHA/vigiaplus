@@ -78,3 +78,19 @@ test('páginas administrativas mantêm formulários de projetos e fontes em pt-B
   assert.match(credits, /Massimo Scognamiglio/);
   assert.match(credits, /GNU AGPL-3\.0/);
 });
+
+test('componentes administrativos apresentam rótulos e ações em pt-BR', () => {
+  const components = [
+    ['team-manager', 'Senha temporária gerada', 'Adicionar membro'],
+    ['cost-control', 'Limite de gastos', 'Zerar contador'],
+    ['ai-engine', 'Motor de IA', 'Salvar modelos'],
+    ['connector-keys', 'Chaves configuradas', 'Salvar chaves'],
+    ['editable-entity', 'Sua marca', 'Termos relacionados'],
+    ['change-password-form', 'Senha atualizada', 'Atualizar senha'],
+  ] as const;
+  for (const [name, first, second] of components) {
+    const source = readFileSync(join(process.cwd(), 'components', name + '.tsx'), 'utf8');
+    assert.ok(source.includes(first), name + ' sem primeiro rótulo em português');
+    assert.ok(source.includes(second), name + ' sem segundo rótulo em português');
+  }
+});
