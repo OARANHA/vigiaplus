@@ -47,6 +47,7 @@ services:
       RADAR_MCP_TOKEN: ${RADAR_MCP_TOKEN:-}
       DEMO_MODE: ${DEMO_MODE:-}
       AUTH_TRUST_PROXY: ${AUTH_TRUST_PROXY:-1}
+      VIGIA_COLLECTION_SCHEDULER: ${VIGIA_COLLECTION_SCHEDULER:-0}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vigiaplus.rule=Host(`${APP_DOMAIN}`)"
