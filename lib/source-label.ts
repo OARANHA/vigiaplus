@@ -1,4 +1,4 @@
-import { SOURCE_META } from '@/lib/connectors';
+import { SOURCE_META } from '@/lib/connectors/source-meta';
 
 // ---------------------------------------------------------------------------
 // Il nome di una fonte.
