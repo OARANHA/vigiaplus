@@ -30,7 +30,8 @@ export async function POST(req: Request) {
   }
 
   const result = await processPaymentEvent(event, raw);
-  return NextResponse.json({ received: true, ...result });
+  const retry = ['unmatched', 'amount_mismatch', 'ambiguous_charge', 'event_conflict'].includes(result.status);
+  return NextResponse.json({ received: !retry, ...result }, { status: retry ? 503 : 200 });
 }
 
 export async function GET() {

@@ -87,9 +87,12 @@ export const StripeAdapter: GatewayAdapter = {
     const meta = obj(data.metadata);
     return {
       id: String(raw.id ?? ''),
-      type: raw.type === 'invoice.payment_succeeded' || raw.type === 'checkout.session.completed'
+      // Checkout concluído não significa liquidação em método assíncrono.
+      type: raw.type === 'invoice.payment_succeeded' ||
+        raw.type === 'checkout.session.async_payment_succeeded' ||
+        (raw.type === 'checkout.session.completed' && data.payment_status === 'paid')
         ? 'payment.succeeded'
-        : raw.type === 'invoice.payment_failed'
+        : raw.type === 'invoice.payment_failed' || raw.type === 'checkout.session.async_payment_failed'
           ? 'payment.failed'
           : String(raw.type ?? ''),
       // O tenant vem do metadata que NOS colocamos no checkout, nunca do corpo livre.
