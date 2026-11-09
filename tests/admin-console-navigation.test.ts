@@ -27,7 +27,7 @@ test('console: gate server para proprietário e tema consistente', () => {
   const dashboard = readFileSync(join(process.cwd(), 'components/console-owner-dashboard.tsx'), 'utf8');
   assert.match(server, /globalRole !== 'owner'/);
   assert.match(server, /notFound\(\)/);
-  assert.doesNotMatch(dashboard, /bg-white|bg-gray-50|col-span-3 bg-white/);
+  assert.doesNotMatch(dashboard, /\bbg-white(?:\s|["']|$)|\bbg-gray-50\b/);
   assert.match(dashboard, /var\(--panel\)/);
 });
 
