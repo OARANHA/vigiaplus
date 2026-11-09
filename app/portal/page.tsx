@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import './portal-extra.css';
 import Link from 'next/link';
 import {
   Activity, ArrowRight, Bell, BookOpen, CalendarClock, ChevronRight, CreditCard,
