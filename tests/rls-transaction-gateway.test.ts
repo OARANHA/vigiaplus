@@ -36,3 +36,23 @@ test('catálogo recusa superuser antes de executar queries de cliente', async ()
   );
   assert.equal(queries, 3);
 });
+
+test('preflight impede SELECT irrestrito quando policy contém USING true', async () => {
+  const { assessRlsReadiness, TENANT_RLS_TABLES } = await import('../lib/tenant/rls-preflight');
+  const tables = TENANT_RLS_TABLES.map((name) => ({
+    name, owner: 'migrator', rlsEnabled: true, forceRls: false,
+  }));
+  const policies = TENANT_RLS_TABLES.map((table) => ({
+    table, qualification: "tenant_id = nullif(current_setting('app.tenant_id', true),'')::integer",
+    withCheck: "tenant_id = nullif(current_setting('app.tenant_id', true),'')::integer",
+  }));
+  assert.deepEqual(assessRlsReadiness({
+    role: { role: 'vigiaplus_app', superuser: false, bypassRls: false },
+    tables, policies, connectionDriver: 'transactional',
+  }), []);
+  policies[0].qualification = '(true)';
+  assert.ok(assessRlsReadiness({
+    role: { role: 'vigiaplus_app', superuser: false, bypassRls: false },
+    tables, policies, connectionDriver: 'transactional',
+  }).some((issue) => issue.includes('Política permissiva')));
+});
