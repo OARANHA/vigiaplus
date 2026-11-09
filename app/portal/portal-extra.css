@@ -1,0 +1,32 @@
+
+/* Complemento do portal cliente aprovado: sidebar própria, KPI pastel em dark. */
+.cp-shell .cp-portal-tab{display:flex;align-items:center;gap:12px;width:100%;padding:12px;border:0;border-radius:11px;color:#aeb9d1;background:transparent;font-size:12px;font-weight:660;text-align:left;cursor:pointer;transition:background .15s,color .15s}
+.cp-shell .cp-portal-tab:hover{background:#ffffff0e;color:#fff}
+.cp-shell .cp-portal-tab.active{color:#fff;background:linear-gradient(100deg,#673daa,#413674);box-shadow:inset 2px 0 0 #ae7aff}
+.cp-shell .cp-console-link{display:flex;align-items:center;gap:8px;margin-top:20px;padding:10px 12px;color:#d9c2ff;font-size:11px;border:1px solid #5e4a85;border-radius:10px}
+.cp-shell .cp-topbar .cp-toplink{font-size:11px;color:#d1b6ff}
+.cp-shell .cp-topbar button{display:flex;align-items:center;gap:6px;cursor:pointer}
+.cp-select{width:100%;color:#f5f3ff;background:#1b2337;outline:none;font-size:12px}
+.cp-select option{background:#1b2337;color:#f5f3ff}
+.cp-small-link{display:inline-flex;align-items:center;gap:4px;color:#cdb2ff;font-size:11px;background:transparent;cursor:pointer}
+.cp-portal .cp-panels{margin-top:0}
+.cp-alert{background:#5d263d;border:1px solid #a54b6c;color:#ffe1ed;border-radius:12px;padding:13px 16px;font-size:12px}
+.cp-pill{display:inline-flex;align-items:center;max-width:100%;border:1px solid #555073;background:#372b50;color:#e6d5ff;border-radius:100px;font-size:10px;padding:5px 9px}
+.cp-reputation{padding:15px 0;border-bottom:1px solid #29344e}
+.cp-reputation:last-child{border-bottom:0}
+.cp-reputation h3{font-size:13px;font-weight:700;color:#f1f2ff}
+.cp-reputation-score{font-size:31px;font-weight:780;color:#eedaff;margin:9px 0}
+.cp-reputation-score small{font-size:12px;color:#a8b8d0}
+.cp-reputation p{font-size:11px;line-height:1.7;color:#afbdd7}
+.cp-incident-list article{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:15px 0;border-bottom:1px solid #2f3951}
+.cp-incident-list article:last-child{border:0}
+.cp-incident-list strong{font-size:13px}
+.cp-incident-list p{font-size:11px;margin-top:5px;color:#aab8ce}
+.cp-plan-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.cp-plan-grid h3{font-size:12px;font-weight:750;color:#ccb2f7;margin-bottom:12px}
+.cp-plan-grid strong{font-size:20px}
+.cp-plan-grid p{font-size:12px;line-height:1.9;color:#c3cde0}
+.cp-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.cp-tags span{border:1px solid #374662;border-radius:100px;padding:4px 9px;font-size:10px;color:#d5dfeb}
+@media (max-width:900px){.cp-plan-grid{grid-template-columns:1fr}.cp-shell .cp-nav{min-height:auto}.cp-shell .cp-nav nav{display:flex;overflow:auto;gap:5px}.cp-shell .cp-portal-tab{white-space:nowrap;width:auto}.cp-shell .cp-nav-bottom{margin-top:14px}.cp-shell .cp-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.cp-shell .cp-panels{grid-template-columns:1fr}}
+@media (max-width:520px){.cp-shell .cp-metrics{grid-template-columns:1fr 1fr;gap:9px}.cp-shell .cp-metric{padding:14px;min-height:120px}.cp-shell .cp-metric strong{font-size:23px}.cp-shell .cp-content{padding:18px}.cp-shell .cp-heading h1{font-size:27px}.cp-shell .cp-topbar{padding:14px 18px}.cp-shell .cp-topbar .cp-toplink{display:none}.va-auth{grid-template-columns:1fr}.va-story{min-height:250px;padding:25px}.va-story-content{padding:20px 0}.va-story-content h2{font-size:26px;margin:10px 0}.va-story-features,.va-story-bottom{display:none}.va-login-side{padding:35px 25px}.va-form-logo{margin-bottom:20px}.va-login-bottom{position:static;margin-top:25px}}

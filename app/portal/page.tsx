@@ -1,391 +1,312 @@
 'use client';
-import { useState, useEffect } from 'react';
+
+import { useEffect, useState } from 'react';
+import './portal-extra.css';
+import Link from 'next/link';
+import {
+  Activity, ArrowRight, Bell, BookOpen, CalendarClock, ChevronRight, CreditCard,
+  ExternalLink, FileText, LayoutDashboard, LogOut, Radio, RefreshCw, ShieldCheck,
+  Siren, UsersRound,
+} from 'lucide-react';
 import { ViewModeToggle } from '@/components/view-mode-toggle';
 
-// Portal do cliente: 4 abas que respondem as 4 perguntas em 30s.
-// Panorama, Crises, Relatorios, Conta (com Plano e Avisos dentro).
-//
-// Quando o dono esta em "visao de carteira" (system=true, sem tenant ativo),
-// o portal mostra um seletor de cliente para ele conferir exatamente o que
-// cada contrato enxerga. E a mesma tela do cliente, so que com o tenant escolhido.
-
-type TenantOption = { id: number; name: string; plan?: string };
-
-type CompositionItem = {
-  key: string;
-  label: string;
-  technical: string;
-  weight: number;
-};
-
+type Tenant = { id: number; name: string; plan?: string };
 type Reputation = {
-  id: number;
-  kind: string;
-  name: string;
-  score: number | null;
+  id: number; kind: string; name: string; score: number | null;
   headline: string;
-  comparison?: { delta: number | null; reference: string; temporal_note?: string } | null;
-  provenance: {
-    comments: number;
-    sources: number;
-    window_days: number;
-    updated_at: string | null;
-    note: string;
-  };
+  provenance?: { comments: number; sources: number; window_days: number; updated_at: string | null; note: string };
   confidence?: { level: string; note: string } | null;
-  composition?: CompositionItem[];
-  component_note?: string;
 };
-
-type Incident = {
-  id: number;
-  title: string;
-  status: string;
-  severity: string;
-  owner?: string;
-};
-
-type SummaryData = {
-  error?: string;
-  greeting?: string;
-  view?: { density?: string; vocabulary?: string };
+type Incident = { id: number; title: string; status: string; severity: string; owner?: string };
+type Summary = {
+  greeting?: string; error?: string;
   work_evidence?: {
-    sources_monitored?: number;
-    comments_analyzed?: number;
-    detection_minutes?: number | null;
-    subjects_tracked?: number;
+    sources_monitored?: number; comments_analyzed?: number; subjects_tracked?: number;
+    detection_minutes?: number | null; updated_at?: string | null;
   };
-  reputations?: Reputation[];
-  open_incidents?: number;
-  incidents?: Incident[];
+  reputations?: Reputation[]; incidents?: Incident[]; open_incidents?: number;
 };
-
-type Channel = { channel: string; destination: string; active: boolean };
-type Invoice = { id: number; amount: number | string; status: string };
-type PlanData = {
-  error?: string;
-  plan?: { label?: string; priceBrl?: number | null } | null;
-  subscription_status?: string;
-  included?: string[];
-  avisos?: { channels?: Channel[] };
-  invoices?: Invoice[];
+type Evidence = {
+  id: number; title: string | null; url: string | null; source: string;
+  projectName: string; publishedAt: string | null;
 };
+type Plan = {
+  error?: string; plan?: { label?: string; priceBrl?: number | null } | null;
+  subscription_status?: string; included?: string[];
+  invoices?: { id: number; amount: number; status: string }[];
+  avisos?: { channels?: { channel: string; destination: string; active: boolean }[] };
+};
+type Tab = 'panorama' | 'crises' | 'relatorios' | 'conta';
 
-export default function AppPortal() {
-  const [data, setData] = useState<SummaryData | null>(null);
-  const [tab, setTab] = useState<'panorama' | 'crises' | 'relatorios' | 'conta'>('panorama');
+async function getJson<T>(url: string): Promise<T> {
+  const response = await fetch(url, { cache: 'no-store' });
+  const data = await response.json();
+  if (!response.ok || data.error) throw new Error(data.error || 'Não foi possível consultar os dados.');
+  return data as T;
+}
+function numberOrDash(value: number | undefined): string {
+  return typeof value === 'number' ? new Intl.NumberFormat('pt-BR').format(value) : '—';
+}
+function dateBR(iso: string | null | undefined): string {
+  if (!iso) return 'Data indisponível';
+  const date = new Date(iso);
+  return Number.isNaN(date.getTime()) ? 'Data indisponível'
+    : date.toLocaleString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+function statusPT(status: string): string {
+  const statuses: Record<string, string> = {
+    active: 'Ativo', paid: 'Pago', open: 'Em aberto', trial: 'Em avaliação',
+    monitoring: 'Em acompanhamento', resolved: 'Resolvido', closed: 'Encerrado',
+    past_due: 'Em atraso', canceled: 'Cancelado', none: 'Sem assinatura',
+  };
+  return statuses[status] ?? status;
+}
+
+const TABS: { id: Tab; label: string; icon: typeof Activity }[] = [
+  { id: 'panorama', label: 'Panorama', icon: LayoutDashboard },
+  { id: 'crises', label: 'Crises', icon: Siren },
+  { id: 'relatorios', label: 'Publicações e relatórios', icon: FileText },
+  { id: 'conta', label: 'Meu plano', icon: CreditCard },
+];
+
+export default function ClientPortal() {
+  const [tab, setTab] = useState<Tab>('panorama');
+  const [owner, setOwner] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+  const [tenants, setTenants] = useState<Tenant[]>([]);
   const [tenantId, setTenantId] = useState<number | null>(null);
-  const [tenants, setTenants] = useState<TenantOption[]>([]);
-  const [ownerView, setOwnerView] = useState(false);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [evidence, setEvidence] = useState<Evidence[] | null>(null);
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  // Descobre se e o dono em visao de carteira; se for, lista os clientes.
   useEffect(() => {
-    fetch('/api/me/permissions')
-      .then((r) => r.json())
-      .then((p) => {
-        if (p?.permissions?.system === true) {
-          setOwnerView(true);
-          return fetch('/api/console/tenants')
-            .then((r) => r.json())
-            .then((d) => {
-              const list = d.tenants ?? [];
-              setTenants(list);
-              if (list.length > 0) setTenantId(list[0].id);
-            });
+    let mounted = true;
+    (async () => {
+      try {
+        const permissions = await getJson<{ permissions?: { system?: boolean } }>('/api/me/permissions');
+        if (!mounted) return;
+        if (permissions.permissions?.system) {
+          const result = await getJson<{ tenants: Tenant[] }>('/api/console/tenants');
+          if (!mounted) return;
+          setOwner(true);
+          setTenants(result.tenants ?? []);
+          setTenantId(result.tenants?.[0]?.id ?? null);
         }
-      })
-      .catch(() => {});
+        setInitialized(true);
+      } catch (err) {
+        if (mounted) { setError(err instanceof Error ? err.message : 'Falha ao verificar o acesso'); setInitialized(true); }
+      }
+    })();
+    return () => { mounted = false; };
   }, []);
 
-  // O tenant escolhido vai como parametro apenas para o dono. Um cliente
-  // logado NUNCA envia tenant_id: o servidor resolve pela sessao.
   useEffect(() => {
-    const qs = ownerView && tenantId ? `?tenant_id=${tenantId}` : '';
-    if (ownerView && !tenantId) return;
-    fetch(`/api/app/summary${qs}`).then((r) => r.json()).then(setData).catch(() => {});
-  }, [ownerView, tenantId]);
+    if (!initialized || (owner && !tenantId)) { setLoading(false); return; }
+    let mounted = true;
+    setLoading(true); setError(''); setPlan(null);
+    const query = owner && tenantId ? '?tenant_id=' + tenantId : '';
+    Promise.all([getJson<Summary>('/api/app/summary' + query),
+      getJson<{ items: Evidence[] }>('/api/app/evidence' + query)])
+      .then(([s, e]) => {
+        if (mounted) { setSummary(s); setEvidence(e.items); }
+      })
+      .catch((err) => {
+        if (mounted) { setSummary(null); setEvidence(null); setError(err instanceof Error ? err.message : 'Falha de consulta'); }
+      })
+      .finally(() => { if (mounted) setLoading(false); });
+    return () => { mounted = false; };
+  }, [initialized, owner, tenantId]);
 
-  if (!data) return <div className="p-8 text-center text-gray-500">Carregando...</div>;
-  if (data.error) {
-    return <div className="p-8 text-center text-gray-500">{data.error}</div>;
+  useEffect(() => {
+    if (tab !== 'conta' || !initialized || (owner && !tenantId)) return;
+    let active = true;
+    const query = owner && tenantId ? '?tenant_id=' + tenantId : '';
+    getJson<Plan>('/api/app/plan' + query)
+      .then((result) => { if (active) setPlan(result); })
+      .catch((err) => { if (active) setError(err instanceof Error ? err.message : 'Falha de consulta'); });
+    return () => { active = false; };
+  }, [tab, initialized, owner, tenantId]);
+
+  async function logout() {
+    await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ logout: true }) }).catch(() => {});
+    window.location.replace('/login');
   }
 
-  const isLeigo = data.view?.vocabulary === 'leigo';
-  const isBasico = data.view?.density === 'basico';
-  const openIncidents = data.open_incidents ?? 0;
-  const clienteAtual = tenants.find((t) => t.id === tenantId);
+  const selected = tenants.find((t) => t.id === tenantId);
+  const metrics = [
+    { name: 'Fontes observadas', value: numberOrDash(summary?.work_evidence?.sources_monitored), icon: Radio, className: 'cp-metric-violet' },
+    { name: 'Menções analisadas', value: numberOrDash(summary?.work_evidence?.comments_analyzed), icon: Activity, className: 'cp-metric-cyan' },
+    { name: 'Assuntos monitorados', value: numberOrDash(summary?.work_evidence?.subjects_tracked), icon: ShieldCheck, className: 'cp-metric-mint' },
+    { name: 'Incidentes abertos', value: numberOrDash(summary?.open_incidents), icon: Siren, className: 'cp-metric-rose' },
+  ];
+  const reputations = summary?.reputations ?? [];
+  const incidents = summary?.incidents ?? [];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b px-6 py-4 flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">VigiaPlus</h1>
-          <p className="text-sm text-gray-500">
-            {ownerView && clienteAtual ? `Visualizando: ${clienteAtual.name}` : data.greeting}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          {ownerView && tenants.length > 0 && (
-            <label className="flex items-center gap-2 text-sm text-gray-600">
-              <span className="text-xs uppercase tracking-wide text-gray-400">Cliente</span>
-              <select
-                value={tenantId ?? ''}
-                onChange={(e) => { setTenantId(Number(e.target.value)); setData(null); }}
-                className="rounded-lg border px-2 py-1.5 text-sm bg-white"
-              >
-                {tenants.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name} ({t.plan})</option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          {(['panorama', 'crises', 'relatorios', 'conta'] as const).map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
-                tab === t ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-              }`}
-            >
-              {t === 'panorama' ? 'Panorama' : t === 'crises' ? 'Crises' : t === 'relatorios' ? 'Relatorios' : 'Minha conta'}
+    <div className="cp-shell">
+      <aside className="cp-nav" aria-label="Navegação do cliente">
+        <Link href="/portal" className="cp-logo"><Radio size={27}/> VigiaPlus <small>CLIENTE</small></Link>
+        <p className="cp-section-kicker">INTELIGÊNCIA</p>
+        <nav aria-label="Seções da área do cliente">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button key={id} type="button" onClick={() => { setTab(id); setError(''); }}
+              aria-current={tab === id ? 'page' : undefined}
+              className={'cp-portal-tab ' + (tab === id ? 'active' : '')}>
+              <Icon size={17}/><span>{label}</span>
             </button>
           ))}
-          <ViewModeToggle compact />
+        </nav>
+        {owner && <Link href="/console" className="cp-console-link"><ShieldCheck size={16}/> Voltar ao console</Link>}
+        <div className="cp-nav-bottom">
+          <span className="cp-avatar"><UsersRound size={17}/></span>
+          <span className="cp-user-name">{owner ? 'Visualização do proprietário' : 'Área exclusiva do cliente'}</span>
+          <button type="button" onClick={logout} aria-label="Sair"><LogOut size={17}/></button>
         </div>
-      </header>
+      </aside>
 
-      <main className="max-w-5xl mx-auto p-6">
-        {tab === 'panorama' && (
-          <div className="space-y-6">
-            {/* Evidencia de trabalho: "as vezes o pouco e muito" */}
-            <div className="bg-white rounded-xl border p-4">
-              <div className="flex gap-6 text-sm text-gray-500 flex-wrap">
-                <span>{data.work_evidence?.sources_monitored ?? 0} fontes com menções no período</span>
-                {!isBasico && (
-                  <>
-                    <span>{data.work_evidence?.comments_analyzed ?? 0} menções analisadas</span>
-                    <span>{data.work_evidence?.detection_minutes == null
-                      ? 'Tempo de detecção não aferido'
-                      : `Detecção em ${data.work_evidence.detection_minutes} min`}</span>
-                  </>
-                )}
-                <span>{data.work_evidence?.subjects_tracked ?? 0} assuntos acompanhados</span>
-              </div>
-            </div>
-
-            {/* Duas reputacoes — contrato do numero unico (remodelagem.md §5) */}
-            <div className="grid grid-cols-2 gap-4">
-              {data.reputations?.map((r: Reputation) => (
-                <ReputationCard key={r.id} r={r} isLeigo={isLeigo} isBasico={isBasico} />
-              ))}
-            </div>
-
-            {/* Tem crise? */}
-            <div className={`rounded-xl border p-6 ${openIncidents > 0 ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
-              <p className="text-lg font-semibold">
-                {openIncidents > 0
-                  ? `${openIncidents} incidente(s) em acompanhamento`
-                  : 'Nenhum incidente ativo registrado'}
-              </p>
-              {data.incidents?.map((i: Incident) => (
-                <div key={i.id} className="mt-3 text-sm">
-                  <span className="font-medium">{i.title}</span>
-                  <span className="text-gray-500 ml-2">- {i.status} - {i.severity}</span>
-                </div>
-              ))}
-            </div>
+      <div className="cp-main">
+        <header className="cp-topbar">
+          <span><span className="cp-state"><i/></span> Monitoramento e inteligência</span>
+          <div>
+            <Link className="cp-toplink" href="/impostazioni/account">Minha conta</Link>
+            <button type="button" onClick={logout}><LogOut size={14}/> Sair</button>
           </div>
-        )}
-
-        {tab === 'crises' && (
-          <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold mb-4">Gestao de crises</h2>
-            {openIncidents === 0 ? (
-              <p className="text-gray-500">Nenhum incidente ativo no momento.</p>
-            ) : (
-              <div className="space-y-3">
-                {data.incidents?.map((i: Incident) => (
-                  <div key={i.id} className="border rounded-lg p-4">
-                    <p className="font-medium">{i.title}</p>
-                    <div className="flex gap-4 text-sm text-gray-500 mt-1">
-                      <span>Status: {i.status}</span>
-                      <span>Severidade: {i.severity}</span>
-                      <span>Responsavel: {i.owner}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+        </header>
+        <main className="cp-content cp-dashboard">
+          <div className="cp-heading">
+            <div>
+              <p className="cp-eyebrow"><ShieldCheck size={16}/> PORTAL DE INTELIGÊNCIA</p>
+              <h1>{owner && selected ? selected.name : 'Sua reputação, com contexto.'}</h1>
+              <p>{owner ? 'Visualização do portal do cliente, com acesso restrito ao proprietário.'
+                : 'Acompanhe publicações, sinais de risco, fontes e informações da sua organização.'}</p>
+            </div>
+            {owner && (
+              <label className="cp-project-picker">
+                <span>Visualizar como cliente</span>
+                <select className="cp-select" value={tenantId ?? ''} onChange={(e) => setTenantId(Number(e.target.value))}>
+                  {tenants.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </label>
             )}
           </div>
-        )}
 
-        {tab === 'relatorios' && (
-          <div className="bg-white rounded-xl border p-6">
-            <h2 className="text-lg font-semibold mb-4">Relatorios</h2>
-            <p className="text-gray-500">Relatorios periodicos e personalizados aparecem aqui.</p>
-          </div>
-        )}
-
-        {tab === 'conta' && <ContaTab ownerView={ownerView} tenantId={tenantId} />}
-      </main>
-    </div>
-  );
-}
-
-const fmtBR = (n: number) => new Intl.NumberFormat('pt-BR').format(n);
-
-/**
- * Cartao de reputacao. O numero NUNCA some e NUNCA e trocado por adjetivo:
- * o que muda entre leigo/tecnico sao as PALAVRAS; os dados sao identicos.
- * O modo avancado revela composicao e procedencia NA MESMA TELA (ADR-03).
- */
-function ReputationCard({ r, isLeigo, isBasico }: { r: Reputation; isLeigo: boolean; isBasico: boolean }) {
-  const title = r.kind === 'brand' ? 'Sua marca' : r.kind === 'market' ? 'Seu mercado' : 'Entidade';
-  const hasScore = r.score != null;
-  const delta = r.comparison?.delta ?? null;
-  const reference = r.comparison?.reference ?? 'referência';
-  const prov = r.provenance;
-
-  const headline = isLeigo
-    ? r.headline
-    : hasScore
-      ? `Brand Health ${r.score}/100` +
-        (delta != null ? ` · Δ ${reference} ${delta > 0 ? '+' : ''}${delta}` : '') +
-        ` · n=${fmtBR(prov.comments)} · janela ${prov.window_days}d`
-      : 'Pontuação indisponível: sem metodologia validada para este alvo.';
-
-  const provenanceLine = isLeigo
-    ? prov.note
-    : `n=${fmtBR(prov.comments)} · ${prov.sources} fontes · ${prov.window_days} dias · última coleta: ${prov.updated_at ? new Date(prov.updated_at).toLocaleString('pt-BR') : 'indisponível'}`;
-
-  return (
-    <div className="bg-white rounded-xl border p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-sm text-gray-500 mb-1">{title}</p>
-          <p className="text-lg font-semibold text-gray-900">{r.name}</p>
-        </div>
-        {r.confidence && (
-          <span className={`shrink-0 rounded-full px-2 py-1 text-xs ${
-            r.confidence.level === 'consolidado' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-          }`}>
-            {r.confidence.level === 'consolidado' ? 'Base consolidada' : r.confidence.level === 'sem_dados' ? 'Sem dados' : 'Resultado preliminar'}
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-baseline gap-2 mt-3 flex-wrap">
-        <span className="text-4xl font-bold text-gray-900">{hasScore ? r.score : '—'}</span>
-        <span className="text-sm text-gray-400">de 100</span>
-        {delta != null && (
-          <span className={`ml-1 rounded-md px-2 py-0.5 text-xs font-medium ${
-            delta >= 0 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-          }`}>
-            {delta > 0 ? '+' : ''}{delta} vs {reference}
-          </span>
-        )}
-      </div>
-
-      <p className="mt-3 text-sm text-gray-700 leading-relaxed">{headline}</p>
-      <p className="mt-2 text-xs text-gray-500">{provenanceLine}</p>
-      <p className="mt-2 text-xs text-gray-400">{r.confidence?.note}</p>
-
-      {!isBasico && (
-        <div className="mt-4 border-t pt-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
-            {isLeigo ? 'Como chegamos a esse número' : 'Score composition'}
-          </p>
-          <div className="space-y-1">
-            {r.composition?.map((c: CompositionItem) => (
-              <div key={c.key} className="flex justify-between text-xs text-gray-600">
-                <span>{isLeigo ? c.label : c.technical}</span>
-                <span className="tabular-nums">{c.weight}%</span>
+          {error && <div className="cp-alert" role="alert">{error}</div>}
+          {loading ? <div className="cp-panel" role="status">Carregando informações autorizadas…</div>
+            : owner && !tenantId ? <div className="cp-empty">
+                <h2>Nenhum cliente cadastrado</h2><p>Cadastre e vincule um cliente no console do proprietário.</p>
               </div>
-            ))}
-          </div>
-          <p className="text-xs text-gray-400 mt-2">{r.component_note}</p>
-          <p className="text-xs text-gray-500 mt-2">{r.comparison?.temporal_note}</p>
-        </div>
-      )}
+            : !summary ? <div className="cp-empty">
+                <h2>Dados indisponíveis</h2><p>Verifique a conexão e os vínculos de acesso deste cliente.</p>
+              </div> : (
+                <>
+                  <div className="cp-metrics" aria-label="Indicadores observados">
+                    {metrics.map(({ name, value, icon: Icon, className }) => (
+                      <div key={name} className={'cp-metric ' + className}>
+                        <Icon size={19}/><span>{name}</span><strong>{value}</strong>
+                        <small>Dados do período informado pelas fontes</small>
+                      </div>
+                    ))}
+                  </div>
+
+                  {tab === 'panorama' && <>
+                    <div className="cp-panels">
+                      <section className="cp-panel">
+                        <div className="cp-panel-title"><div><BookOpen size={19}/><h2>Menções e publicações recentes</h2></div>
+                          <button type="button" onClick={() => setTab('relatorios')} className="cp-small-link">
+                            Todas as evidências <ChevronRight size={14}/></button>
+                        </div>
+                        <EvidenceList data={evidence}/>
+                      </section>
+                      <section className="cp-panel">
+                        <div className="cp-panel-title"><div><ShieldCheck size={19}/><h2>Visão de reputação</h2></div></div>
+                        {reputations.length ? reputations.map((r) => <ReputationPanel key={r.id} reputation={r}/>) :
+                          <p className="cp-placeholder">Nenhum indicador de reputação calculado. Cadastre alvos e aguarde dados verificáveis.</p>}
+                      </section>
+                    </div>
+                    <section className="cp-panel">
+                      <div className="cp-panel-title"><div><Siren size={19}/><h2>Situação de crises</h2></div>
+                        <button type="button" className="cp-small-link" onClick={() => setTab('crises')}>Ver ocorrências <ArrowRight size={14}/></button>
+                      </div>
+                      {incidents.length ? <IncidentList data={incidents}/> :
+                        <p className="cp-placeholder">Nenhum incidente ativo registrado neste período.</p>}
+                    </section>
+                    <div className="cp-footer-note"><CalendarClock size={15}/>
+                      Última coleta conhecida: {dateBR(summary.work_evidence?.updated_at)}. Indicadores sem medição não recebem valores estimados.
+                    </div>
+                  </>}
+
+                  {tab === 'crises' && <section className="cp-panel">
+                    <div className="cp-panel-title"><div><Siren size={19}/><h2>Gestão de crises</h2></div>
+                      <span className="cp-pill">{incidents.length} ocorrências no retorno da API</span></div>
+                    {incidents.length ? <IncidentList data={incidents}/> :
+                      <p className="cp-placeholder">Nenhuma ocorrência registrada para este cliente.</p>}
+                  </section>}
+
+                  {tab === 'relatorios' && <section className="cp-panel">
+                    <div className="cp-panel-title"><div><FileText size={19}/><h2>Publicações e evidências</h2></div></div>
+                    <p className="cp-note">Links e datas originais, filtrados pelos projetos do seu cliente. Relatórios adicionais dependem de processamento e autorização.</p>
+                    <EvidenceList data={evidence}/>
+                  </section>}
+
+                  {tab === 'conta' && <section className="cp-panel">
+                    <div className="cp-panel-title"><div><CreditCard size={19}/><h2>Meu plano e notificações</h2></div></div>
+                    {!plan ? <p className="cp-placeholder">Consultando informações do plano…</p> : (
+                      <div className="cp-plan-grid">
+                        <div><h3>Plano contratado</h3><strong>{plan.plan?.label ?? 'Não informado'}</strong>
+                          <p>Situação: {statusPT(plan.subscription_status ?? 'none')}</p>
+                          <p>Mensalidade: {plan.plan?.priceBrl == null ? 'Não informada'
+                            : plan.plan.priceBrl.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}</p>
+                          <div className="cp-tags">{(plan.included ?? []).map((feature) =>
+                            <span key={feature}>{feature.replaceAll('_',' ')}</span>)}</div>
+                        </div>
+                        <div><h3>Faturas</h3>
+                          {plan.invoices?.length ? plan.invoices.map((inv) =>
+                            <p key={inv.id}>{Number(inv.amount).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} · {statusPT(inv.status)}</p>)
+                            : <p>Nenhuma fatura emitida.</p>}
+                          <h3 className="mt-5">Avisos</h3>
+                          {plan.avisos?.channels?.length ? plan.avisos.channels.map((c) =>
+                            <p key={c.channel + c.destination}>{c.channel}: {c.active ? 'ativo' : 'inativo'}</p>)
+                            : <p>Nenhum canal configurado.</p>}
+                        </div>
+                      </div>
+                    )}
+                    <div className="mt-5"><ViewModeToggle/></div>
+                  </section>}
+                </>
+              )}
+        </main>
+      </div>
     </div>
   );
 }
 
-function ContaTab({ ownerView, tenantId }: { ownerView: boolean; tenantId: number | null }) {
-  const [plan, setPlan] = useState<PlanData | null>(null);
-  useEffect(() => {
-    const qs = ownerView && tenantId ? `?tenant_id=${tenantId}` : '';
-    if (ownerView && !tenantId) return;
-    fetch(`/api/app/plan${qs}`).then((r) => r.json()).then(setPlan).catch(() => {});
-  }, [ownerView, tenantId]);
-  if (!plan) return <div className="text-gray-500">Carregando...</div>;
-  if (plan.error) return <div className="text-gray-500">{plan.error}</div>;
-
-  return (
-    <div className="space-y-6">
-      {/* Preferencias de visualizacao (ADR-03) */}
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold mb-4">Modo de visualizacao</h2>
-        <p className="text-sm text-gray-500 mb-3">
-          Estas preferencias mudam como a informacao aparece, mas nao alteram o que voce pode acessar.
-        </p>
-        <ViewModeToggle />
-      </div>
-
-      {/* Meu plano */}
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold mb-4">Meu plano</h2>
-        <div className="flex items-baseline gap-2 mb-3">
-          <span className="text-2xl font-bold">{plan.plan?.label ?? 'Sem plano'}</span>
-          {plan.plan?.priceBrl != null && (
-            <span className="text-gray-500">R$ {plan.plan?.priceBrl}/mes</span>
-          )}
-          <span className="text-xs text-gray-400">{plan.subscription_status}</span>
-        </div>
-        <p className="text-sm text-gray-500 mb-2">Inclusos:</p>
-        <div className="flex flex-wrap gap-2">
-          {plan.included?.map((f: string) => (
-            <span key={f} className="px-3 py-1 bg-green-50 text-green-700 rounded-full text-xs">{f}</span>
-          ))}
-        </div>
-      </div>
-
-      {/* Avisos */}
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold mb-4">Avisos</h2>
-        <p className="text-sm text-gray-500 mb-3">Canais de notificacao:</p>
-        <div className="space-y-2">
-          {plan.avisos?.channels?.map((c: Channel, i: number) => (
-            <div key={i} className="flex items-center justify-between text-sm">
-              <span>{c.channel}: {c.destination}</span>
-              <span className={c.active ? 'text-green-600' : 'text-gray-400'}>
-                {c.active ? 'ativo' : 'inativo'}
-              </span>
-            </div>
-          ))}
-          {(!plan.avisos?.channels || plan.avisos.channels.length === 0) && (
-            <p className="text-sm text-gray-400">Nenhum canal configurado.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Faturas */}
-      <div className="bg-white rounded-xl border p-6">
-        <h2 className="text-lg font-semibold mb-4">Faturas</h2>
-        <div className="space-y-2">
-          {plan.invoices?.map((inv: Invoice) => (
-            <div key={inv.id} className="flex justify-between text-sm">
-              <span>R$ {inv.amount}</span>
-              <span className={inv.status === 'paid' ? 'text-green-600' : 'text-amber-600'}>{inv.status}</span>
-            </div>
-          ))}
-          {(!plan.invoices || plan.invoices.length === 0) && (
-            <p className="text-sm text-gray-400">Nenhuma fatura emitida.</p>
-          )}
-        </div>
-      </div>
+function EvidenceList({ data }: { data: Evidence[] | null }) {
+  if (!data?.length) return <p className="cp-placeholder">Nenhuma publicação coletada para este cliente. As evidências aparecerão após a coleta autorizada.</p>;
+  return <div className="cp-articles">{data.map((m) => <article key={m.id}>
+    <div><h3>{m.title || 'Publicação sem título'}</h3>
+      <p>{m.source} · {m.projectName} · {dateBR(m.publishedAt)}</p></div>
+    {m.url && <a href={m.url} target="_blank" rel="noopener noreferrer" aria-label={'Abrir publicação ' + (m.title || '')}>
+      <ExternalLink size={16}/></a>}
+  </article>)}</div>;
+}
+function ReputationPanel({ reputation: r }: { reputation: Reputation }) {
+  return <div className="cp-reputation">
+    <div className="flex items-center justify-between gap-3"><h3>{r.name}</h3>
+      <span className="cp-pill">{r.confidence?.level === 'consolidado' ? 'Consolidado' :
+        r.confidence?.level === 'preliminar' ? 'Preliminar' : 'Sem pontuação certificada'}</span>
     </div>
-  );
+    <div className="cp-reputation-score">{r.score ?? '—'} <small>/ 100</small></div>
+    <p>{r.headline}</p>
+    <p className="cp-note">{r.provenance?.note ?? 'Sem histórico suficiente para calcular evolução.'}</p>
+  </div>;
+}
+function IncidentList({ data }: { data: Incident[] }) {
+  return <div className="cp-incident-list">{data.map((i) =>
+    <article key={i.id}><div><strong>{i.title}</strong>
+      <p>{statusPT(i.status)} · Prioridade: {i.severity}</p></div>
+      <span className="cp-pill">{i.owner || 'Sem responsável definido'}</span>
+    </article>)}</div>;
 }
