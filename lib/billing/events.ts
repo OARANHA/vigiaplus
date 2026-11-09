@@ -31,6 +31,14 @@ function tenantOf(v: unknown): number | null {
   return Number.isInteger(n) && n > 0 ? n : null;
 }
 
+/** Asaas autentica por authToken no header asaas-access-token, não por HMAC. */
+export function verifyAsaasWebhookToken(provided: string | null, expected: string | undefined): boolean {
+  if (!provided || !expected || expected.length < 32) return false;
+  const a = Buffer.from(provided, 'utf8');
+  const b = Buffer.from(expected, 'utf8');
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
 export function signWebhook(raw: string, secret: string): string {
   return createHmac('sha256', secret).update(raw).digest('hex');
 }
@@ -75,7 +83,7 @@ export function verifyStripeSignature(
 export const StripeAdapter: GatewayAdapter = {
   name: 'stripe',
   normalize(raw) {
-    const data = obj(raw.data).object as Record<string, unknown>;
+    const data = obj(obj(raw.data).object);
     const meta = obj(data.metadata);
     return {
       id: String(raw.id ?? ''),
@@ -100,13 +108,15 @@ export const PixAdapter: GatewayAdapter = {
     const payment = obj(raw.payment ?? raw.data);
     const eventName = String(raw.event ?? raw.type ?? '');
     return {
-      id: String(raw.id ?? raw.event ?? payment.id ?? ''),
+      id: typeof raw.id === 'string' ? raw.id : '',
       type: /CONFIRMED|RECEIVED|PAID|payment.succeeded/i.test(eventName)
         ? 'payment.succeeded'
         : /OVERDUE|REFUSED|FAILED/i.test(eventName)
           ? 'payment.failed'
           : eventName,
-      tenantId: tenantOf(payment.externalReference ?? raw.externalReference),
+      // A identidade do cliente é resolvida pelo ID da cobrança no banco.
+      // externalReference é informativo e não substitui a checagem de posse.
+      tenantId: null,
       amountBrl: num(payment.value ?? payment.amount ?? raw.amount_brl),
       gateway: 'pix',
       invoiceGatewayId: payment.id != null ? String(payment.id) : null,

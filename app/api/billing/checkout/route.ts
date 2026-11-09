@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { invoices } from '@/lib/db/schema';
+import { ensureAsaasCustomer } from '@/lib/billing/asaas-customer';
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction } from '@/lib/tenant/rbac';
 import { createStripeCheckout, createPixCharge } from '@/lib/billing/gateways';
@@ -44,6 +45,9 @@ export async function POST(request: Request) {
   if (!inv || inv.tenantId !== ctx.tenantId) {
     return NextResponse.json({ error: 'Fatura nao encontrada' }, { status: 404 });
   }
+  if (inv.status === 'processing') {
+    return NextResponse.json({ error: 'Cobrança já iniciada; aguarde a confirmação do gateway' }, { status: 409 });
+  }
   if (inv.status === 'paid') {
     return NextResponse.json({ error: 'Fatura ja paga' }, { status: 409 });
   }
@@ -54,11 +58,17 @@ export async function POST(request: Request) {
     amountBrl: inv.amountBrl,
     description: inv.description ?? `Plano VigiaPlus — fatura #${invoiceId}`,
     dueDate: inv.dueAt ?? undefined,
+    customerId: method === 'pix' && process.env.ASAAS_API_KEY
+      ? await ensureAsaasCustomer(ctx.tenantId)
+      : null,
   };
 
-  const charge = method === 'pix'
-    ? await createPixCharge(input)
-    : await createStripeCheckout(input);
+  let charge;
+  try {
+    charge = method === 'pix' ? await createPixCharge(input) : await createStripeCheckout(input);
+  } catch (error) {
+    return NextResponse.json({ error: 'gateway_indisponivel', message: (error as Error).message }, { status: 502 });
+  }
 
   await db.update(invoices).set({
     gateway: charge.gateway,
