@@ -144,6 +144,7 @@ export const paymentEvents = pgTable('payment_events', {
   amountBrl: real('amount_brl').notNull().default(0),
   gateway: text('gateway').notNull(),
   rawHash: text('raw_hash').notNull(),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
   receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

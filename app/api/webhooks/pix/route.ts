@@ -29,7 +29,8 @@ export async function POST(req: Request) {
   }
 
   const result = await processPaymentEvent(event, raw);
-  return NextResponse.json({ received: true, ...result });
+  return NextResponse.json({ received: result.status !== 'unmatched' && result.status !== 'amount_mismatch', ...result },
+    { status: result.status === 'unmatched' || result.status === 'amount_mismatch' ? 503 : 200 });
 }
 
 export async function GET() {

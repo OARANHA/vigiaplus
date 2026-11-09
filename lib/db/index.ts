@@ -701,6 +701,7 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS incidents_tenant ON incidents (tenant_id, status)`,
   `CREATE INDEX IF NOT EXISTS reputation_targets_tenant ON reputation_targets (tenant_id)`,
   `CREATE INDEX IF NOT EXISTS subscriptions_tenant ON subscriptions (tenant_id, status)`,
+  `ALTER TABLE payment_events ADD COLUMN IF NOT EXISTS processed_at TIMESTAMPTZ`,
   // ---- H2/H3: cobranca, dunning e historico de avisos -------------------
   `ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS gateway_customer_id TEXT`,
   `ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS grace_until TIMESTAMPTZ`,

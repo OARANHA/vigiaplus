@@ -52,22 +52,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Fatura ja paga' }, { status: 409 });
   }
 
-  const input = {
-    tenantId: ctx.tenantId,
-    invoiceId,
-    amountBrl: inv.amountBrl,
-    description: inv.description ?? `Plano VigiaPlus — fatura #${invoiceId}`,
-    dueDate: inv.dueAt ?? undefined,
-    customerId: method === 'pix' && process.env.ASAAS_API_KEY
-      ? await ensureAsaasCustomer(ctx.tenantId)
-      : null,
-  };
-
   let charge;
   try {
+    const customerId = method === 'pix' && process.env.ASAAS_API_KEY
+      ? await ensureAsaasCustomer(ctx.tenantId)
+      : null;
+    const input = {
+      tenantId: ctx.tenantId,
+      invoiceId,
+      amountBrl: inv.amountBrl,
+      description: inv.description ?? `Plano VigiaPlus — fatura #${invoiceId}`,
+      dueDate: inv.dueAt ?? undefined,
+      customerId,
+    };
     charge = method === 'pix' ? await createPixCharge(input) : await createStripeCheckout(input);
   } catch (error) {
-    return NextResponse.json({ error: 'gateway_indisponivel', message: (error as Error).message }, { status: 502 });
+    console.error('[billing] Falha na cobrança:', (error as Error).message);
+    return NextResponse.json({ error: 'gateway_indisponivel' }, { status: 502 });
   }
 
   await db.update(invoices).set({
