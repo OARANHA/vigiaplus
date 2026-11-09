@@ -11,31 +11,31 @@ import { PageHeader, fmtDate } from '@/components/ui';
 import { getT } from '@/lib/i18n';
 import type { SourceStatus } from '@/lib/ingest';
 
-export const metadata = { title: 'Sources' };
+export const metadata = { title: 'Fontes de dados' };
 
 // What each source is and what data Radar collects from it: shown in the hover tooltip.
 const SOURCE_INFO: Record<string, string> = {
-  googlenews: 'Google’s news aggregator. Collects public articles from thousands of outlets matching your keywords, with title, outlet and date. Ideal for mainstream press coverage.',
-  gdelt: 'Global news index in 65+ languages (100,000+ outlets worldwide). Collects international articles by keyword: perfect for multilingual, cross-country monitoring.',
-  reddit: 'Public discussions from subreddits. Collects posts and comments citing your terms, with votes and the community they belong to. Great for opinions and raw sentiment.',
-  bluesky: 'Open social network (AT Protocol). Collects public posts by keyword, with author and interactions. Good for tech conversations and early adopters.',
-  mastodon: 'Federated social network. Collects public posts (toots) from instances that mention your terms, with author and engagement.',
-  hackernews: 'Y Combinator’s tech community. Collects stories and comments citing your terms, with score and discussion. Great for technology and startup topics.',
-  youtube: 'Public YouTube videos. Collects videos by keyword with title, channel, date and views. Requires a free Google key.',
-  telegram: 'Only the public channels you choose (set them in the project): Radar reads those channels’ messages. It does not search across all of Telegram.',
-  rss: 'Any site, blog or outlet offering an RSS/Atom feed. Add the URLs in the project and Radar collects their articles automatically. Unlimited feeds.',
-  x: 'Public X (Twitter) posts in real time by keyword, with author, hashtags and engagement (likes, reposts, replies). Requires a paid API (Basic plan).',
-  instagram: 'Hashtag search via the Meta Graph API: collects public posts using the hashtags tied to your keywords, with author and interactions. Requires a Business account + Meta app.',
-  facebook: 'Posts of the pages you link to your token (watchlist model), not all of Facebook. Collects those pages’ posts with reactions, comments and shares.',
-  tiktok: 'Public videos via the Research API (approval-gated by TikTok). Collects videos by keyword with description, hashtags and metrics (likes, comments, views).',
-  linkedin: 'Posts from your company page via the official LinkedIn API (full text, real metrics). LinkedIn does not allow public third-party search, so this covers ONLY your organization — for everyone else’s public posts see "LinkedIn (web)".',
-  linkedin_web: 'Public LinkedIn posts and articles by ANY author, found through the Tavily search index (official API, 1,000 free searches/month). A different acquisition model from "LinkedIn (page)": you get partial excerpts with a link to the original, but no engagement metrics. Legal: it queries Tavily, never LinkedIn’s servers.',
-  newsapi: 'Aggregator of ~150,000 outlets with full-text boolean search. Collects articles by advanced query: a premium alternative to GDELT/Google News. Requires an API key.',
-  stackexchange: 'Questions (by title, not full text) from Stack Overflow plus 5 other Stack Exchange communities: money, workplace, travel, parenting, general computing (Super User). Works immediately, no key — the shared anonymous quota is low, so set STACK_EXCHANGE_KEY (free, from stackapps.com) as an environment variable if you need more volume.',
-  github: 'Issues and pull requests matching your terms in their title, across all of public GitHub — with the real issue text, not just the title. Automated bot issues (changelog trackers, scheduled digests) are filtered out. Works immediately, no key — GitHub’s unauthenticated search limit is tight (10 requests/minute), so set GITHUB_TOKEN (a free personal access token) as an environment variable if you need more volume.',
-  discord: 'Messages from the channels of a Discord server you administer, via your own bot (watchlist model, like Facebook) — Discord does not offer search across other servers. Requires a free bot invited to your server, with the Message Content Intent enabled for it in the Developer Portal.',
-  'sec-edgar': 'Filings by any US-listed company matching your terms: 8-K material events, 10-K/10-Q reports, DEF 14A proxy statements. Free, no key — official US government data (SEC.gov), covers no other market. The search only returns filing metadata, not the document text, so entries show the company, filing type and exhibit description with a link to read the real thing.',
-  arxiv: 'Academic papers (computer science, physics, math, quantitative biology and more) matching your terms, with the full abstract included — official free API, no key. arXiv’s own search does light stemming, so every result is re-checked here for a literal match before being kept.',
+  googlenews: "Agregador de notícias do Google. Reúne matérias públicas relacionadas aos termos monitorados, com título, veículo e data.",
+  gdelt: "Índice internacional de notícias. Pesquisa matérias em diversos idiomas e países, conforme os termos configurados.",
+  reddit: "Discussões públicas em comunidades do Reddit. Inclui publicações, comentários, votos e informações da comunidade, quando disponíveis.",
+  bluesky: "Rede social aberta baseada no protocolo AT. Busca publicações públicas por termos, com autoria e interações disponíveis.",
+  mastodon: "Rede social federada. Consulta publicações em instâncias acessíveis que mencionem os termos monitorados.",
+  hackernews: "Comunidade de tecnologia. Reúne notícias e comentários relacionados aos termos, com pontuação e discussão.",
+  youtube: "Vídeos públicos do YouTube, com título, canal, data e métricas disponíveis. Exige uma chave de API do Google.",
+  telegram: "Acompanha somente canais públicos informados no projeto. Não realiza busca em todo o Telegram.",
+  rss: "Feeds RSS/Atom cadastrados no projeto. Coleta conteúdos dos endereços configurados, respeitando limites e disponibilidade da fonte.",
+  x: "Publicações do X por termos monitorados. Exige acesso autorizado à API e pode estar sujeito a cobrança.",
+  instagram: "Consulta hashtags pela API Meta Graph, sujeita a permissões e conta profissional compatível.",
+  facebook: "Publicações das páginas associadas ao token autorizado, incluindo interações fornecidas pela API.",
+  tiktok: "Vídeos públicos pela API de pesquisa do TikTok, sujeita à aprovação e às regras de acesso.",
+  linkedin: "Conteúdo da página corporativa autorizada pela API LinkedIn. Não oferece busca geral de publicações de terceiros.",
+  linkedin_web: "Resultados públicos indexados pelo Tavily, com trechos e links para a origem. Não inclui métricas de interação do LinkedIn.",
+  newsapi: "Agregador de notícias com consultas por palavras-chave. Requer credencial e respeita limites do plano contratado.",
+  stackexchange: "Perguntas públicas do Stack Exchange, incluindo Stack Overflow, localizadas por título. A cota sem chave é limitada.",
+  github: "Issues e pull requests públicos encontrados pelos termos. O limite de consultas anônimas é reduzido; pode exigir GITHUB_TOKEN.",
+  discord: "Mensagens dos canais de servidores administrados por você, com bot autorizado e permissão de leitura de mensagens.",
+  "sec-edgar": "Documentos de empresas listadas nos Estados Unidos disponíveis nos registros oficiais da SEC, com metadados e link para leitura.",
+  arxiv: "Publicações acadêmicas da API arXiv, com resumos disponíveis. Resultados são filtrados para verificar relevância literal.",
 };
 
 export default async function FontiPage() {
@@ -52,29 +52,29 @@ export default async function FontiPage() {
   return (
     <>
       <PageHeader
-        title={t('page.sources.title', 'Sources')}
-        subtitle="Status of the listening sources and their API keys. AI spend and budget are in the Budget tab."
+        title={t('page.sources.title', 'Fontes')}
+        subtitle="Situação das fontes e suas credenciais. Custos de IA e orçamento ficam na aba Orçamento."
       />
 
       <div className="max-w-3xl">
         <section className="panel px-5 py-4">
-          <h2 className="mb-3 text-sm font-semibold text-slate-300">Source status</h2>
+          <h2 className="mb-3 text-sm font-semibold text-slate-300">Situação das fontes</h2>
 
           <TierSection
-            heading="Free" headingClass="text-emerald-400/80"
+            heading="Gratuitas" headingClass="text-emerald-400/80"
             connectors={CONNECTORS.filter((c) => c.tier === 'free')}
             sourceStatus={sourceStatus} credStatuses={credStatuses} canEditKeys={canEditKeys} showKeys={false}
           />
           <TierSection
-            heading="Free · requires a free key" headingClass="text-sky-400/80"
-            description="Free, but you need to register a free API key with the service. Enter it here: the source turns on right away."
+            heading="Gratuitas com chave" headingClass="text-sky-400/80"
+            description="Exigem uma chave gratuita cadastrada no serviço. Informe a credencial para habilitar o conector."
             connectors={CONNECTORS.filter((c) => c.tier === 'freekey')}
             sourceStatus={sourceStatus} credStatuses={credStatuses} canEditKeys={canEditKeys} showKeys
           />
           <TierSection
-            heading="Premium — paid" headingClass="text-amber-400/80"
-            description={<>Connectors are ready: enter your API keys here, without touching code. They turn on right away and apply to the whole account.
-              Their cost is billed by each provider — see the <span className="text-slate-400">Budget</span> tab.</>}
+            heading="Pagas ou restritas" headingClass="text-amber-400/80"
+            description={<>Cadastre as credenciais autorizadas sem alterar o código. As configurações de fonte podem valer para toda a conta.
+              Os custos dependem de cada provedor; consulte a aba <span className="text-slate-400">Orçamento</span>.</>}
             connectors={CONNECTORS.filter((c) => c.tier === 'premium')}
             sourceStatus={sourceStatus} credStatuses={credStatuses} canEditKeys={canEditKeys} showKeys
           />
@@ -166,11 +166,11 @@ function SourceRow({ c, st }: {
           ? c.disabledReason
           : st
             ? st.ok
-              ? `${st.count} new · ${fmtDate(st.at)}`
+              ? `${st.count} novas · ${fmtDate(st.at)}`
               : recentOk
-                ? `temporarily unavailable · last successful collection ${fmtDate(st.lastOkAt!)}`
-                : `error: ${st.error}`
-            : 'awaiting first collection'}
+                ? `temporariamente indisponível · última coleta bem-sucedida ${fmtDate(st.lastOkAt!)}`
+                : `erro: ${st.error}`
+            : 'aguardando primeira coleta'}
       </span>
     </div>
   );
