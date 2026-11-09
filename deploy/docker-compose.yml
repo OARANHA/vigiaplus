@@ -45,6 +45,7 @@ services:
       CRON_SECRET: ${CRON_SECRET:-}
       RADAR_MCP_TOKEN: ${RADAR_MCP_TOKEN:-}
       DEMO_MODE: ${DEMO_MODE:-}
+      AUTH_TRUST_PROXY: ${AUTH_TRUST_PROXY:-1}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vigiaplus.rule=Host(`${APP_DOMAIN}`)"
