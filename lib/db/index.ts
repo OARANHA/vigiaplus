@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import type { PgliteDatabase } from 'drizzle-orm/pglite';
 import * as schema from './schema';
+import { resolveBootstrapAdmin, shouldSeedSampleTenants } from './bootstrap-auth';
 
 // Un solo tipo per entrambi i driver: l'API di query drizzle è identica,
 // cambia solo il trasporto (Neon HTTP in produzione, PGlite in locale).
@@ -34,15 +35,18 @@ async function init(): Promise<DB> {
     const client = new PGlite(dir);
     db = drizzle(client, { schema }) as unknown as DB;
   }
+  if (process.env.DEMO_MODE === '1' && process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
+    throw new Error('DEMO_MODE com banco remoto em produção é proibido para proteger dados reais');
+  }
   await ensureSchema(db);
   if (process.env.DEMO_MODE === '1') {
     const { seedDemo } = await import('./demo-seed');
     await seedDemo(db);
   } else {
-    await seed(db);
+    if (shouldSeedSampleTenants(process.env)) await seed(db);
     await seedUsers(db);
   }
-  // VigiaPlus: seed multi-tenant (tenants, memberships, planos, LLM, incidentes).
+  // Catálogo de planos sempre; tenants/usuários exemplificativos apenas no modo DEMO/opt-in local.
   const { seedVigiaPlus } = await import('./vigia-seed');
   await seedVigiaPlus(db);
   return db;
@@ -754,35 +758,22 @@ async function seed(db: DB) {
   ]);
 }
 
-// Amministratore iniziale, creato al primo avvio se il database è vuoto.
-// Configuralo con le variabili d'ambiente ADMIN_EMAIL / ADMIN_PASSWORD / ADMIN_NAME.
-// Se non le imposti, viene creato un admin di default con password nota: in quel
-// caso l'app OBBLIGA a cambiarla al primo accesso. Nuovi membri si aggiungono
-// dalla UI (Impostazioni → Team), non serve toccare il codice.
-function seedAdmin() {
-  const email = (process.env.ADMIN_EMAIL || 'admin@example.com').trim().toLowerCase();
-  const password = process.env.ADMIN_PASSWORD || 'changeme';
-  const name = process.env.ADMIN_NAME || 'Admin';
-  // Password di default (nessuna ADMIN_PASSWORD impostata) => forza il cambio.
-  const mustChange = process.env.ADMIN_PASSWORD ? 0 : 1;
-  return { name, email, password, mustChange };
-}
-
+// Provisionamento do primeiro proprietário — somente por credenciais explícitas.
 async function seedUsers(db: DB) {
   const existing = await db.select({ id: schema.users.id }).from(schema.users).limit(1);
   if (existing.length > 0) return;
 
-  const { hashPassword } = await import('@/lib/password');
-  const a = seedAdmin();
-  const [admin] = await db.insert(schema.users).values({
-    name: a.name, email: a.email, role: 'admin',
-    aiEnabled: 1, mustChangePassword: a.mustChange,
-    passwordHash: hashPassword(a.password),
-  }).returning();
+  const admin = resolveBootstrapAdmin(process.env);
+  if (!admin) return; // dev sem setup: ninguém consegue autenticar com uma senha conhecida
 
-  // I progetti già esistenti (creati prima del multi-utente) vanno all'admin
-  if (admin) {
-    await db.execute(sql`UPDATE projects SET owner_id = ${admin.id} WHERE owner_id IS NULL`);
+  const { hashPassword } = await import('@/lib/password');
+  const [created] = await db.insert(schema.users).values({
+    name: admin.name, email: admin.email, role: 'admin', globalRole: 'owner',
+    aiEnabled: 1, mustChangePassword: admin.mustChange,
+    passwordHash: hashPassword(admin.password),
+  }).returning();
+  if (created) {
+    await db.execute(sql`UPDATE projects SET owner_id = ${created.id} WHERE owner_id IS NULL`);
   }
 }
 
