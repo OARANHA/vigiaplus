@@ -5,6 +5,7 @@ import { sql } from 'drizzle-orm';
 import type { DB } from '@/lib/db';
 import * as schema from '@/lib/db/schema';
 import { PLANS, PLAN_FEATURES } from '@/lib/tenant/catalog';
+import { shouldSeedSampleTenants } from './bootstrap-auth';
 
 async function hashPasswordPlain(text: string): Promise<string> {
   const { hashPassword } = await import('@/lib/password');
@@ -32,6 +33,9 @@ export async function seedVigiaPlus(db: DB): Promise<void> {
       await db.insert(schema.planFeatures).values({ planKey, featureKey }).onConflictDoNothing();
     }
   }
+
+  // Instalação real: não gerar clientes, pagamentos, incidentes ou senhas de exemplo.
+  if (!shouldSeedSampleTenants(process.env)) return;
 
   // --- Tenants --------------------------------------------------------------
   const [aurora] = await db.insert(schema.tenants).values({
