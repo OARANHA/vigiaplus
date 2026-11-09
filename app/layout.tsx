@@ -4,7 +4,7 @@ import './globals.css';
 import { Sidebar } from '@/components/sidebar';
 import { getLocale, getT, setServerLocaleTag } from '@/lib/i18n';
 import { AutoRefresh } from '@/components/auto-refresh';
-import { ExportBar } from '@/components/export-bar';
+import { ContextualExportBar } from '@/components/contextual-export-bar';
 import { getCurrentProject, getLastIngestAt, getProjects, getPulse, getRecentAlertCount } from '@/lib/data';
 import { LiveFavicon } from '@/components/live-favicon';
 import { getCurrentUser, isAdmin } from '@/lib/auth';
@@ -47,7 +47,7 @@ export default async function RootLayout({
         {demo && (
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-sky-500/15 px-4 py-2 text-center text-xs text-sky-200">
             <span>🛰️ <strong>{t('demo.live', 'Demonstração')}</strong> — {t('demo.banner', 'Dados de exemplo, somente leitura. Os recursos de IA dependem de configuração própria.')}</span>
-            <a href="https://github.com/Scognamiglio1969/radar-intelligence" target="_blank" rel="noopener noreferrer"
+            <a href="https://github.com/OARANHA/vigiaplus" target="_blank" rel="noopener noreferrer"
               className="rounded-full bg-sky-500/90 px-3 py-0.5 font-semibold text-slate-950 transition hover:bg-sky-400">
               ⭐ GitHub
             </a>
@@ -65,7 +65,7 @@ export default async function RootLayout({
           />
           <div className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-6">
             <div className="mx-auto max-w-[1250px]">
-              <ExportBar locale={locale} canUseStudio={isAdmin(user)} />
+              <ContextualExportBar locale={locale} canUseStudio={isAdmin(user)} />
               <main>{children}</main>
             </div>
           </div>

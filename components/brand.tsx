@@ -1,9 +1,9 @@
 // Nome e sottotitolo del brand. Personalizzabili senza toccare il codice tramite
 // le variabili d'ambiente NEXT_PUBLIC_BRAND_NAME e NEXT_PUBLIC_BRAND_BYLINE.
-export const APP_NAME = process.env.NEXT_PUBLIC_BRAND_NAME || 'Radar';
+export const APP_NAME = process.env.NEXT_PUBLIC_BRAND_NAME || 'VigiaPlus';
 // Senza punto finale: la firma è resa in maiuscoletto spaziato, dove un punto
 // isolato sembra sporco. Il payoff resta quello del marchio.
-export const APP_BYLINE = process.env.NEXT_PUBLIC_BRAND_BYLINE || 'Signal over noise';
+export const APP_BYLINE = process.env.NEXT_PUBLIC_BRAND_BYLINE || 'Monitoramento e inteligência';
 
 /**
  * Il marchio Radar: anelli concentrici interrotti, con il fascio che esce dal
