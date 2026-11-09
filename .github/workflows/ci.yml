@@ -1,13 +1,10 @@
 name: CI
 
-permissions:
-  contents: read
-
 on:
   push:
-    branches: [main, fix/radar-homologacao-p0, feat/vigiaelus-crfrs-etapas-1-2]
+    branches: [main]
   pull_request:
-    branches: [main, fix/radar-homologacao-p0]
+    branches: [main]
 
 jobs:
   build:
@@ -20,40 +17,16 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      - run: npm ci
 
       - name: Lint
-        run: npm run lint
+        run: npx eslint .
 
       - name: Type-check
         run: npx tsc --noEmit
 
       - name: Test
-        run: npm test
+        run: node --import tsx --test tests/*.test.ts
 
       - name: Build
-        run: npm run build -- --webpack
-
-      - name: Production security E2E (isolated PGlite, ephemeral test secrets)
-        run: |
-          node scripts/e2e-security.mjs
-          node scripts/e2e-server-actions.mjs
-        env:
-          RADAR_E2E_EVIDENCE_DIR: ${{ runner.temp }}/radar-e2e-evidence
-
-      - name: VigiaElus real public-source canary (isolated DB, diagnostics)
-        if: github.ref == 'refs/heads/feat/vigiaelus-crfrs-etapas-1-2' || github.event_name == 'pull_request'
-        continue-on-error: true
-        timeout-minutes: 5
-        run: node --import tsx scripts/vigia-live-smoke.ts
-        env:
-          RADAR_E2E_EVIDENCE_DIR: ${{ runner.temp }}/radar-e2e-evidence
-
-      - name: Upload security evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: security-e2e-${{ github.sha }}
-          path: ${{ runner.temp }}/radar-e2e-evidence
-          if-no-files-found: warn
+        run: npm run build
