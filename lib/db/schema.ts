@@ -448,6 +448,26 @@ export const mentions = pgTable('mentions', {
 
 
 /** Histórico por projeto, nunca estado global de fontes. */
+/** Opt-in de coleta: desativado por padrão em todos os projetos. */
+export const collectionSchedules = pgTable('collection_schedules', {
+  projectId: integer('project_id').primaryKey().references(() => projects.id, { onDelete: 'cascade' }),
+  enabled: integer('enabled').notNull().default(0),
+  updatedBy: integer('updated_by'),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Uma única execução autorizada por janela global de 15 minutos. */
+export const collectionScheduleSlots = pgTable('collection_schedule_slots', {
+  slotAt: timestamp('slot_at', { withTimezone: true }).primaryKey(),
+  projectId: integer('project_id').notNull().references(() => projects.id, { onDelete: 'cascade' }),
+  tenantId: integer('tenant_id').notNull().references(() => tenants.id),
+  status: text('status').notNull().default('running'),
+  runId: integer('run_id'),
+  error: text('error'),
+  startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+});
+
 export const collectionRuns = pgTable('collection_runs', {
   id: serial('id').primaryKey(),
   projectId: integer('project_id').notNull(),
