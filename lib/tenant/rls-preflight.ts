@@ -41,6 +41,7 @@ export function assessRlsReadiness(input: RlsPreflightInput): string[] {
       const expressions = [policy.qualification, policy.withCheck].filter(Boolean).join(' ');
       if (/current_setting\s*\(\s*'app\.tenant_id'\s*,\s*true\s*\)\s+IS\s+NULL/i.test(expressions) ||
           /current_setting\s*\(\s*'app\.tenant_id'\s*,\s*true\s*\)\s*=\s*''/i.test(expressions) ||
+          /^\s*\(?\s*true\s*\)?\s*$/i.test(policy.qualification ?? '') ||
           /^\s*(?:true|\(true\))\s*$/i.test(policy.withCheck ?? '')) {
         errors.push(`Política permissiva com escopo ausente em ${name}`);
       }
