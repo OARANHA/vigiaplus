@@ -112,3 +112,24 @@ test('duas invocações concorrentes não reservam duas vezes a mesma janela', a
   assert.equal(calls, 1);
   assert.deepEqual(outcomes.map((x) => x.status).sort(), ['skipped', 'success']);
 });
+
+test('erro de coleta fica auditado e replay da janela não repete API', async () => {
+  let calls = 0;
+  const slot = new Date('2026-11-09T13:30:00Z');
+  await assert.rejects(() => runScheduledCollection(slot, async () => {
+    calls++;
+    throw new Error('HTTP 503 em https://news.example/private?token=secret');
+  }), /HTTP 503/);
+  const skipped = await runScheduledCollection(new Date('2026-11-09T13:31:00Z'), async () => {
+    calls++;
+    return { runId: 99, status: 'success' as const };
+  });
+  assert.equal(skipped.reason, 'janela_ja_reservada');
+  assert.equal(calls, 1);
+  const db = await dbMod.getDb();
+  const rows = await db.select().from(schema.collectionScheduleSlots);
+  const failed = rows.find((x) => x.slotAt.getTime() === slot.getTime());
+  assert.equal(failed?.status, 'failed');
+  assert.ok(!failed?.error?.includes('news.example'));
+  assert.ok(!failed?.error?.includes('secret'));
+});
