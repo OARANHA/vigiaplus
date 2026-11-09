@@ -10,16 +10,16 @@ import { PageHeader } from '@/components/ui';
 import { getT } from '@/lib/i18n';
 import { ExternalLink } from 'lucide-react';
 
-export const metadata = { title: 'Budget' };
+export const metadata = { title: 'Orçamento' };
 
 // How each paid connector is billed — by the provider, not metered by Radar.
 const PAID_NOTE: Record<string, string> = {
-  x: 'X API — Basic plan, a flat ~$200/month subscription billed by X.',
-  newsapi: 'NewsAPI — free developer tier, paid plans for production. Billed by newsapi.org.',
-  instagram: 'Meta Graph API — free to call, but requires a Business account. No per-call fee.',
-  facebook: 'Meta Graph API — free to call, tied to your Page/token. No per-call fee.',
-  tiktok: 'TikTok Research API — free, approval-gated by TikTok. No per-call fee.',
-  linkedin: 'LinkedIn — free, limited to your own organization page.',
+  x: "API do X. Preço e franquia dependem do plano contratado diretamente com o provedor.",
+  newsapi: "NewsAPI oferece planos de desenvolvimento e comerciais; a cobrança é feita pelo provedor.",
+  instagram: "API Meta Graph. Exige conta profissional e permissões compatíveis; verifique as condições atuais da Meta.",
+  facebook: "API Meta Graph vinculada às páginas e tokens autorizados. Verifique as condições do provedor.",
+  tiktok: "API de pesquisa do TikTok, sujeita à análise e autorização do serviço.",
+  linkedin: "API LinkedIn, geralmente restrita ao conteúdo da organização autorizada.",
 };
 
 export default async function BudgetPage() {
@@ -47,8 +47,8 @@ export default async function BudgetPage() {
   return (
     <>
       <PageHeader
-        title={t('page.budget.title', 'Budget & costs')}
-        subtitle={t('h5.budget.subtitle', 'The AI key that powers analysis, its spend cap, and where your paid data-source costs come from.')}
+        title={t('page.budget.title', 'Orçamento e custos')}
+        subtitle={t('h5.budget.subtitle', 'Controle dos custos de IA e condições comerciais das fontes de dados.')}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -59,12 +59,12 @@ export default async function BudgetPage() {
           )}
 
           <section className="panel h-fit px-5 py-4">
-            <h2 className="mb-3 text-sm font-semibold text-slate-300">{t('h5.budget.aiSpend', 'AI spend & budget')}</h2>
+            <h2 className="mb-3 text-sm font-semibold text-slate-300">{t('h5.budget.aiSpend', 'Custos e limite de IA')}</h2>
             {await claudeAvailable() ? (
               <>
                 <div className="flex items-baseline gap-2">
                   <p className="text-3xl font-bold">${cost.current.cost.toFixed(2)}</p>
-                  <p className="text-sm text-slate-500">of ${budget.toFixed(2)} — since last reset</p>
+                  <p className="text-sm text-slate-500">de ${budget.toFixed(2)} — desde o último reinício</p>
                 </div>
                 <div className="mt-2 h-2 rounded bg-white/5">
                   <div
@@ -73,15 +73,15 @@ export default async function BudgetPage() {
                   />
                 </div>
                 <p className="mt-2 text-xs text-slate-500">
-                  {cost.current.calls.toLocaleString('en-US')} calls · {(cost.current.inTok / 1000).toFixed(0)}k input tokens · {(cost.current.outTok / 1000).toFixed(0)}k output.
-                  Once the cap is reached, the app stops calling the AI (data collection keeps running).
+                  {cost.current.calls.toLocaleString('pt-BR')} chamadas · {(cost.current.inTok / 1000).toFixed(0)} mil tokens de entrada · {(cost.current.outTok / 1000).toFixed(0)} mil tokens de saída.
+                  Ao atingir o limite, as chamadas de IA são interrompidas; a coleta de dados continua.
                 </p>
                 {cost.byPurpose.length > 0 && (
                   <div className="mt-3 flex flex-col gap-1.5">
                     {cost.byPurpose.map((p) => (
                       <div key={p.purpose} className="flex justify-between text-xs">
                         <span className="text-slate-400">{p.purpose.replace(/_/g, ' ')}</span>
-                        <span className="text-slate-500">${p.cost.toFixed(3)} · {p.calls} calls</span>
+                        <span className="text-slate-500">${p.cost.toFixed(3)} · {p.calls} chamadas</span>
                       </div>
                     ))}
                   </div>
@@ -97,7 +97,7 @@ export default async function BudgetPage() {
               </>
             ) : (
               <p className="text-sm text-amber-400/90">
-                {t('h5.budget.noKey', 'The active AI engine has no key yet: add one above. Data collection works, but sentiment, briefs and ratings stay pending.')}
+                {t('h5.budget.noKey', 'O mecanismo de IA selecionado está sem chave. A coleta funciona, mas análises e relatórios gerados por IA ficam pendentes.')}
               </p>
             )}
           </section>
@@ -105,36 +105,36 @@ export default async function BudgetPage() {
 
         {/* Colonna costi delle fonti a pagamento */}
         <section className="panel h-fit px-5 py-4">
-          <h2 className="mb-1 text-sm font-semibold text-slate-300">{t('h5.budget.paidSources', 'Paid data sources')}</h2>
+          <h2 className="mb-1 text-sm font-semibold text-slate-300">{t('h5.budget.paidSources', 'Fontes de dados com custos')}</h2>
           <p className="mb-3 text-[11px] leading-relaxed text-slate-600">
-            {t('h5.budget.paidHint', 'The budget above meters only the AI spend, because Radar makes those calls itself and can count the tokens. Paid data sources are different: they are billed directly by each provider as a flat subscription or a request quota — Radar can’t meter that cost. You control it by entering or removing the key (in the Sources tab) and by managing limits on the provider’s own dashboard.')}
+            {t('h5.budget.paidHint', 'O orçamento de IA considera apenas o consumo medido pelo VigiaPlus. Fontes externas podem gerar despesas cobradas pelos respectivos provedores. Consulte o contrato e os limites diretamente no serviço.')}
           </p>
 
           {paidActive.length > 0 ? (
             <div className="flex flex-col gap-2.5">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-400/80">Active on your account</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-400/80">Configuradas nesta conta</p>
               {paidActive.map((c) => (
                 <div key={c.id} className="rounded-lg border border-[var(--border)] bg-white/[0.02] px-3 py-2">
                   <p className="text-sm font-medium text-slate-200">{SOURCE_META[c.id]?.label ?? c.id}</p>
-                  <p className="text-[11px] leading-snug text-slate-500">{PAID_NOTE[c.id] ?? 'Billed directly by the provider.'}</p>
+                  <p className="text-[11px] leading-snug text-slate-500">{PAID_NOTE[c.id] ?? 'Cobrança e limites definidos pelo provedor.'}</p>
                 </div>
               ))}
             </div>
           ) : (
             <p className="text-xs text-slate-500">
-              No paid source is active. All data currently comes from free sources — your only metered cost is the AI budget on the left.
+              Nenhuma fonte paga está configurada. Verifique o consumo de IA no painel ao lado.
             </p>
           )}
 
           <div className="mt-4 flex flex-col gap-1.5 border-t border-[var(--border)] pt-3">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Reference — how each paid source is billed</p>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-600">Referência sobre custos e condições das fontes</p>
             {(['x', 'newsapi', 'instagram', 'facebook', 'tiktok', 'linkedin'] as const).map((id) => (
               <p key={id} className="text-[11px] text-slate-500">
                 <span className="text-slate-300">{SOURCE_META[id]?.label ?? id}:</span> {PAID_NOTE[id]}
               </p>
             ))}
             <p className="mt-1 inline-flex items-center gap-1 text-[11px] text-slate-600">
-              Manage source keys in the <span className="text-sky-400">Sources</span> tab. <ExternalLink className="size-3" />
+              Gerencie as credenciais na aba <span className="text-sky-400">Fontes</span>. <ExternalLink className="size-3" />
             </p>
           </div>
         </section>
