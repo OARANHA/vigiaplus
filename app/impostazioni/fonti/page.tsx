@@ -185,7 +185,7 @@ function SourceRow({ c, st }: {
       </span>
       <span className="truncate text-xs text-slate-500" title={!enabled ? c.disabledReason : st?.ok === false ? st.error : undefined}>
         {!enabled
-          ? c.disabledReason
+          ? sourceDisabledMessage(c.disabledReason)
           : st
             ? st.ok
               ? `${st.count} novas · ${fmtDate(st.at)}`
