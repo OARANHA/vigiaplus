@@ -31,14 +31,19 @@ captura da aplicação real.
   dados dos endpoints; se falham mostram indisponibilidade, não zero.
 - Tratamento do status financeiro como **MRR contratual**, sem afirmar receita
   recebida. Configuração de credenciais não é homologação de pagamentos.
-- Textos, tooltips, abas e principais labels da sidebar em pt-BR.
+- Textos, tooltips, abas e principais rótulos da sidebar em pt-BR.
+- Páginas de Projetos, Fontes, Orçamento, Minha conta, Equipe e Créditos traduzidas
+  para português brasileiro, preservando identificadores de serviços e atribuições
+  legais do projeto original. Novo projeto começa com idioma português selecionado.
+- Descrições de fontes e categorias em português, sem preços externos não verificados.
 - Não muda banco, métricas, schemas, autenticação, deploy ou faturamento.
 
 ## Próximas verificações
 1. Capturar interface autenticada como proprietário em 1440px, 1024px e
    390px e conferir contraste, rolagem de sidebar, foco e estados sem dados.
-2. Consolidar páginas legadas de Configurações e Projetos, que ainda
-   contêm texto inglês/italiano. Migrar strings para dicionário com testes.
+2. Estender a auditoria de idioma a telas analíticas e componentes auxiliares
+   de terceiros; mensagens de erro técnicas poderão manter trechos do provedor.
+   Migrar gradualmente os textos literais restantes para dicionário tipado.
 3. Criar páginas funcionais para gestão de clientes/planos/LLMs/recebíveis,
    evitando links que apenas abrem uma lista sem ações.
 4. Integrar PRs #10-#15 com revisão de segurança e E2E antes de produção.

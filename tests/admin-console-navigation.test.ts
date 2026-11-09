@@ -59,3 +59,22 @@ test('sidebar do dono reutiliza layout global e remove exportação analítica d
   }
   assert.doesNotMatch(tabs, /'My account'|'Sources'|'Credits & Legal'/);
 });
+
+test('páginas administrativas mantêm formulários de projetos e fontes em pt-BR', () => {
+  const project = readFileSync(join(process.cwd(), 'app/settings/page.tsx'), 'utf8');
+  const source = readFileSync(join(process.cwd(), 'app/impostazioni/fonti/page.tsx'), 'utf8');
+  const budget = readFileSync(join(process.cwd(), 'app/impostazioni/budget/page.tsx'), 'utf8');
+  const account = readFileSync(join(process.cwd(), 'app/impostazioni/account/page.tsx'), 'utf8');
+  const credits = readFileSync(join(process.cwd(), 'app/impostazioni/credits/page.tsx'), 'utf8');
+  assert.match(project, /code === 'pt'/);
+  assert.match(project, /Qual tipo de projeto deseja criar/);
+  assert.match(project, /Criar e configurar consultas/);
+  assert.doesNotMatch(project, /What kind of project\?|New listening project|No active link/);
+  assert.match(source, /Situação das fontes/);
+  assert.match(source, /Notícias e fontes gerais/);
+  assert.match(budget, /Configuradas nesta conta/);
+  assert.match(account, /Alterar senha/);
+  assert.match(credits, /Créditos e informações legais/);
+  assert.match(credits, /Massimo Scognamiglio/);
+  assert.match(credits, /GNU AGPL-3\.0/);
+});
