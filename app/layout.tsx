@@ -15,10 +15,10 @@ const geistMono = localFont({ src: './fonts/GeistMono-Variable.woff2', variable:
 
 export const metadata: Metadata = {
   title: {
-    default: 'Radar — Signal over noise',
-    template: '%s — Radar',
+    default: 'VigiaPlus — Inteligência e monitoramento',
+    template: '%s — VigiaPlus',
   },
-  description: 'Social listening and media intelligence',
+  description: 'Monitoramento de fontes, reputação e inteligência de comunicação.',
 };
 
 // Tutte le pagine leggono dal database a ogni richiesta: niente prerender statico.
@@ -46,7 +46,7 @@ export default async function RootLayout({
       <body className="min-h-full">
         {demo && (
           <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-sky-500/15 px-4 py-2 text-center text-xs text-sky-200">
-            <span>🛰️ <strong>{t('demo.live', 'Live demo')}</strong> — {t('demo.banner', 'read-only, sample data. Interactive AI features run when you self-host with your own key.')}</span>
+            <span>🛰️ <strong>{t('demo.live', 'Demonstração')}</strong> — {t('demo.banner', 'Dados de exemplo, somente leitura. Os recursos de IA dependem de configuração própria.')}</span>
             <a href="https://github.com/Scognamiglio1969/radar-intelligence" target="_blank" rel="noopener noreferrer"
               className="rounded-full bg-sky-500/90 px-3 py-0.5 font-semibold text-slate-950 transition hover:bg-sky-400">
               ⭐ GitHub
@@ -60,7 +60,7 @@ export default async function RootLayout({
             lastIngest={lastIngest?.toISOString() ?? null}
             alertCount={alertCount}
             peopleCount={peopleCount}
-            user={user ? { name: user.name, role: user.role } : null}
+            user={user ? { name: user.name, role: user.role, globalRole: user.globalRole } : null}
             locale={locale}
           />
           <div className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-6">
