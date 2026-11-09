@@ -28,10 +28,10 @@ export function AiEngine({ options, active }: { options: EngineOption[]; active:
   return (
     <section className="panel px-5 py-4">
       <h2 className="mb-1 flex items-center gap-1.5 text-sm font-semibold text-slate-300">
-        <Cpu className="size-4" /> AI engine
+        <Cpu className="size-4" /> Motor de IA
       </h2>
       <p className="mb-3 text-[11px] text-slate-600">
-        The engine that powers sentiment, briefs, ratings and every AI feature. Pick a provider, enter its key (stored encrypted), and you can switch at any time.
+        Motor responsável pela análise de sentimento, resumos e demais recursos de IA. Selecione o provedor e cadastre a chave protegida.
       </p>
 
       {/* Provider picker */}
@@ -48,7 +48,7 @@ export function AiEngine({ options, active }: { options: EngineOption[]; active:
               {o.id === active && <Check className="ml-auto size-3.5 text-sky-400" />}
             </span>
             <span className={`mt-0.5 text-[10px] ${o.configured ? 'text-emerald-400' : 'text-slate-500'}`}>
-              {o.configured ? 'key set' : 'no key yet'}
+              {o.configured ? 'Chave configurada' : 'Sem chave'}
             </span>
           </button>
         ))}
@@ -57,36 +57,36 @@ export function AiEngine({ options, active }: { options: EngineOption[]; active:
 
       {/* Key for the active provider */}
       <div className="mt-3 border-t border-[var(--border)] pt-3">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{current.label} · API key</p>
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{current.label} · Chave de API</p>
         <ConnectorKeys connectorId={current.id} fields={current.fields} />
         {!current.configured && (
-          <p className="mt-1.5 text-[11px] text-amber-400/90">Without this key, AI features stay off while {current.label} is the active engine.</p>
+          <p className="mt-1.5 text-[11px] text-amber-400/90">Sem essa chave, os recursos de IA permanecerão indisponíveis enquanto {current.label} estiver selecionado.</p>
         )}
       </div>
 
       {/* Models for the active provider */}
       <div className="mt-3 border-t border-[var(--border)] pt-3">
-        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{current.label} · models</p>
+        <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{current.label} · Modelos</p>
         <form action={modelAction} className="flex flex-wrap items-end gap-2">
           <input type="hidden" name="provider" value={current.id} />
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] text-slate-400">Fast model <span className="text-slate-600">· batch tagging, translations</span></span>
+            <span className="text-[11px] text-slate-400">Modelo rápido <span className="text-slate-600">· classificação em lote e traduções</span></span>
             <input name="fast" defaultValue={current.models.fast} placeholder={current.defaults.fast}
               className="w-52 rounded-md border border-[var(--border)] bg-white/5 px-2.5 py-1.5 text-xs text-slate-100 outline-none focus:border-sky-500" />
           </label>
           <label className="flex flex-col gap-1">
-            <span className="text-[11px] text-slate-400">Smart model <span className="text-slate-600">· briefs, insights, studio</span></span>
+            <span className="text-[11px] text-slate-400">Modelo avançado <span className="text-slate-600">· resumos, análises e estúdio</span></span>
             <input name="smart" defaultValue={current.models.smart} placeholder={current.defaults.smart}
               className="w-52 rounded-md border border-[var(--border)] bg-white/5 px-2.5 py-1.5 text-xs text-slate-100 outline-none focus:border-sky-500" />
           </label>
           <button type="submit" disabled={modelPending}
             className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5 disabled:opacity-50">
-            <Save className="size-3.5" />{modelPending ? 'Saving…' : 'Save models'}
+            <Save className="size-3.5" />{modelPending ? 'Salvando…' : 'Salvar modelos'}
           </button>
           {modelState.msg && <span className={`text-xs ${modelState.ok ? 'text-emerald-400' : 'text-red-400'}`}>{modelState.msg}</span>}
         </form>
         <p className="mt-1.5 text-[11px] text-slate-600">
-          Model ids as the provider publishes them — when a new model comes out, just type its id here. Leave blank to go back to the default ({current.defaults.fast} / {current.defaults.smart}).
+          Informe os identificadores oficiais dos modelos do provedor. Deixe vazio para utilizar os padrões ({current.defaults.fast} / {current.defaults.smart}).
         </p>
       </div>
     </section>

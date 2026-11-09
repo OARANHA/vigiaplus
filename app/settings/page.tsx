@@ -22,21 +22,21 @@ import { hydrateConnectorCredentials } from '@/lib/connector-credentials';
 type Project = typeof projectsTable.$inferSelect;
 
 const LANGS = [
-  ['it', 'Italian'], ['en', 'English'], ['es', 'Spanish'],
-  ['fr', 'French'], ['de', 'German'], ['pt', 'Portuguese'],
+  ['it', 'Italiano'], ['en', 'Inglês'], ['es', 'Espanhol'],
+  ['fr', 'Francês'], ['de', 'Alemão'], ['pt', 'Português'],
 ] as const;
 
 const COUNTRIES = [
-  ['IT', 'Italy'], ['US', 'United States'], ['GB', 'United Kingdom'], ['FR', 'France'],
-  ['DE', 'Germany'], ['ES', 'Spain'], ['BR', 'Brazil'], ['MX', 'Mexico'],
-  ['CA', 'Canada'], ['AU', 'Australia'], ['IN', 'India'], ['NL', 'Netherlands'],
-  ['PL', 'Poland'], ['JP', 'Japan'],
+  ['IT', 'Itália'], ['US', 'Estados Unidos'], ['GB', 'Reino Unido'], ['FR', 'França'],
+  ['DE', 'Alemanha'], ['ES', 'Espanha'], ['BR', 'Brasil'], ['MX', 'México'],
+  ['CA', 'Canadá'], ['AU', 'Austrália'], ['IN', 'Índia'], ['NL', 'Países Baixos'],
+  ['PL', 'Polônia'], ['JP', 'Japão'],
 ] as const;
 
 const inputCls = 'w-full rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-3 py-2 text-sm outline-none placeholder:text-slate-600';
 const btnCls = 'rounded-lg bg-sky-500/90 px-5 py-2 text-sm font-medium text-slate-950 transition hover:bg-sky-400';
 
-export const metadata = { title: 'Projects' };
+export const metadata = { title: 'Projetos' };
 
 export default async function SettingsPage({ searchParams }: {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -44,7 +44,7 @@ export default async function SettingsPage({ searchParams }: {
   const t = await getT();
   const sp = await searchParams;
   const [allProjects, current] = await Promise.all([getProjects(), getCurrentProject()]);
-  if (allProjects.length === 0) return <EmptyState message="No project." />;
+  if (allProjects.length === 0) return <EmptyState message="Nenhum projeto cadastrado." />;
 
   const isNew = sp.p === 'new';
   const newType = sp.type; // 'listening' | 'import' | 'talkwalker' | undefined (chooser)
@@ -76,8 +76,8 @@ export default async function SettingsPage({ searchParams }: {
   return (
     <>
       <PageHeader
-        title={t('page.settings.title', 'Projects')}
-        subtitle="Each project is an independent listening scope: query, languages, geographies and entities to compare"
+        title={t('page.settings.title', 'Projetos')}
+        subtitle="Cada projeto tem suas próprias fontes, consultas, idiomas, regiões e entidades monitoradas."
       />
 
       {/* Project tabs */}
@@ -106,7 +106,7 @@ export default async function SettingsPage({ searchParams }: {
               : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-slate-200'
           }`}
         >
-          <Plus className="size-4" /> New project
+          <Plus className="size-4" /> Novo projeto
         </Link>
       </div>
 
@@ -119,63 +119,63 @@ export default async function SettingsPage({ searchParams }: {
               !newType ? (
                 /* Passo 0: che tipo di progetto? */
                 <div>
-                  <h2 className="mb-3 text-sm font-semibold text-slate-300">What kind of project?</h2>
+                  <h2 className="mb-3 text-sm font-semibold text-slate-300">Qual tipo de projeto deseja criar?</h2>
                   <div className="grid gap-3 sm:grid-cols-3">
                     <Link href="/settings?p=new&type=listening"
                       className="group flex flex-col gap-1.5 rounded-xl border border-[var(--border)] bg-white/[0.02] px-4 py-4 transition hover:border-sky-500/50 hover:bg-sky-500/[0.05]">
-                      <span className="flex items-center gap-2 text-sm font-semibold text-slate-100"><Radar className="size-4 text-sky-400" /> Listening</span>
-                      <span className="text-xs leading-snug text-slate-400">Radar collects mentions automatically from the web — news, social, RSS. You set the keywords and sources.</span>
+                      <span className="flex items-center gap-2 text-sm font-semibold text-slate-100"><Radar className="size-4 text-sky-400" /> Monitoramento</span>
+                      <span className="text-xs leading-snug text-slate-400">O VigiaPlus coleta menções na web, em notícias, redes e RSS. Você define os termos e as fontes.</span>
                     </Link>
                     <Link href="/settings?p=new&type=import"
                       className="group flex flex-col gap-1.5 rounded-xl border border-[var(--border)] bg-white/[0.02] px-4 py-4 transition hover:border-sky-500/50 hover:bg-sky-500/[0.05]">
-                      <span className="flex items-center gap-2 text-sm font-semibold text-slate-100"><UploadCloud className="size-4 text-sky-400" /> Import file</span>
-                      <span className="text-xs leading-snug text-slate-400">Bring your own data from an Excel or CSV file — surveys, exports. Radar analyzes it the same way. No scraping.</span>
+                      <span className="flex items-center gap-2 text-sm font-semibold text-slate-100"><UploadCloud className="size-4 text-sky-400" /> Importar arquivo</span>
+                      <span className="text-xs leading-snug text-slate-400">Importe planilhas Excel ou CSV, como pesquisas e relatórios exportados, sem coleta automática na web.</span>
                     </Link>
                     <Link href="/settings?p=new&type=talkwalker"
                       className="group flex flex-col gap-1.5 rounded-xl border border-[var(--border)] bg-white/[0.02] px-4 py-4 transition hover:border-teal-500/50 hover:bg-teal-500/[0.05]">
                       <span className="flex items-center gap-2 text-sm font-semibold text-slate-100"><Antenna className="size-4 text-teal-400" /> Talkwalker</span>
-                      <span className="text-xs leading-snug text-slate-400">Read mentions live from your corporate Talkwalker account through its API. No scraping, no files — and it spends Talkwalker credits.</span>
+                      <span className="text-xs leading-snug text-slate-400">Consulte menções de sua conta corporativa Talkwalker pela API oficial. Consome créditos do contrato Talkwalker.</span>
                     </Link>
                   </div>
                 </div>
               ) : newType === 'talkwalker' ? (
                 <form action={createTalkwalkerProject} className="flex flex-col gap-4">
-                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300"><Antenna className="size-4 text-teal-400" /> New Talkwalker project</h2>
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300"><Antenna className="size-4 text-teal-400" /> Novo projeto Talkwalker</h2>
                   <p className="text-xs leading-relaxed text-slate-400">
-                    No keywords here: the search is already written in Talkwalker. Point at the project, and Radar takes what it collects — including the tags and corrections made over there.
+                    A busca já está configurada no Talkwalker. Informe o projeto corporativo para importar menções, etiquetas e correções.
                   </p>
                   <TalkwalkerFields project={null} topics={[]} topicsError={null} />
                   <TalkwalkerNotice />
-                  <p className="text-xs text-slate-500">Once created, you can narrow it down to specific topics of that Talkwalker project.</p>
+                  <p className="text-xs text-slate-500">Depois de criar, você poderá selecionar os tópicos específicos desse projeto Talkwalker.</p>
                   <div className="mt-2 flex items-center gap-3 border-t border-[var(--border)] pt-4">
-                    <SubmitButton className={btnCls} pendingLabel="Creating project…">Create and build the queries →</SubmitButton>
-                    <Link href="/settings?p=new" className="text-xs text-slate-500 hover:text-slate-300">← back</Link>
+                    <SubmitButton className={btnCls} pendingLabel="Criando projeto…">Criar e configurar consultas →</SubmitButton>
+                    <Link href="/settings?p=new" className="text-xs text-slate-500 hover:text-slate-300">← Voltar</Link>
                   </div>
                 </form>
               ) : newType === 'import' ? (
                 <form action={createImportProject} className="flex flex-col gap-4">
-                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300"><UploadCloud className="size-4 text-sky-400" /> New import project</h2>
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300"><UploadCloud className="size-4 text-sky-400" /> Novo projeto de importação</h2>
                   <label className="text-xs text-slate-400">
-                    Project name
-                    <input name="name" className={`${inputCls} mt-1`} placeholder="e.g. Q2 survey exports" required />
+                    Nome do projeto
+                    <input name="name" className={`${inputCls} mt-1`} placeholder="Ex.: pesquisas do segundo trimestre" required />
                   </label>
                   <label className="flex items-center gap-2 text-sm text-slate-300">
                     <input type="checkbox" name="shared" className="accent-sky-500" />
-                    Share this project with the whole team (read-only for others)
+                    Compartilhar este projeto com a equipe (demais membros somente leitura)
                   </label>
-                  <p className="text-xs text-slate-500">Next you’ll upload an Excel/CSV file and map its columns to Radar’s fields.</p>
+                  <p className="text-xs text-slate-500">Depois, envie o arquivo Excel/CSV e associe as colunas aos campos do VigiaPlus.</p>
                   <div className="mt-2 flex items-center gap-3 border-t border-[var(--border)] pt-4">
-                    <SubmitButton className={btnCls} pendingLabel="Creating…">Create &amp; upload file</SubmitButton>
-                    <Link href="/settings?p=new" className="text-xs text-slate-500 hover:text-slate-300">← back</Link>
+                    <SubmitButton className={btnCls} pendingLabel="Criando…">Criar e enviar arquivo</SubmitButton>
+                    <Link href="/settings?p=new" className="text-xs text-slate-500 hover:text-slate-300">← Voltar</Link>
                   </div>
                 </form>
               ) : (
                 <form action={createProject} className="flex flex-col gap-4">
-                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300"><Radar className="size-4 text-sky-400" /> New listening project</h2>
+                  <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-300"><Radar className="size-4 text-sky-400" /> Novo projeto de monitoramento</h2>
                   <ProjectFields project={null} />
                   <div className="mt-2 flex items-center gap-3 border-t border-[var(--border)] pt-4">
-                    <SubmitButton className={btnCls} pendingLabel="Creating project…">Create and build the queries →</SubmitButton>
-                    <Link href="/settings?p=new" className="text-xs text-slate-500 hover:text-slate-300">← back</Link>
+                    <SubmitButton className={btnCls} pendingLabel="Criando projeto…">Criar e configurar consultas →</SubmitButton>
+                    <Link href="/settings?p=new" className="text-xs text-slate-500 hover:text-slate-300">← Voltar</Link>
                   </div>
                 </form>
               )
@@ -184,40 +184,40 @@ export default async function SettingsPage({ searchParams }: {
                 {selected.mode === 'talkwalker' ? (
                   <>
                     <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-teal-500/25 bg-teal-500/[0.05] px-4 py-3">
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-teal-200"><Antenna className="size-4" /> Talkwalker project</span>
-                      <span className="text-xs text-slate-400">— mentions come from the corporate Talkwalker API. No other source is queried.</span>
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-teal-200"><Antenna className="size-4" /> Projeto Talkwalker</span>
+                      <span className="text-xs text-slate-400">— menções obtidas apenas pela API corporativa do Talkwalker.</span>
                     </div>
                     <form action={updateTalkwalkerProject} className="flex flex-col gap-4">
                       <input type="hidden" name="id" value={selected.id} />
                       <TalkwalkerFields project={selected} topics={twTopics} topicsError={twTopicsError} />
                       <TalkwalkerNotice />
                       <div className="mt-2 border-t border-[var(--border)] pt-4">
-                        <SubmitButton className={btnCls} pendingLabel="Saving…">Save changes</SubmitButton>
+                        <SubmitButton className={btnCls} pendingLabel="Salvando…">Salvar alterações</SubmitButton>
                       </div>
                     </form>
                   </>
                 ) : selected.mode === 'upload' ? (
                   <>
                     <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-sky-500/25 bg-sky-500/[0.05] px-4 py-3">
-                      <span className="flex items-center gap-1.5 text-sm font-medium text-sky-200"><UploadCloud className="size-4" /> Import project</span>
-                      <span className="text-xs text-slate-400">— data comes from files you upload, not scraping.</span>
+                      <span className="flex items-center gap-1.5 text-sm font-medium text-sky-200"><UploadCloud className="size-4" /> Projeto de importação</span>
+                      <span className="text-xs text-slate-400">— dados obtidos apenas dos arquivos enviados, sem coleta web.</span>
                       <Link href={`/import?project=${selected.id}`}
                         className="ml-auto inline-flex items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-sm font-medium text-slate-950 hover:bg-sky-400">
-                        <UploadCloud className="size-3.5" /> Import a file
+                        <UploadCloud className="size-3.5" /> Importar arquivo
                       </Link>
                     </div>
                     <form action={updateImportProject} className="flex flex-col gap-4">
                       <input type="hidden" name="id" value={selected.id} />
                       <label className="text-xs text-slate-400">
-                        Project name
+                        Nome do projeto
                         <input name="name" defaultValue={selected.name} className={`${inputCls} mt-1`} required />
                       </label>
                       <label className="flex items-center gap-2 text-sm text-slate-300">
                         <input type="checkbox" name="shared" defaultChecked={selected.visibility === 'shared'} className="accent-sky-500" />
-                        Share this project with the whole team (read-only for others)
+                        Compartilhar este projeto com a equipe (demais membros somente leitura)
                       </label>
                       <div className="mt-2 border-t border-[var(--border)] pt-4">
-                        <SubmitButton className={btnCls} pendingLabel="Saving…">Save changes</SubmitButton>
+                        <SubmitButton className={btnCls} pendingLabel="Salvando…">Salvar alterações</SubmitButton>
                       </div>
                     </form>
                   </>
@@ -226,19 +226,19 @@ export default async function SettingsPage({ searchParams }: {
                     <input type="hidden" name="id" value={selected.id} />
                     <ProjectFields project={selected} />
                     <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-[var(--border)] pt-4">
-                      <SubmitButton className={btnCls} pendingLabel="Saving…">Save changes</SubmitButton>
+                      <SubmitButton className={btnCls} pendingLabel="Salvando…">Salvar alterações</SubmitButton>
                     </div>
                   </form>
                 )}
 
                 <hr className="my-5 border-[var(--border)]" />
 
-                <h3 className="mb-1 text-sm font-semibold text-slate-300">Benchmark entities</h3>
+                <h3 className="mb-1 text-sm font-semibold text-slate-300">Entidades para comparação</h3>
                 <p className="mb-3 text-xs text-slate-500">
-                  Brands or competitors to compare on the Benchmark page: mentions citing these keywords are attributed to the entity.
-                  Saving a query plan updates the subject and the competitors here automatically; the others stay as they are.
-                  Mark one with the <Star className="inline size-3 -translate-y-px text-amber-400" /> to set it as <span className="text-amber-300">your brand</span> —
-                  this unlocks the Brand Health Index (your brand vs the market and the competitors).
+                  Marcas e concorrentes para comparar: menções que contêm os termos cadastrados são atribuídas à entidade.
+                  Ao salvar o plano de consulta, a entidade monitorada e os concorrentes são atualizados; as demais permanecem.
+                  Marque uma entidade com a estrela <Star className="inline size-3 -translate-y-px text-amber-400" /> para defini-la como <span className="text-amber-300">sua marca</span> —
+                  isso habilita o índice de saúde da marca, comparando-a ao mercado e aos concorrentes.
                 </p>
                 <div className="flex flex-col gap-2">
                   {entities.map((e) => (
@@ -248,56 +248,56 @@ export default async function SettingsPage({ searchParams }: {
                     />
                   ))}
                   {entities.length === 0 && (
-                    <p className="text-xs text-slate-600">No entities: add one to use Benchmark.</p>
+                    <p className="text-xs text-slate-600">Nenhuma entidade cadastrada. Adicione uma para habilitar comparações.</p>
                   )}
                 </div>
                 <form action={addEntity} className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <input type="hidden" name="projectId" value={selected.id} />
-                  <input name="name" placeholder="Entity name" className={inputCls} required />
-                  <input name="keywords" placeholder="associated keywords (optional)" className={inputCls} />
-                  <SubmitButton pendingLabel="Adding…"
+                  <input name="name" placeholder="Nome da entidade" className={inputCls} required />
+                  <input name="keywords" placeholder="Termos associados (opcional)" className={inputCls} />
+                  <SubmitButton pendingLabel="Adicionando…"
                     className="shrink-0 rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-slate-300 hover:bg-white/5">
-                    Add
+                    Adicionar
                   </SubmitButton>
                 </form>
 
                 <hr className="my-5 border-[var(--border)]" />
 
                 <h3 className="mb-1 flex items-center gap-2 text-sm font-semibold text-slate-300">
-                  <Link2 className="size-4 text-sky-400" /> Sharing
+                  <Link2 className="size-4 text-sky-400" /> Compartilhamento
                 </h3>
                 <p className="mb-3 text-xs text-slate-500">
-                  Create a read-only link to show the report to managers or clients without sharing the password. It expires on its own.
+                  Crie um link de leitura para compartilhar o relatório sem enviar a senha. O acesso expira automaticamente.
                 </p>
                 <div className="flex flex-col gap-2">
                   {activeShares.map((s) => (
                     <div key={s.id} className="flex flex-wrap items-center gap-2 rounded-lg bg-white/5 px-3 py-2 text-xs">
                       <code className="truncate text-sky-300">{shareBase ? `${shareBase}/share/${s.token}` : `/share/${s.token}`}</code>
-                      <span className="text-slate-500">expires {s.expiresAt.toLocaleDateString('en-US')}</span>
+                      <span className="text-slate-500">expira em {s.expiresAt.toLocaleDateString('pt-BR')}</span>
                       <span className="ml-auto flex items-center gap-1">
                         <CopyButton text={shareBase ? `${shareBase}/share/${s.token}` : `/share/${s.token}`} />
                         <form action={revokeShareLink}>
                           <input type="hidden" name="id" value={s.id} />
-                          <button type="submit" className="rounded-md px-2 py-1 text-red-400/80 hover:bg-red-500/10">revoke</button>
+                          <button type="submit" className="rounded-md px-2 py-1 text-red-400/80 hover:bg-red-500/10">Revogar</button>
                         </form>
                       </span>
                     </div>
                   ))}
                   {activeShares.length === 0 && (
-                    <p className="text-xs text-slate-600">No active link.</p>
+                    <p className="text-xs text-slate-600">Nenhum link ativo.</p>
                   )}
                 </div>
                 <form action={createShareLink} className="mt-3 flex items-center gap-2">
                   <input type="hidden" name="projectId" value={selected.id} />
                   <select name="days" defaultValue="7"
                     className="rounded-lg border border-[var(--border)] bg-[var(--panel-2)] px-2 py-2 text-sm outline-none">
-                    <option value="1">1 day</option>
-                    <option value="7">7 days</option>
-                    <option value="30">30 days</option>
+                    <option value="1">1 dia</option>
+                    <option value="7">7 dias</option>
+                    <option value="30">30 dias</option>
                   </select>
-                  <SubmitButton pendingLabel="Creating link…"
+                  <SubmitButton pendingLabel="Criando link…"
                     className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-slate-300 hover:bg-white/5">
-                    Create shareable link
+                    Criar link de compartilhamento
                   </SubmitButton>
                 </form>
 
@@ -310,8 +310,8 @@ export default async function SettingsPage({ searchParams }: {
             )}
           </section>
           <p className="mt-2 px-1 text-[11px] text-slate-600">
-            Note: every active project consumes API quota on each update — with the current budget, keep few of them.
-            Source status and budget are now in <span className="text-slate-400">Settings → Sources &amp; budget</span>.
+            Atenção: cada projeto ativo consome a cota das APIs a cada atualização. Ajuste os limites conforme seu orçamento.
+            O status das fontes e o orçamento estão em <span className="text-slate-400">Configurações → Fontes e orçamento</span>.
           </p>
         </div>
       </div>
@@ -336,30 +336,30 @@ function TalkwalkerFields({ project, topics, topicsError }: {
   return (
     <>
       <label className="text-xs text-slate-400">
-        Project name (in Radar)
+        Nome do projeto (no VigiaPlus)
         <input name="name" defaultValue={project?.name} className={`${inputCls} mt-1`}
-          placeholder="e.g. Corporate reputation" required />
+          placeholder="Ex.: reputação institucional" required />
       </label>
       <label className="flex items-center gap-2 text-sm text-slate-300">
         <input type="checkbox" name="shared" defaultChecked={project?.visibility === 'shared'} className="accent-sky-500" />
-        Share this project with the whole team (read-only for others)
+        Compartilhar este projeto com a equipe (demais membros somente leitura)
       </label>
       <label className="text-xs text-slate-400">
-        Talkwalker project id
+        Identificador do projeto Talkwalker
         <input name="talkwalkerProject" defaultValue={project?.talkwalkerProject ?? ''}
-          className={`${inputCls} mt-1`} placeholder="e.g. kpnutesu_123456" required />
+          className={`${inputCls} mt-1`} placeholder="Ex.: kpnutesu_123456" required />
         <span className="mt-1 block text-[11px] text-slate-500">
-          Ask your CSM, or read it from the URL of the project inside Talkwalker.
+          Consulte o responsável pela conta ou a URL do projeto no Talkwalker.
         </span>
       </label>
 
       {project && (
       <fieldset className="rounded-lg border border-[var(--border)] bg-[var(--panel-2)]/40 px-4 py-3">
-        <legend className="px-1 text-xs text-slate-400">Where the data comes from</legend>
+        <legend className="px-1 text-xs text-slate-400">Origem dos dados</legend>
         {topics.length > 0 ? (
           <>
             <p className="mb-2 text-[11px] text-slate-500">
-              Topics configured in that Talkwalker project. <strong>Tick none to take everything</strong> it collects — you can always narrow later.
+              Tópicos cadastrados no projeto Talkwalker. <strong>Não marque nenhum para incluir todos os tópicos</strong> coletados; você poderá restringi-los depois.
             </p>
             <div className="grid gap-1.5 sm:grid-cols-2">
               {topics.map((t) => (
@@ -374,18 +374,18 @@ function TalkwalkerFields({ project, topics, topicsError }: {
         ) : (
           <p className="text-[11px] leading-relaxed text-slate-500">
             {topicsError
-              ? `Topics could not be read from Talkwalker: ${topicsError}. Radar will take everything the project collects.`
-              : 'Once the token is set, the topics configured in this Talkwalker project appear here to tick. Until then Radar takes everything the project collects.'}
+              ? `Não foi possível consultar os tópicos do Talkwalker: ${topicsError}. O VigiaPlus utilizará todos os tópicos coletados pelo projeto.`
+              : 'Após configurar o token, os tópicos do projeto Talkwalker aparecerão aqui. Até lá, todos serão considerados.'}
           </p>
         )}
       </fieldset>
       )}
 
       <label className="text-xs text-slate-400">
-        <span className="text-violet-300">✨ Topic description</span> — optional: it doesn’t change what is fetched, it guides the AI relevance stars
+        <span className="text-violet-300">✨ Descrição dos tópicos</span> — opcional; orienta a análise de relevância por IA sem alterar a coleta
         <textarea name="semanticContext" defaultValue={project?.semanticContext ?? ''} rows={2}
           className={`${inputCls} mt-1 resize-y`}
-          placeholder="e.g. Reputation of the group across insurance and mobility" />
+          placeholder="Ex.: reputação do grupo nos segmentos de seguros e mobilidade" />
       </label>
     </>
   );
@@ -395,7 +395,7 @@ function TalkwalkerFields({ project, topics, topicsError }: {
 function TalkwalkerNotice() {
   return (
     <p className="rounded-lg border border-amber-500/25 bg-amber-500/[0.06] px-3 py-2 text-[11px] leading-relaxed text-amber-200/90">
-      Each refresh runs one Talkwalker search per block of 40 keywords: <strong>10 credits per call plus 1 per result</strong>, taken from your Talkwalker contract. The token goes in Settings → Sources.
+      Cada atualização executa uma consulta Talkwalker por grupo de até 40 termos: <strong>10 créditos por consulta, mais 1 por resultado</strong>, debitados do contrato Talkwalker. Configure o token em Configurações → Fontes.
     </p>
   );
 }
@@ -404,48 +404,48 @@ function ProjectFields({ project }: { project: Project | null }) {
   return (
     <>
       <label className="text-xs text-slate-400">
-        Project name
+        Nome do projeto
         <input name="name" defaultValue={project?.name} className={`${inputCls} mt-1`}
-          placeholder="e.g. Renewable energy" required />
+          placeholder="Ex.: energia renovável" required />
       </label>
       <label className="flex items-center gap-2 text-sm text-slate-300">
         <input type="checkbox" name="shared" defaultChecked={project?.visibility === 'shared'} className="accent-sky-500" />
-        Share this project with the whole team (read-only for others)
+        Compartilhar este projeto com a equipe (demais membros somente leitura)
       </label>
       {project ? (
         // La query non si scrive più qui: ha una pagina sua, dove si
         // costruisce a parole, si prova e si modifica.
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-sky-500/25 bg-sky-500/[0.05] px-4 py-3">
           <div className="min-w-0 flex-1 text-xs text-slate-300">
-            <p className="font-medium text-sky-200">What this project listens to</p>
+            <p className="font-medium text-sky-200">O que este projeto monitora</p>
             <p className="mt-0.5 text-slate-400">
               {project.queryPlan
-                ? `${project.queryPlan.queries.filter((q) => q.enabled).length} active queries built from: “${project.queryPlan.brief.slice(0, 140)}${project.queryPlan.brief.length > 140 ? '…' : ''}”`
+                ? `${project.queryPlan.queries.filter((q) => q.enabled).length} consultas ativas criadas a partir de: “${project.queryPlan.brief.slice(0, 140)}${project.queryPlan.brief.length > 140 ? '…' : ''}”`
                 : project.keywords.length
-                  ? `Old-style query (${project.keywords.slice(0, 4).join(', ')}${project.keywords.length > 4 ? '…' : ''}). Open the query builder to turn it into building blocks.`
-                  : 'No query yet: the project collects nothing until you build one.'}
+                  ? `Consulta legada (${project.keywords.slice(0, 4).join(', ')}${project.keywords.length > 4 ? '…' : ''}). Abra o editor de consultas para reorganizá-la.`
+                  : 'Nenhuma consulta criada. O projeto não coleta dados até você configurar uma.'}
             </p>
           </div>
           <Link href={`/query?project=${project.id}`}
             className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-sky-500 px-3 py-1.5 text-sm font-medium text-slate-950 hover:bg-sky-400">
-            Open the query builder
+            Abrir editor de consultas
           </Link>
         </div>
       ) : (
         <label className="text-xs text-slate-400">
-          <span className="text-sky-300">What do you want to monitor?</span> — in plain words; next step, Radar turns it into queries you can test and edit
+          <span className="text-sky-300">O que deseja monitorar?</span> — descreva em linguagem natural; o VigiaPlus criará consultas que você poderá testar e editar
           <textarea name="semanticContext" rows={3}
             className={`${inputCls} mt-1 resize-y`}
-            placeholder="e.g. The company Acme in relation to worker protests, and its competitors Alfa, Beta and Gamma" />
+            placeholder="Ex.: empresa Acme, mobilizações de funcionários e concorrentes Alfa, Beta e Gama" />
         </label>
       )}
       <fieldset className="text-xs text-slate-400">
-        Languages (news editions and search)
+        Idiomas (notícias e pesquisas)
         <div className="mt-1.5 flex flex-wrap gap-3">
           {LANGS.map(([code, label]) => (
             <label key={code} className="flex items-center gap-1.5 text-sm text-slate-300">
               <input type="checkbox" name="languages" value={code}
-                defaultChecked={project ? project.languages.includes(code) : code === 'it' || code === 'en'}
+                defaultChecked={project ? project.languages.includes(code) : code === 'pt'}
                 className="accent-sky-500" />
               {label}
             </label>
@@ -453,7 +453,7 @@ function ProjectFields({ project }: { project: Project | null }) {
         </div>
       </fieldset>
       <fieldset className="text-xs text-slate-400">
-        Geographies (applies to news sources; no selection = worldwide)
+        Regiões (para fontes de notícias; sem seleção = mundo todo)
         <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1.5 sm:grid-cols-4">
           {COUNTRIES.map(([code, label]) => (
             <label key={code} className="flex items-center gap-1.5 text-sm text-slate-300">
@@ -465,21 +465,21 @@ function ProjectFields({ project }: { project: Project | null }) {
         </div>
       </fieldset>
       <label className="text-xs text-slate-400">
-        Telegram channels to watch (comma-separated usernames, e.g. @reuters)
+        Canais Telegram monitorados (usuários separados por vírgula, ex.: @reuters)
         <input name="telegramChannels" defaultValue={(project?.telegramChannels ?? []).map((c) => `@${c}`).join(', ')}
-          className={`${inputCls} mt-1`} placeholder="e.g. @channel1, @channel2 (optional)" />
+          className={`${inputCls} mt-1`} placeholder="Ex.: @canal1, @canal2 (opcional)" />
       </label>
       <label className="text-xs text-slate-400">
-        RSS/Atom feeds to follow (URLs comma- or newline-separated) — outlets, blogs, Google Alerts…
+        Feeds RSS/Atom (URLs separadas por vírgula ou linha) — jornais, blogs e alertas do Google…
         <textarea name="rssFeeds" defaultValue={(project?.rssFeeds ?? []).join('\n')} rows={2}
           className={`${inputCls} mt-1 resize-y`}
-          placeholder="e.g. https://example.com/feed.xml (optional, max 15)" />
+          placeholder="Ex.: https://exemplo.com/feed.xml (opcional, até 15)" />
       </label>
       <label className="text-xs text-slate-400">
-        Brand tone of voice — used by Content Studio to write drafts
+        Tom de voz da marca — usado pelo Estúdio de Conteúdo na criação de textos
         <textarea name="brandVoice" defaultValue={project?.brandVoice ?? ''} rows={2}
           className={`${inputCls} mt-1 resize-y`}
-          placeholder="e.g. Professional but direct, informal, avoid unnecessary jargon (optional)" />
+          placeholder="Ex.: profissional, direto e sem jargões desnecessários (opcional)" />
       </label>
     </>
   );

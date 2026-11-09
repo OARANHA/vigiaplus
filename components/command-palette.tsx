@@ -39,7 +39,7 @@ function score(q: string, label: string, also: string[]): number {
   return 0;
 }
 
-export function CommandPalette({ locale = 'en' }: { locale?: Locale }) {
+export function CommandPalette({ locale = 'pt' }: { locale?: Locale }) {
   const t = tFor(locale);
   const router = useRouter();
   const [open, setOpen] = useState(false);

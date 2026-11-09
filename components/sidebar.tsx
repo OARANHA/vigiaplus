@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Settings, Menu, X, UserCog, LogOut, UserCircle2 } from 'lucide-react';
+import { Settings, Menu, X, UserCog, LogOut, UserCircle2, ShieldCheck } from 'lucide-react';
 import { RefreshButton } from './refresh-button';
 import { Brand } from './brand';
 import { LocaleSwitch } from './locale-switch';
@@ -35,15 +35,16 @@ type Props = {
   alertCount?: number;
   /** Quante persone ha il progetto: il menù lo dice, altrimenti non si trovano. */
   peopleCount?: number;
-  user?: { name: string; role: string } | null;
+  user?: { name: string; role: string; globalRole?: string | null } | null;
   locale?: Locale;
 };
 
-export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopleCount = 0, user = null, locale = 'en' }: Props) {
+export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopleCount = 0, user = null, locale = 'pt' }: Props) {
   const t = tFor(locale);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
+  const isOwner = user?.globalRole === 'owner';
 
   async function logout() {
     await fetch('/api/auth', {
@@ -60,19 +61,19 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
         <UserCircle2 className="size-5 shrink-0 text-slate-500" />
         <div className="min-w-0">
           <p className="truncate text-xs font-medium text-slate-300">{user.name}</p>
-          <p className="text-[10px] uppercase tracking-wide text-slate-600">{user.role === 'admin' ? t('nav.admin', 'Admin') : t('nav.member', 'Member')}</p>
+          <p className="text-[10px] uppercase tracking-wide text-slate-600">{isOwner ? 'Proprietário' : user.role === 'admin' ? t('nav.admin', 'Administrador') : t('nav.member', 'Membro')}</p>
         </div>
       </div>
       <div className="flex items-center gap-1">
         <Link href="/impostazioni/account" onClick={() => setOpen(false)}
           className="flex flex-1 items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-slate-400 transition hover:bg-white/5 hover:text-slate-200">
-          <UserCog className="size-4" /> {t('nav.account', 'Settings')}
+          <UserCog className="size-4" /> {t('nav.account', 'Configurações da conta')}
         </Link>
         <LocaleSwitch current={locale} compact />
       </div>
       <button onClick={logout}
         className="flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-slate-400 transition hover:bg-white/5 hover:text-red-300">
-        <LogOut className="size-4" /> {t('nav.logout', 'Log out')}
+        <LogOut className="size-4" /> {t('nav.logout', 'Sair')}
       </button>
     </div>
   );
@@ -83,7 +84,7 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
 
       {/* Header mobile/tablet (sotto lg) */}
       <header className="sticky top-0 z-40 flex flex-wrap items-center gap-3 border-b border-[var(--border)] bg-[#0c1226]/95 px-4 py-2.5 backdrop-blur lg:hidden">
-        <button onClick={() => setOpen(true)} aria-label="Open menu"
+        <button onClick={() => setOpen(true)} aria-label="Abrir menu"
           className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
           <Menu className="size-5" />
         </button>
@@ -101,12 +102,13 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
           <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col gap-4 overflow-y-auto bg-[#0c1226] px-3 py-4 shadow-2xl">
             <div className="flex items-center gap-2 px-2">
               <Brand />
-              <button onClick={() => setOpen(false)} aria-label="Close menu"
+              <button onClick={() => setOpen(false)} aria-label="Fechar menu"
                 className="ml-auto rounded-lg p-1.5 text-slate-400 hover:bg-white/10">
                 <X className="size-5" />
               </button>
             </div>
             <CommandHint locale={locale} />
+            {isOwner && <OwnerShortcut pathname={pathname} onNavigate={() => setOpen(false)} />}
             <NavLinks pathname={pathname} alertCount={alertCount} peopleCount={peopleCount} t={t} onNavigate={() => setOpen(false)} />
             {userBlock}
             <FooterBlock lastIngest={lastIngest} locale={locale} />
@@ -115,12 +117,13 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
       )}
 
       {/* Sidebar desktop (da lg in su) */}
-      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-3 border-r border-[var(--border)] bg-[#0c1226] px-3 py-5 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col gap-3 border-r border-[var(--border)] bg-[#0c1226] px-3 py-5 lg:flex">
         <div className="px-2 [&_span_span_span:last-child]:block">
           <Brand />
         </div>
         <ProjectSelect projects={projects} currentId={currentId} />
         <CommandHint locale={locale} />
+        {isOwner && <OwnerShortcut pathname={pathname} />}
         <NavLinks pathname={pathname} alertCount={alertCount} peopleCount={peopleCount} t={t} />
         <div className="mt-auto flex flex-col gap-3">
           {userBlock}
@@ -131,6 +134,23 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
   );
 }
 
+/** Acesso do proprietário integrado à sidebar global. Nunca exibir para outros papéis. */
+function OwnerShortcut({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  const active = pathname === '/console' || pathname.startsWith('/console/');
+  return (
+    <Link href="/console" onClick={onNavigate} aria-current={active ? 'page' : undefined}
+      className={[
+        'flex min-h-10 items-center gap-2.5 rounded-lg border px-3 py-2 text-sm font-medium transition',
+        active
+          ? 'border-sky-500/30 bg-sky-500/15 text-sky-200'
+          : 'border-[var(--border)] bg-[var(--panel)] text-slate-200 hover:border-sky-500/30 hover:bg-white/5',
+      ].join(' ')}>
+      <ShieldCheck className="size-4 shrink-0 text-sky-400" aria-hidden="true" />
+      <span>Console do proprietário</span>
+    </Link>
+  );
+}
+
 function ProjectSelect({ projects, currentId, compact }: {
   projects: Props['projects']; currentId: number | null; compact?: boolean;
 }) {
@@ -138,6 +158,7 @@ function ProjectSelect({ projects, currentId, compact }: {
   if (projects.length === 0) return null;
   return (
     <select
+      aria-label="Projeto em foco"
       value={currentId ?? undefined}
       onChange={(e) => {
         document.cookie = `sr_project=${e.target.value};path=/;max-age=31536000`;
@@ -168,7 +189,7 @@ function NavLinks({ pathname, alertCount = 0, peopleCount = 0, t, onNavigate }: 
   t: (k: string, f: string) => string; onNavigate?: () => void;
 }) {
   return (
-    <nav className="flex flex-col gap-px overflow-y-auto">
+    <nav aria-label="Navegação principal" className="flex min-h-0 flex-1 flex-col gap-px overflow-y-auto pr-1">
       {NAV.map((item, i) => {
         if ('section' in item) {
           return item.section
@@ -193,6 +214,7 @@ function NavLinks({ pathname, alertCount = 0, peopleCount = 0, t, onNavigate }: 
           <Link
             key={href}
             href={href}
+            aria-current={active ? 'page' : undefined}
             onClick={onNavigate}
             className={`flex items-center gap-2.5 rounded-lg transition-colors ${
               primary ? 'px-3 py-1.5 text-[15px]' : 'py-1 pl-3 pr-3 text-[13px]'
@@ -231,7 +253,7 @@ function NavLinks({ pathname, alertCount = 0, peopleCount = 0, t, onNavigate }: 
   );
 }
 
-function FooterBlock({ lastIngest, locale = 'en' }: { lastIngest: string | null; locale?: Locale }) {
+function FooterBlock({ lastIngest, locale = 'pt' }: { lastIngest: string | null; locale?: Locale }) {
   const t = tFor(locale);
   return (
     <div className="mt-auto flex flex-col gap-2 px-1">

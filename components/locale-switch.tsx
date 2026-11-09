@@ -47,8 +47,8 @@ export function LocaleSwitch({ current, compact = false, publicPage = false }: {
             disabled={pending}
             aria-label={l.label}
             title={active
-              ? `${l.label} — active`
-              : `Switch to ${l.label}: interface and newly generated AI content (briefs, narratives, Point of View). Collected data is never translated.`}
+              ? `${l.label} — idioma selecionado`
+              : `Mudar para ${l.label}: interface e novos conteúdos gerados por IA. Dados já coletados não são traduzidos.`}
             className={`rounded px-1 text-base leading-none transition ${
               active ? 'opacity-100' : 'opacity-40 grayscale hover:opacity-80 hover:grayscale-0'
             }`}

@@ -43,18 +43,18 @@ export function ViewModeToggle({ compact = false }: { compact?: boolean }) {
         <button
           onClick={() => update({ density: density === 'basico' ? 'avancado' : 'basico' })}
           disabled={loading}
-          className="rounded-md border px-2 py-1 hover:bg-gray-100 disabled:opacity-50"
+          className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 py-1 text-slate-300 transition hover:bg-white/10 hover:text-slate-100 disabled:opacity-50"
           title="Alternar densidade"
         >
-          {density === 'basico' ? 'Simples' : 'Avancado'}
+          {density === 'basico' ? 'Simples' : 'Avançado'}
         </button>
         <button
           onClick={() => update({ vocabulary: vocabulary === 'leigo' ? 'tecnico' : 'leigo' })}
           disabled={loading}
-          className="rounded-md border px-2 py-1 hover:bg-gray-100 disabled:opacity-50"
+          className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 py-1 text-slate-300 transition hover:bg-white/10 hover:text-slate-100 disabled:opacity-50"
           title="Alternar vocabulario"
         >
-          {vocabulary === 'leigo' ? 'Leigo' : 'Tecnico'}
+          {vocabulary === 'leigo' ? 'Linguagem simples' : 'Técnico'}
         </button>
       </div>
     );
@@ -63,7 +63,7 @@ export function ViewModeToggle({ compact = false }: { compact?: boolean }) {
   return (
     <div className="space-y-3">
       <div>
-        <p className="text-sm font-medium text-gray-700 mb-1">Densidade</p>
+        <p className="mb-1 text-sm font-medium text-slate-200">Densidade</p>
         <div className="flex gap-1">
           {(['basico', 'avancado'] as const).map((d) => (
             <button
@@ -72,17 +72,17 @@ export function ViewModeToggle({ compact = false }: { compact?: boolean }) {
               disabled={loading || density === d}
               className={`px-3 py-1.5 rounded-lg text-sm transition ${
                 density === d
-                  ? 'bg-blue-600 text-white'
-                  : 'border text-gray-600 hover:bg-gray-100'
+                  ? 'bg-sky-500/20 text-sky-200 border border-sky-500/40'
+                  : 'border border-[var(--border)] text-slate-300 hover:bg-white/5'
               }`}
             >
-              {d === 'basico' ? 'Basico (menos info, mais legivel)' : 'Avancado (mais detalhes)'}
+              {d === 'basico' ? 'Básico (mais legível)' : 'Avançado (mais detalhes)'}
             </button>
           ))}
         </div>
       </div>
       <div>
-        <p className="text-sm font-medium text-gray-700 mb-1">Vocabulario</p>
+        <p className="mb-1 text-sm font-medium text-slate-200">Vocabulario</p>
         <div className="flex gap-1">
           {(['leigo', 'tecnico'] as const).map((v) => (
             <button
@@ -91,11 +91,11 @@ export function ViewModeToggle({ compact = false }: { compact?: boolean }) {
               disabled={loading || vocabulary === v}
               className={`px-3 py-1.5 rounded-lg text-sm transition ${
                 vocabulary === v
-                  ? 'bg-blue-600 text-white'
-                  : 'border text-gray-600 hover:bg-gray-100'
+                  ? 'bg-sky-500/20 text-sky-200 border border-sky-500/40'
+                  : 'border border-[var(--border)] text-slate-300 hover:bg-white/5'
               }`}
             >
-              {v === 'leigo' ? 'Leigo (linguagem do dia a dia)' : 'Tecnico (jargao de especialista)'}
+              {v === 'leigo' ? 'Simples (linguagem do dia a dia)' : 'Técnico (termos especializados)'}
             </button>
           ))}
         </div>

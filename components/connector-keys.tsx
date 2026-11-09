@@ -34,7 +34,7 @@ export function ConnectorKeys({ connectorId, fields }: {
         }`}
       >
         {configured ? <Check className="size-3" /> : <KeyRound className="size-3" />}
-        {configured ? 'Keys set · edit' : 'Enter API keys'}
+        {configured ? 'Chaves configuradas · editar' : 'Informar chaves de API'}
       </button>
 
       {open && (
@@ -49,7 +49,7 @@ export function ConnectorKeys({ connectorId, fields }: {
                 {f.label}
                 {f.hint && <span className="ml-1 font-normal text-slate-600">· {f.hint}</span>}
                 {f.set && f.fromEnv && (
-                  <span className="ml-1 font-normal text-amber-500/80">· attiva da variabile d’ambiente</span>
+                  <span className="ml-1 font-normal text-amber-500/80">· ativa por variável de ambiente</span>
                 )}
               </span>
               <input
@@ -58,28 +58,28 @@ export function ConnectorKeys({ connectorId, fields }: {
                 autoComplete="off"
                 spellCheck={false}
                 defaultValue={f.secret ? '' : (f.display ?? '')}
-                placeholder={f.secret ? (f.set ? `${f.display ?? 'set'} · leave blank to keep` : 'paste the value') : 'paste the value'}
+                placeholder={f.secret ? (f.set ? `${f.display ?? 'configurada'} · deixe vazio para manter` : 'Cole o valor') : 'Cole o valor'}
                 className="w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-2.5 py-1.5 text-xs outline-none placeholder:text-slate-600 focus:border-sky-500/50"
               />
             </label>
           ))}
           <div className="flex items-center gap-2 pt-1">
             <SubmitButton
-              pendingLabel="Saving…"
+              pendingLabel="Salvando…"
               className="rounded-md bg-sky-500 px-3 py-1 text-xs font-semibold text-slate-950 transition hover:bg-sky-400"
             >
-              Save keys
+              Salvar chaves
             </SubmitButton>
             <button
               type="button"
               onClick={() => setOpen(false)}
               className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-slate-500 transition hover:text-slate-300"
             >
-              <X className="size-3" /> Cancel
+              <X className="size-3" /> Cancelar
             </button>
           </div>
           <p className="text-[10px] leading-relaxed text-slate-600">
-            Keys are stored encrypted and apply to the whole account. They are never shown in clear text.
+            As chaves são armazenadas de forma criptografada e podem valer para toda a conta. Os valores completos não são exibidos.
           </p>
         </form>
       )}

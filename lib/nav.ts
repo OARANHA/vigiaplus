@@ -43,7 +43,7 @@ export const NAV: NavItem[] = [
   { section: 'Monitor', key: 'nav.monitor' },
   { href: '/', label: 'Dashboard', key: 'nav.dashboard', icon: LayoutDashboard, primary: true },
   { href: '/listening', label: 'Listening', key: 'nav.listening', icon: Ear, primary: true, also: ['mentions', 'post', 'stream'] },
-  { href: '/vigia', label: 'VigiaElus · CRF-RS', key: 'nav.vigia', icon: Radar, primary: true, also: ['CRF-RS', 'monitoramento', 'reputação'] },
+  { href: '/vigia', label: 'Piloto CRF-RS', key: 'nav.vigia', icon: Radar, primary: true, also: ['CRF-RS', 'monitoramento', 'reputação'] },
   { href: '/media', label: 'Media', key: 'nav.media', icon: Newspaper, also: ['news', 'stories', 'press'] },
   { href: '/alerts', label: 'Alerts', key: 'nav.alerts', icon: Bell, primary: true, also: ['spike', 'warning'] },
   { href: '/changes', label: 'What changed', key: 'nav.changes', icon: Diff, also: ['diff', 'since'] },
