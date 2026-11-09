@@ -1,0 +1,30 @@
+E2E di sicurezza — 27 controlli, 27 PASS, 0 FAIL
+Durata: 30.7s · Credenziali sintetiche su DB usa-e-getta (nessun segreto reale)
+
+PASS  [A] A1 login admin → 200 + cookie di sessione — status=200 cookie=emesso
+PASS  [A] A2 cookie valido → API protetta risponde 200 — POST /api/locale → 200 {"locale":"pt"}
+PASS  [A] A3 revokeAll con sessione viva → 200 — status=200 body={"ok":true,"revokedSessions":"all"}
+PASS  [A] A4 cookie REVOCATO → API protetta risponde 401 — POST /api/locale → 401 {"error":"unauthorized"}
+PASS  [A] A5 revokeAll con cookie REVOCATO → 401 (fix audit) — status=401 body={"error":"sessione già revocata"}
+PASS  [A] A6 nuovo login → cookie fresco accettato (200) — login=200 /api/locale=200
+PASS  [B] B1 login member senza progetti → 200 — status=200 cookie=emesso
+PASS  [B] B2 member senza progetti: POST /api/refresh → 404 esplicito (MAI pipeline globale) — status=404 body={"error":"nessun progetto accessibile"}
+PASS  [B] B3 member senza progetti: POST /api/reviews/refresh → 404 — status=404
+PASS  [B] B4 SENZA cookie: POST /api/refresh → 401 (proxy) e mai esecuzione — status=401 body={"error":"non autorizzato"}
+PASS  [B] B5 DB: zero lock di pipeline dopo i tentativi (nessuna esecuzione globale) — righe in meta con key LIKE 'pipeline_lock%' = 0
+PASS  [C] C0 demo: home visibile (200) — GET / → 200
+PASS  [C] C1 demo: POST /api/refresh → 403 (refresh globale on-demand) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C2 demo: POST /api/reviews/refresh → 403 (ingestione recensioni (Google/Yelp)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C3 demo: POST /api/wikipedia/refresh → 403 (ingestione edit Wikipedia) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C4 demo: POST /api/facts/refresh → 403 (ingestione fact-check) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C5 demo: POST /api/trials/refresh → 403 (ingestione studi clinici) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C6 demo: POST /api/sport/refresh → 403 (ingestione partite) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C7 demo: POST /api/timeline → 403 (estrazione timeline (persistenza)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C8 demo: POST /api/pov → 403 (rigenerazione tesi (AI+persistenza)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C9 demo: POST /api/brief → 403 (rigenerazione brief (AI+persistenza)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C10 demo: POST /api/insights/clusters → 403 (rigenerazione cluster (AI+persistenza)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C11 demo: POST /api/influencer → 403 (profilo influencer (AI+persistenza)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C12 demo: POST /api/playbook → 403 (playbook alert (AI+persistenza)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C13 demo: POST /api/translate → 403 (traduzione mention (AI+persistenza cache)) — status=403 body={"error":"demo mode: read-only"}
+PASS  [C] C14 demo: GET /api/cron/daily → 403 (cron disattivato) — status=403 body={"error":"demo mode: cron operations are disabled"}
+PASS  [D] D1 produzione senza SESSION_SECRET → boot RIFIUTATO con messaggio esplicito — il server ha stampato la validazione e non serve alcuna pagina (serving=false)

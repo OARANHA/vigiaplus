@@ -48,7 +48,7 @@ export default async function BudgetPage() {
     <>
       <PageHeader
         title={t('page.budget.title', 'Budget & costs')}
-        subtitle="The AI key that powers analysis, its spend cap, and where your paid data-source costs come from."
+        subtitle={t('h5.budget.subtitle', 'The AI key that powers analysis, its spend cap, and where your paid data-source costs come from.')}
       />
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -59,7 +59,7 @@ export default async function BudgetPage() {
           )}
 
           <section className="panel h-fit px-5 py-4">
-            <h2 className="mb-3 text-sm font-semibold text-slate-300">AI spend & budget</h2>
+            <h2 className="mb-3 text-sm font-semibold text-slate-300">{t('h5.budget.aiSpend', 'AI spend & budget')}</h2>
             {await claudeAvailable() ? (
               <>
                 <div className="flex items-baseline gap-2">
@@ -97,7 +97,7 @@ export default async function BudgetPage() {
               </>
             ) : (
               <p className="text-sm text-amber-400/90">
-                The active AI engine has no key yet: add one above. Data collection works, but sentiment, briefs and ratings stay pending.
+                {t('h5.budget.noKey', 'The active AI engine has no key yet: add one above. Data collection works, but sentiment, briefs and ratings stay pending.')}
               </p>
             )}
           </section>
@@ -105,11 +105,9 @@ export default async function BudgetPage() {
 
         {/* Colonna costi delle fonti a pagamento */}
         <section className="panel h-fit px-5 py-4">
-          <h2 className="mb-1 text-sm font-semibold text-slate-300">Paid data sources</h2>
+          <h2 className="mb-1 text-sm font-semibold text-slate-300">{t('h5.budget.paidSources', 'Paid data sources')}</h2>
           <p className="mb-3 text-[11px] leading-relaxed text-slate-600">
-            The budget above meters only the <span className="text-slate-400">AI</span> spend, because Radar makes those calls itself and can count the tokens.
-            Paid data sources are different: they are billed <span className="text-slate-400">directly by each provider</span> as a flat subscription or a request quota —
-            Radar can’t meter that cost. You control it by entering or removing the key (in the <span className="text-slate-400">Sources</span> tab) and by managing limits on the provider’s own dashboard.
+            {t('h5.budget.paidHint', 'The budget above meters only the AI spend, because Radar makes those calls itself and can count the tokens. Paid data sources are different: they are billed directly by each provider as a flat subscription or a request quota — Radar can’t meter that cost. You control it by entering or removing the key (in the Sources tab) and by managing limits on the provider’s own dashboard.')}
           </p>
 
           {paidActive.length > 0 ? (

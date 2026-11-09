@@ -29,7 +29,7 @@ export default async function TeamPage() {
     <>
       <PageHeader
         title={t('page.team.title', 'Team')}
-        subtitle="Manage access. Members with AI on “hold” collect data but don’t consume API until you enable them (requires budget)."
+        subtitle={t('h5.team.subtitle', 'Manage access. Members with AI on “hold” collect data but don’t consume API until you enable them (requires budget).')}
       />
       <TeamManager users={rows.map((r) => ({ ...r, projectCount: countByOwner.get(r.id) ?? 0 }))} />
     </>

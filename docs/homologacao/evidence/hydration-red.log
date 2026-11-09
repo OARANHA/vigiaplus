@@ -1,0 +1,69 @@
+✖ SSR: tradução de menção usa locale pt, independente de document.cookie (13.22972ms)
+✖ SSR: tradução de menção usa locale en, independente de document.cookie (2.405831ms)
+✔ SSR: tradução de menção usa locale it, independente de document.cookie (2.026072ms)
+✖ SSR: menção já em português não recebe botão de tradução para português (8.988545ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 1
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1068.759164
+
+✖ failing tests:
+
+test at tests/i18n-hydration.test.ts:2:1135
+✖ SSR: tradução de menção usa locale pt, independente de document.cookie (13.22972ms)
+  AssertionError [ERR_ASSERTION]: expected translation target Português
+      at TestContext.<anonymous> (/workspace/radar-demo/tests/i18n-hydration.test.ts:11:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.start (node:internal/test_runner/test:1262:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/i18n-hydration.test.ts:2:1135
+✖ SSR: tradução de menção usa locale en, independente de document.cookie (2.405831ms)
+  AssertionError [ERR_ASSERTION]: expected translation target English
+      at TestContext.<anonymous> (/workspace/radar-demo/tests/i18n-hydration.test.ts:11:12)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at tests/i18n-hydration.test.ts:2:1589
+✖ SSR: menção já em português não recebe botão de tradução para português (8.988545ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(!renderToStaticMarkup(createElement(MentionBody, props)).includes('<button'))
+  
+      at TestContext.<anonymous> (/workspace/radar-demo/tests/i18n-hydration.test.ts:17:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

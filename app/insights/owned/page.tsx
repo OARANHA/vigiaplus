@@ -20,8 +20,8 @@ export default async function OwnedInsightPage() {
     <>
       <PageHeader
         title={t('ins.owned.title', 'Owned vs Earned')}
-        info="Owned = your own Facebook Page and LinkedIn company page, pulled with your own credentials via the official APIs. Everything else is earned: what other people say, wherever they say it — even a keyword search on the same platforms. Period: last 30 days. No AI involved."
-        subtitle="Are your own posts working, or is all the conversation happening without you? Owned channels compared with everything said about you elsewhere."
+        info={t('h5.owned.info', 'Owned = your own Facebook Page and LinkedIn company page, pulled with your own credentials via the official APIs. Everything else is earned: what other people say, wherever they say it — even a keyword search on the same platforms. Period: last 30 days. No AI involved.')}
+        subtitle={t('h5.owned.subtitle', 'Are your own posts working, or is all the conversation happening without you? Owned channels compared with everything said about you elsewhere.')}
       />
 
       {data.configured.length === 0 ? (
@@ -31,7 +31,7 @@ export default async function OwnedInsightPage() {
               'No owned channel is connected yet. Radar can only compare your posts with the conversation once it can read them.')}
           </p>
           <p className="max-w-md text-xs text-slate-600">
-            Connect your Facebook Page or LinkedIn company page — both are official, free APIs, just your own credentials.
+            {t('h5.owned.connectHint', 'Connect your Facebook Page or LinkedIn company page — both are official, free APIs, just your own credentials.')}
           </p>
           <Link href="/impostazioni/fonti"
             className="mt-2 flex items-center gap-1.5 rounded-lg bg-sky-500/90 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-sky-400">

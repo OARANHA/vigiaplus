@@ -1,0 +1,1 @@
+{"scenario":"demo progressive Server Action createProject must refuse writes","status":303,"location":"/query?project=5&new=1","blocked":false}

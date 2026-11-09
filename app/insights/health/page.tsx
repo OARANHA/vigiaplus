@@ -16,9 +16,10 @@ export default async function HealthInsightPage() {
   if (theme.total === 0) {
     return (
       <>
-        <PageHeader title={t('ins.health.title', 'Health Index')} subtitle="How the conversation is doing, as one 0–100 score."
-          info="One 0–100 composite of the conversation's health, blending sentiment, positive share, momentum and resonance. Data: your analyzed mentions. Period: last 14 days. Source: your collected mentions across all active sources." />
-        <EmptyState message="Not enough mentions in the last 14 days to compute the index." />
+        <PageHeader title={t('ins.health.title', 'Health Index')}
+          subtitle={t('h5.health.subtitle', 'How the conversation is doing, as one 0–100 score.')}
+          info={t('h5.health.info', 'One 0–100 composite of the conversation\'s health, blending sentiment, positive share, momentum and resonance. Data: your analyzed mentions. Period: last 14 days. Source: your collected mentions across all active sources.')} />
+        <EmptyState message={t('h5.health.notEnough', 'Not enough mentions in the last 14 days to compute the index.')} />
       </>
     );
   }
@@ -34,7 +35,7 @@ export default async function HealthInsightPage() {
 
       {/* ── Market/Theme health (sempre) ── */}
       <div className="mb-2 flex items-center gap-2">
-        <h2 className="text-sm font-semibold text-slate-300">Market health <span className="text-slate-600">· the whole theme</span></h2>
+        <h2 className="text-sm font-semibold text-slate-300">{t('h5.health.marketHealth', 'Market health')} <span className="text-slate-600">· the whole theme</span></h2>
         <InfoTip title="Market health">
           The health of the <b>entire conversation</b> on your topic — every mention, all brands. It tells you how the market/sector is doing at the communication level, independent of any single brand.
         </InfoTip>
@@ -46,14 +47,14 @@ export default async function HealthInsightPage() {
         </section>
         <section className="panel px-5 py-5">
           <div className="mb-3 flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-slate-300">What drives the score</h2>
+            <h2 className="text-sm font-semibold text-slate-300">{t('h5.health.drivesScore', 'What drives the score')}</h2>
             <InfoTip title="Composite">
               Weighted mix: Sentiment 35%, Positive share 25%, Momentum 20%, Resonance 20%.
               Momentum compares the last 7 days to the previous 7; Resonance is the share of mentions that got any engagement.
             </InfoTip>
           </div>
           <HealthBars components={theme.components} />
-          <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-300">14-day sentiment trend</h2>
+          <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-300">{t('h5.health.trend14', '14-day sentiment trend')}</h2>
           <Sparkline values={theme.spark} />
         </section>
       </div>
@@ -79,7 +80,7 @@ export default async function HealthInsightPage() {
             </section>
             <section className="panel px-5 py-5">
               <HealthBars components={brand.health.components} />
-              <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-300">14-day sentiment trend</h2>
+              <h2 className="mb-2 mt-6 text-sm font-semibold text-slate-300">{t('h5.health.trend14', '14-day sentiment trend')}</h2>
               <Sparkline values={brand.health.spark} />
             </section>
           </div>
@@ -87,7 +88,7 @@ export default async function HealthInsightPage() {
           {compare.length > 1 && (
             <section className="panel mt-4 px-5 py-5">
               <div className="mb-3 flex items-center gap-2">
-                <h2 className="text-sm font-semibold text-slate-300">Health ranking · your brand vs competitors</h2>
+                <h2 className="text-sm font-semibold text-slate-300">{t('h5.health.ranking', 'Health ranking · your brand vs competitors')}</h2>
                 <InfoTip title="Competitive ranking">
                   Each benchmark entity scored with the same index, ranked. Your brand is highlighted in amber — see at a glance whether you lead or trail the field.
                 </InfoTip>

@@ -16,7 +16,7 @@ import { GapBadge, L, MentionsLink, Section, SignalText, Tile, VerdictBadge } fr
 export const metadata = { title: 'Cross-checks' };
 
 export default async function CrossCheckPage() {
-  const lang: Lang = (await getLocale()) === 'it' ? 'it' : 'en';
+  const lang: Lang = await getLocale();
   const project = await getCurrentProject();
   if (!project) return <EmptyState message={L(lang, 'Nessun progetto selezionato.', 'No project selected.')} />;
   await hydrateConnectorCredentials();
@@ -25,12 +25,12 @@ export default async function CrossCheckPage() {
   const untold = d.trials.interventions.filter((i) => i.gap === 'untold');
   const recurring = d.pods.shows.filter((s) => s.recurring);
 
-  const coverage: { key: keyof typeof d.coverage; it: string; en: string; href: string }[] = [
-    { key: 'factcheck', it: 'Verifiche dei fact-checker', en: 'Fact-checkers’ verdicts', href: '/verifiche' },
-    { key: 'trials', it: 'Studi clinici', en: 'Clinical trials', href: '/evidenze' },
-    { key: 'podcasts', it: 'Podcast', en: 'Podcasts', href: '/podcast' },
-    { key: 'newsdata', it: 'Notizie NewsData.io', en: 'NewsData.io news', href: '/impostazioni/fonti' },
-    { key: 'lemmy', it: 'Discussioni Lemmy', en: 'Lemmy discussions', href: '/impostazioni/fonti' },
+  const coverage: { key: keyof typeof d.coverage; it: string; en: string; pt: string; href: string }[] = [
+    { key: 'factcheck', it: 'Verifiche dei fact-checker', en: 'Fact-checkers’ verdicts', pt: 'Veredictos dos checadores', href: '/verifiche' },
+    { key: 'trials', it: 'Studi clinici', en: 'Clinical trials', pt: 'Estudos clínicos', href: '/evidenze' },
+    { key: 'podcasts', it: 'Podcast', en: 'Podcasts', pt: 'Podcasts', href: '/podcast' },
+    { key: 'newsdata', it: 'Notizie NewsData.io', en: 'NewsData.io news', pt: 'Notícias do NewsData.io', href: '/impostazioni/fonti' },
+    { key: 'lemmy', it: 'Discussioni Lemmy', en: 'Lemmy discussions', pt: 'Discussões no Lemmy', href: '/impostazioni/fonti' },
   ];
 
   return (
@@ -40,10 +40,12 @@ export default async function CrossCheckPage() {
         title={L(lang, 'Riscontri', 'Cross-checks')}
         subtitle={L(lang,
           'Quello che si dice, accanto a quello che si sa: verifiche, evidenze e voci sugli stessi temi.',
-          'What is being said, next to what is known: checks, evidence and voices on the same topics.')}
+          'What is being said, next to what is known: checks, evidence and voices on the same topics.',
+          'O que se diz, ao lado do que se sabe: checagens, evidências e vozes sobre os mesmos temas.')}
         info={L(lang,
           'Questa pagina non introduce numeri nuovi: mette in fila quelli delle Verifiche, degli Studi clinici e dei Podcast, e li incrocia con i temi delle menzioni. Tutto è calcolato, nessun testo è scritto dall’AI, e ogni riga rimanda alle menzioni o alle fonti che la provano.',
-          'This page adds no new numbers: it lines up those from Fact checks, Clinical trials and Podcasts and crosses them with the topics of the mentions. Everything is computed, no text is written by AI, and every row links to the mentions or sources that prove it.')}
+          'This page adds no new numbers: it lines up those from Fact checks, Clinical trials and Podcasts and crosses them with the topics of the mentions. Everything is computed, no text is written by AI, and every row links to the mentions or sources that prove it.',
+          'Esta página não cria números novos: alinha os das Checagens de fatos, dos Estudos clínicos e dos Podcasts e os cruza com os temas das menções. Tudo é calculado, nenhum texto é escrito pela IA, e cada linha remete às menções ou fontes que a comprovam.')}
       />
 
       {/* Che cosa è acceso: una pagina che incrocia fonti deve dire quali ha. */}
@@ -62,10 +64,10 @@ export default async function CrossCheckPage() {
       <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile label={L(lang, 'Smentite ancora in circolo', 'Debunked, still circulating')} value={fmtNumber(d.debunked.length, lang)}
           tone={d.debunked.length ? 'danger' : undefined}
-          hint={d.debunkedWeekly ? L(lang, `fino a ${fmtNumber(d.debunkedWeekly, lang)} menzioni questa settimana`, `up to ${fmtNumber(d.debunkedWeekly, lang)} mentions this week`) : undefined} />
+          hint={d.debunkedWeekly ? L(lang, `fino a ${fmtNumber(d.debunkedWeekly, lang)} menzioni questa settimana`, `up to ${fmtNumber(d.debunkedWeekly, lang)} mentions this week`, `até ${fmtNumber(d.debunkedWeekly, lang)} menções nesta semana`) : undefined} />
         <Tile label={L(lang, 'Temi caldi mai verificati', 'Hot topics never checked')} value={fmtNumber(d.unchecked.length, lang)}
           tone={d.unchecked.length ? 'warn' : undefined}
-          hint={L(lang, `su ${d.topics.length} temi della settimana`, `out of ${d.topics.length} topics this week`)} />
+          hint={L(lang, `su ${d.topics.length} temi della settimana`, `out of ${d.topics.length} topics this week`, `de ${d.topics.length} temas da semana`)} />
         <Tile label={L(lang, 'Notizie più avanti dell’evidenza', 'News ahead of evidence')} value={fmtNumber(hype.length, lang)}
           tone={hype.length ? 'warn' : undefined} />
         <Tile label={L(lang, 'Voci ricorrenti in audio', 'Recurring audio voices')} value={fmtNumber(recurring.length, lang)} />
@@ -73,7 +75,7 @@ export default async function CrossCheckPage() {
 
       <div className="mb-4 grid gap-4 lg:grid-cols-2">
         <Section title={L(lang, 'Smentite che girano ancora', 'Debunked claims still going around')}
-          hint={L(lang, 'Il caso in cui una correzione serve davvero: il fact-check c’è, la conversazione non l’ha ancora letto.', 'Where a correction really matters: the check exists, the conversation has not read it yet.')}>
+          hint={L(lang, 'Il caso in cui una correzione serve davvero: il fact-check c’è, la conversazione non l’ha ancora letto.', 'Where a correction really matters: the check exists, the conversation has not read it yet.', 'O caso em que uma correção realmente importa: a checagem existe, mas a conversa ainda não a leu.')}>
           {d.debunked.length ? (
             <ul className="flex flex-col gap-2.5">
               {d.debunked.slice(0, 6).map((c) => (
@@ -99,7 +101,8 @@ export default async function CrossCheckPage() {
         <Section title={L(lang, 'Temi caldi senza nessuna verifica', 'Hot topics with no check at all')}
           hint={L(lang,
             'I temi più presenti nelle menzioni della settimana su cui nessun fact-checker ha pubblicato niente: è lì che un’affermazione sbagliata può girare senza contrappeso.',
-            'The topics most present in this week’s mentions on which no fact-checker has published anything: where a wrong claim can spread unopposed.')}>
+            'The topics most present in this week’s mentions on which no fact-checker has published anything: where a wrong claim can spread unopposed.',
+            'Os temas mais presentes nas menções da semana sobre os quais nenhum checador publicou nada: é aí que uma afirmação errada pode circular sem contraponto.')}>
           {d.topics.length ? (
             <ul className="flex flex-col gap-1.5">
               {d.topics.slice(0, 12).map((t) => (

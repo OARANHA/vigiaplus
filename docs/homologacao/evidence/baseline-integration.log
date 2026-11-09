@@ -1,0 +1,22 @@
+✔ scenario 1: cookie valido PRIMA della revoga viene accettato (firma + versione) (7796.072054ms)
+✔ scenario 2a: il PROXY (sola firma) LASCIA PASSARE il cookie revocato — per questo la verifica di versione sta nelle rotte (54.09163ms)
+✔ scenario 2b: la API (firma + versione sul DB) RIFIUTA il cookie revocato → 401 reason "revoked" (51.80492ms)
+✔ scenario 2c: utente cancellato → 401 "unknown-user" (il cookie non basta a resuscitare un account) (106.933343ms)
+✔ scenario 3: cambio password (bump versione + re-emissione) → il cookie VECCHIO muore, il NUOVO vive (76.608364ms)
+✔ scenario 4a: revokeAll con cookie GIÀ revocato → 401, la versione NON viene toccata (76.6608ms)
+✔ scenario 4b: dopo revokeAll, il login successivo emette una sessione che funziona (85.859948ms)
+✔ scenario 5a: member SENZA progetti vede ZERO progetti (scoping su DB isolato) (152.725852ms)
+✔ scenario 5b: cookie REVOCATO + zero progetti → nessun progetto per la rotta di refresh (l'invariante che uccide il fallback globale) (95.673822ms)
+✔ scenario 5c: member con progetto CONDIVISO lo vede (il criterio non è "member = cieco") (158.101255ms)
+✔ scenario 7a: boot di produzione SENZA SESSION_SECRET → validazione all'avvio FALLISCA (5.02801ms)
+✔ scenario 7b: in produzione APP_PASSWORD NON sostituisce più SESSION_SECRET (2.462253ms)
+✔ scenario 7c: segreto troppo corto / noto / ripetitivo / uguale ad APP_PASSWORD → rifiutato (1.982672ms)
+✔ scenario 7d: demo pubblica e sviluppo NON richiedono il segreto (eccezioni documentate) (0.871602ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18750.034439

@@ -59,11 +59,11 @@ export const LIMITS = {
   enabledQueries: 8,
 } as const;
 
-export const ROLE_LABEL: Record<ConceptRole, { it: string; en: string }> = {
-  subject: { it: 'Soggetto', en: 'Subject' },
-  context: { it: 'Contesto', en: 'Context' },
-  competitor: { it: 'Competitor', en: 'Competitor' },
-  noise: { it: 'Da escludere', en: 'Exclude' },
+export const ROLE_LABEL: Record<ConceptRole, { it: string; en: string; pt: string }> = {
+  subject: { it: 'Soggetto', en: 'Subject', pt: 'Sujeito' },
+  context: { it: 'Contesto', en: 'Context', pt: 'Contexto' },
+  competitor: { it: 'Competitor', en: 'Competitor', pt: 'Concorrente' },
+  noise: { it: 'Da escludere', en: 'Exclude', pt: 'A excluir' },
 };
 
 const fold = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -256,13 +256,16 @@ export function toBoolean(q: Pick<CompiledQuery, 'anchor' | 'groups' | 'exclude'
 }
 
 /** La query letta come una frase, per chi non legge le parentesi. */
-export function describeQuery(plan: QueryPlan, q: QueryDef, lang: 'it' | 'en' = 'it'): string {
+export function describeQuery(plan: QueryPlan, q: QueryDef, lang: 'it' | 'en' | 'pt' = 'it'): string {
   const byId = new Map(plan.concepts.map((c) => [c.id, c]));
   const names = q.all.map((id) => byId.get(id)?.label).filter(Boolean) as string[];
   const excluded = q.none.map((id) => byId.get(id)?.label).filter(Boolean) as string[];
   const list = (xs: string[], and: string) => (xs.length <= 1 ? xs.join('') : `${xs.slice(0, -1).join(', ')} ${and} ${xs[xs.length - 1]}`);
   if (lang === 'en') {
     return `Finds what talks about ${list(names, 'and')}${excluded.length ? `, leaving out ${list(excluded, 'and')}` : ''}.`;
+  }
+  if (lang === 'pt') {
+    return `Encontra o que fala sobre ${list(names, 'e')}${excluded.length ? `, deixando de fora ${list(excluded, 'e')}` : ''}.`;
   }
   return `Trova quello che parla di ${list(names, 'e')}${excluded.length ? `, lasciando fuori ${list(excluded, 'e')}` : ''}.`;
 }

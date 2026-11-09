@@ -53,18 +53,42 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
     return { enabled: true, reason: granted.reason ?? 'liberado_por_override', source: 'override' };
   }
 
-  // Assinatura ativa
-  const [sub] = await db.select().from(subscriptions)
-    .where(and(eq(subscriptions.tenantId, ctx.tenantId), eq(subscriptions.status, 'active')));
+  // Estado financeiro dirige o contrato (ADR-07 + dunning H3).
+  // Nunca confiamos no frontend: o gateway so muda `status`, e o entitlement
+  // reage aqui. `past_due` mantem acesso ate graceUntil (3 dias de aviso,
+  // 7 dias de suspensao — ver scripts/workers/dunning.ts).
+  const subs = await db.select().from(subscriptions)
+    .where(eq(subscriptions.tenantId, ctx.tenantId));
+  // `now` ja foi declarado acima para validar a expiracao dos overrides.
+  const active = subs.find((s) => s.status === 'active');
+  const inGrace = subs.find(
+    (s) => s.status === 'past_due' && s.graceUntil && new Date(s.graceUntil) > now,
+  );
+  const sub = active ?? inGrace;
 
   if (!sub) {
-    return { enabled: false, reason: 'sem_assinatura_ativa', source: 'billing' };
+    const hasVencida = subs.some((s) => s.status === 'past_due');
+    return {
+      enabled: false,
+      reason: hasVencida ? 'pagamento_atrasado' : 'sem_assinatura_ativa',
+      source: 'billing',
+    };
+  }
+
+  // Vigencia expirada sem renovacao registrada tambem bloqueia.
+  if (sub.vigenciaAte && new Date(sub.vigenciaAte) < now) {
+    return { enabled: false, reason: 'vigencia_expirada', source: 'billing' };
   }
 
   // Feature inclusa no plano?
   const planFeaturesList = PLAN_FEATURES[sub.planKey] ?? [];
   if (planFeaturesList.includes(key)) {
-    return { enabled: true, reason: 'incluso_no_plano', source: 'plano', plan: sub.planKey };
+    return {
+      enabled: true,
+      reason: inGrace && !active ? 'incluso_no_plano_em_carencia' : 'incluso_no_plano',
+      source: 'plano',
+      plan: sub.planKey,
+    };
   }
 
   return { enabled: false, reason: 'nao_incluso_no_plano', source: 'plano', plan: sub.planKey };

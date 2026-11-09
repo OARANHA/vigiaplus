@@ -1,42 +1,55 @@
 import {
   WebStandardStreamableHTTPServerTransport,
 } from '@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js';
-import { createRadarMcpServer, mcpToken, readToken, tokenMatches } from '@/lib/mcp';
+import {
+  createRadarMcpServer, mcpToken, readToken, resolveMcpTenant, tokenHash, checkRateLimit,
+} from '@/lib/mcp';
 import { hydrateConnectorCredentials } from '@/lib/connector-credentials';
 
-// Endpoint MCP di Radar: streamable HTTP, senza sessione.
+// Endpoint MCP do VigiaPlus: streamable HTTP, sem sessão de usuário.
 //
-// È l'unico transport che Microsoft Copilot Studio parla (SSE è deprecato da
-// agosto 2025, stdio non è supportato), ed è anche quello che Claude accetta
-// per i server remoti: un endpoint solo, due mondi.
+// É o único transport que o Microsoft Copilot Studio fala (SSE é deprecado
+// desde agosto de 2025, stdio não é suportado) e também o que o Claude aceita
+// para servidores remotos: um endpoint só, dois mundos.
 //
-// L'accesso è a token (RADAR_MCP_TOKEN), non a sessione: nessun cookie, quindi
-// proxy.ts lo lascia passare e la verifica avviene qui.
+// O escopo vem do TOKEN, não de cookie: RADAR_MCP_TOKEN continua valendo como
+// fallback global da equipe interna (tenantId 0), e tokens por tenant são
+// resolvidos por SHA-256 em mcp_tokens. Sem token válido o endpoint fecha.
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 export async function POST(req: Request): Promise<Response> {
-  // Le credenziali salvate dall'app (non solo le env var) devono essere in
-  // cache prima di leggere il token e prima che i tool tocchino i dati.
+  // As credenciais salvas no app (não só as env vars) precisam estar em cache
+  // antes de ler o token e antes de as ferramentas tocarem os dados.
   await hydrateConnectorCredentials();
 
-  const expected = mcpToken();
-  if (!expected) {
-    // Senza token l'MCP è SPENTO, non aperto: un endpoint che espone l'intero
-    // archivio non deve poter restare pubblico per dimenticanza.
+  const token = readToken(req.headers);
+  if (!token) {
     return Response.json(
-      { error: 'mcp_disabled', hint: 'Set RADAR_MCP_TOKEN to enable the MCP endpoint.' },
-      { status: 503 },
+      { error: 'unauthorized', hint: 'Envie o token via Authorization: Bearer ou x-api-key.' },
+      { status: 401 },
     );
   }
-  if (!tokenMatches(readToken(req.headers), expected)) {
+
+  // Nunca logamos `token`: só sua impressão digital sai daqui (rate limit).
+  const tenant = await resolveMcpTenant(token);
+  if (!tenant) {
     return Response.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const server = createRadarMcpServer();
-  // JSON invece di SSE: una risposta completa per richiesta sta dentro il
-  // modello serverless (niente stream da tenere aperto oltre la funzione) ed è
-  // pienamente valida per il protocollo streamable.
+  if (!checkRateLimit(tokenHash(token), tenant.rateLimit)) {
+    return Response.json(
+      {
+        error: 'rate_limited',
+        hint: `Limite de ${tenant.rateLimit} chamadas por minuto excedido para este token. Aguarde um instante e tente novamente.`,
+      },
+      { status: 429, headers: { 'Retry-After': '60' } },
+    );
+  }
+
+  const server = createRadarMcpServer(tenant.tenantId);
+  // JSON em vez de SSE: uma resposta completa por requisição cabe no modelo
+  // serverless (sem stream aberto além da função) e é válida no protocolo.
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
@@ -50,12 +63,15 @@ export async function POST(req: Request): Promise<Response> {
   }
 }
 
-/** GET serve solo a capire se l'endpoint è vivo: il protocollo viaggia in POST. */
+/** GET serve só para saber se o endpoint está vivo: o protocolo viaja em POST. */
 export async function GET(): Promise<Response> {
   return Response.json({
     server: 'radar-mcp',
     transport: 'streamable-http',
     enabled: Boolean(mcpToken()),
+    // Tokens por tenant não exigem RADAR_MCP_TOKEN; a autorização é por token.
+    tenantTokens: true,
+    rateLimitWindowSeconds: 60,
     endpoint: '/api/mcp',
   });
 }

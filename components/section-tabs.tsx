@@ -16,7 +16,7 @@ import { NAV_TABS } from '@/lib/nav';
 // morire per una riorganizzazione del menù.
 // ---------------------------------------------------------------------------
 
-const GROUPS: Record<string, { href: string; label: string; it?: string }[]> = {
+const GROUPS: Record<string, { href: string; label: string; it?: string; pt?: string }[]> = {
   story: [
     { href: '/narratives', label: 'Narratives' },
     { href: '/timeline', label: 'Timeline' },
@@ -28,14 +28,14 @@ const GROUPS: Record<string, { href: string; label: string; it?: string }[]> = {
     { href: '/people', label: 'People' },
   ],
   facts: [
-    { href: '/riscontri', label: 'Cross-checks', it: 'Riscontri' },
-    { href: '/verifiche', label: 'Fact checks', it: 'Verifiche' },
-    { href: '/evidenze', label: 'Clinical trials', it: 'Studi clinici' },
-    { href: '/podcast', label: 'Podcasts', it: 'Podcast' },
+    { href: '/riscontri', label: 'Cross-checks', it: 'Riscontri', pt: 'Verificações cruzadas' },
+    { href: '/verifiche', label: 'Fact checks', it: 'Verifiche', pt: 'Checagens de fatos' },
+    { href: '/evidenze', label: 'Clinical trials', it: 'Studi clinici', pt: 'Estudos clínicos' },
+    { href: '/podcast', label: 'Podcasts', it: 'Podcast', pt: 'Podcasts' },
   ],
 };
 
-export function SectionTabs({ group, lang = 'en' }: { group: keyof typeof GROUPS | string; lang?: 'it' | 'en' }) {
+export function SectionTabs({ group, lang = 'en' }: { group: keyof typeof GROUPS | string; lang?: 'it' | 'en' | 'pt' }) {
   const pathname = usePathname();
   const tabs = GROUPS[group] ?? [];
   if (!tabs.length) return null;
@@ -55,7 +55,7 @@ export function SectionTabs({ group, lang = 'en' }: { group: keyof typeof GROUPS
                 : 'border-[var(--border)] text-slate-400 hover:bg-white/5 hover:text-slate-200'
             }`}>
             {Icon && <Icon className="size-3.5 shrink-0" />}
-            {lang === 'it' && t.it ? t.it : t.label}
+            {lang === 'it' && t.it ? t.it : lang === 'pt' && t.pt ? t.pt : t.label}
           </Link>
         );
       })}

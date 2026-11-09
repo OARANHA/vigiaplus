@@ -13,13 +13,13 @@ import { Bars, L, Section, Tile } from '@/components/facts-ui';
 export const metadata = { title: 'Podcasts' };
 
 export default async function PodcastPage() {
-  const lang: Lang = (await getLocale()) === 'it' ? 'it' : 'en';
+  const lang: Lang = await getLocale();
   const project = await getCurrentProject();
   if (!project) return <EmptyState message={L(lang, 'Nessun progetto selezionato.', 'No project selected.')} />;
   const [d, user, creds] = await Promise.all([podcastData(project.id), getCurrentUser(), getConnectorCredStatuses()]);
   const admin = isAdmin(user);
   const enabled = creds.podcastindex?.configured ?? false;
-  const date = (x: Date) => x.toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short' });
+  const date = (x: Date) => x.toLocaleDateString(lang === 'it' ? 'it-IT' : lang === 'pt' ? 'pt-BR' : 'en-GB', { day: '2-digit', month: 'short' });
 
   return (
     <>
@@ -28,10 +28,12 @@ export default async function PodcastPage() {
         title="Podcast"
         subtitle={L(lang,
           'Le trasmissioni che parlano del tema, e quelle che ci tornano ogni settimana.',
-          'Shows that talk about the topic, and those that keep coming back to it.')}
+          'Shows that talk about the topic, and those that keep coming back to it.',
+          'Os programas que falam do tema e os que voltam a ele toda semana.')}
         info={L(lang,
           'Episodi da Podcast Index, la directory aperta dei podcast: si leggono titolo e descrizione, non l’audio, quindi un episodio che nomina il tema solo a voce non si trova. Uno show è “ricorrente” se ha almeno tre episodi sul tema distribuiti su più di due settimane.',
-          'Episodes from Podcast Index, the open podcast directory: titles and descriptions are read, not the audio, so an episode that only names the topic out loud is not found. A show is “recurring” with at least three episodes on the topic spread over more than two weeks.')}
+          'Episodes from Podcast Index, the open podcast directory: titles and descriptions are read, not the audio, so an episode that only names the topic out loud is not found. A show is “recurring” with at least three episodes on the topic spread over more than two weeks.',
+          'Episódios do Podcast Index, o diretório aberto de podcasts: lemos título e descrição, não o áudio, então um episódio que cita o tema apenas falado não é encontrado. Um programa é “recorrente” quando tem ao menos três episódios sobre o tema distribuídos em mais de duas semanas.')}
       />
 
       {admin && creds.podcastindex && (
@@ -43,12 +45,14 @@ export default async function PodcastPage() {
       {!enabled && d.episodes === 0 && (
         <EmptyState message={L(lang,
           'Per i podcast servono chiave e segreto gratuiti di Podcast Index (api.podcastindex.org). Inseriti qui sopra, gli episodi arrivano alla prossima raccolta.',
-          'Podcasts need a free Podcast Index key and secret (api.podcastindex.org). Once saved above, episodes arrive with the next collection.')} />
+          'Podcasts need a free Podcast Index key and secret (api.podcastindex.org). Once saved above, episodes arrive with the next collection.',
+          'Para os podcasts são necessárias a chave e o segredo gratuitos do Podcast Index (api.podcastindex.org). Depois de salvá-los acima, os episódios chegam na próxima coleta.')} />
       )}
       {enabled && d.episodes === 0 && (
         <EmptyState message={L(lang,
           'Nessun episodio negli ultimi 90 giorni. Se la chiave è appena stata inserita, premi “Aggiorna ora”: gli episodi arrivano con la raccolta.',
-          'No episodes in the last 90 days. If the key was just added, press “Refresh now”: episodes arrive with the collection.')} />
+          'No episodes in the last 90 days. If the key was just added, press “Refresh now”: episodes arrive with the collection.',
+          'Nenhum episódio nos últimos 90 dias. Se a chave acabou de ser inserida, clique em “Atualizar agora”: os episódios chegam com a coleta.')} />
       )}
 
       {d.episodes > 0 && (

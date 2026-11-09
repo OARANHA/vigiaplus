@@ -101,25 +101,35 @@ export const incidentActions = pgTable('incident_actions', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Assinaturas. O estado dirige os entitlements (ADR-07). */
+/** Assinaturas. O estado dirige os entitlements (ADR-07).
+ *  gateway/gatewayId/gatewayCustomerId: vínculo com Stripe ou gateway Pix.
+ *  graceUntil: janela de dunning antes de suspender o contrato. */
 export const subscriptions = pgTable('subscriptions', {
   id: serial('id').primaryKey(),
   tenantId: integer('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
   gateway: text('gateway').notNull().default('manual'),
   gatewayId: text('gateway_id'),
+  gatewayCustomerId: text('gateway_customer_id'),
   planKey: text('plan_key').notNull(),
   status: text('status').notNull().default('active'),
   vigenciaAte: timestamp('vigencia_ate', { withTimezone: true }),
+  graceUntil: timestamp('grace_until', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
-/** Faturas. */
+/** Faturas. Pix: pixQrcode guarda o copia-e-cola; paymentLink, o checkout Stripe. */
 export const invoices = pgTable('invoices', {
   id: serial('id').primaryKey(),
   tenantId: integer('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  gateway: text('gateway').notNull().default('manual'),
   gatewayId: text('gateway_id'),
   amountBrl: real('amount_brl').notNull().default(0),
   status: text('status').notNull().default('open'),
+  description: text('description'),
+  reference: text('reference'),
+  paymentLink: text('payment_link'),
+  pixCopiaCola: text('pix_copia_cola'),
   dueAt: date('due_at'),
   paidAt: timestamp('paid_at', { withTimezone: true }),
   pixQrcode: text('pix_qrcode'),
@@ -239,6 +249,25 @@ export const invitations = pgTable('invitations', {
   tokenHash: text('token_hash').notNull().unique(),
   expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
   usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Histórico de avisos entregues. dedupeKey garante que uma regra não dispare
+ *  duas vezes para o mesmo fato (idempotência do worker-notify). */
+export const notificationDeliveries = pgTable('notification_deliveries', {
+  id: serial('id').primaryKey(),
+  tenantId: integer('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  ruleId: integer('rule_id'),
+  channel: text('channel').notNull(),
+  destination: text('destination').notNull(),
+  kind: text('kind').notNull(),
+  severity: text('severity').notNull().default('info'),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  status: text('status').notNull().default('sent'),
+  dedupeKey: text('dedupe_key').notNull(),
+  error: text('error'),
+  sentAt: timestamp('sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

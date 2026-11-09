@@ -184,9 +184,9 @@ function Mark({ v, note }: { v: MarkValue; note?: string }) {
 }
 
 const STEPS = [
-  { n: '01', title: 'Describe your topic', text: 'In plain language too: AI turns the description into a multilingual monitoring query.' },
-  { n: '02', title: 'Radar works on its own', text: 'It collects, translates, rates and organizes content every day. Automatic alerts if something blows up.' },
-  { n: '03', title: 'You decide', text: 'Dashboards, briefs, maps and export-ready reports: decisions made with the data in front of you.' },
+  { n: '01', title: 'Describe your topic', text: 'In plain language too: AI turns the description into a multilingual monitoring query.', titleKey: 'h5.landing.step1Title', textKey: 'h5.landing.step1Text' },
+  { n: '02', title: 'Radar works on its own', text: 'It collects, translates, rates and organizes content every day. Automatic alerts if something blows up.', titleKey: 'h5.landing.step2Title', textKey: 'h5.landing.step2Text' },
+  { n: '03', title: 'You decide', text: 'Dashboards, briefs, maps and export-ready reports: decisions made with the data in front of you.', titleKey: 'h5.landing.step3Title', textKey: 'h5.landing.step3Text' },
 ];
 
 export default async function LandingPage() {
@@ -293,9 +293,9 @@ export default async function LandingPage() {
 
         {/* features */}
         <section id="features" className="pb-8">
-          <h2 className="text-center text-3xl font-black tracking-tight sm:text-4xl">What Radar does</h2>
+          <h2 className="text-center text-3xl font-black tracking-tight sm:text-4xl">{t('h5.landing.featuresH2', 'What Radar does')}</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm text-slate-500">
-            The features of enterprise social-intelligence platforms, rethought with generative AI at the core.
+            {t('h5.landing.featuresP', 'The features of enterprise social-intelligence platforms, rethought with generative AI at the core.')}
           </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((f) => (
@@ -311,9 +311,9 @@ export default async function LandingPage() {
 
         {/* comparison */}
         <section className="py-16">
-          <h2 className="text-center text-3xl font-black tracking-tight sm:text-4xl">Radar vs Competitor products</h2>
+          <h2 className="text-center text-3xl font-black tracking-tight sm:text-4xl">{t('h5.landing.compareH2', 'Radar vs Competitor products')}</h2>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm text-slate-500">
-            Feature by feature, an honest comparison with the leading enterprise platforms.
+            {t('h5.landing.compareP', 'Feature by feature, an honest comparison with the leading enterprise platforms.')}
           </p>
           <div className="mt-10 overflow-x-auto rounded-2xl border border-[var(--border)] bg-[var(--panel)]/70 backdrop-blur">
             <table className="w-full min-w-[560px] text-sm">
@@ -358,7 +358,7 @@ export default async function LandingPage() {
 
         {/* how it works */}
         <section className="py-20">
-          <h2 className="text-center text-3xl font-black tracking-tight">How it works</h2>
+          <h2 className="text-center text-3xl font-black tracking-tight">{t('h5.landing.howH2', 'How it works')}</h2>
           <div className="mt-10 grid gap-4 sm:grid-cols-3">
             {STEPS.map((s) => (
               <div key={s.n} className="relative rounded-2xl border border-[var(--border)] bg-[var(--panel)]/50 px-6 py-7">

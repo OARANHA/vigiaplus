@@ -27,8 +27,8 @@ export default async function SovInsightPage() {
     <>
       <PageHeader
         title={t('ins.sov.title', 'Share of Voice over time')}
-        info="How each entity's presence in the conversation moves over time. Volume mode: absolute mentions per day, stacked — you see the real peaks. Share mode: each day normalized to 100% — you see who gains ground. Data: mentions matching your benchmark entities, last 30 days, across all active sources."
-        subtitle="How much of the conversation each entity owns over the last 30 days. The bars up top are the 30-day totals; the chart below shows the movement day by day — switch between Volume (absolute mentions, the real peaks and dips) and Share (each day as 100%, who's gaining ground). Hover any band for that day's mentions and percentage."
+        info={t('h5.sov.info', 'How each entity\'s presence in the conversation moves over time. Volume mode: absolute mentions per day, stacked — you see the real peaks. Share mode: each day normalized to 100% — you see who gains ground. Data: mentions matching your benchmark entities, last 30 days, across all active sources.')}
+        subtitle={t('h5.sov.subtitle', 'How much of the conversation each entity owns over the last 30 days. The bars up top are the 30-day totals; the chart below shows the movement day by day — switch between Volume (absolute mentions, the real peaks and dips) and Share (each day as 100%, who\'s gaining ground). Hover any band for that day\'s mentions and percentage.')}
       />
       {entities.length === 0 ? (
         <EmptyState message="Add benchmark entities (brands/competitors) in Settings to see share of voice." />
@@ -38,7 +38,7 @@ export default async function SovInsightPage() {
         <section className="panel px-4 py-5">
           {/* Riepilogo complessivo esplicito (30 giorni) */}
           <div className="mb-4 rounded-lg border border-[var(--border)] bg-white/[0.02] px-4 py-3">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Overall share of voice · last 30 days</p>
+            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">{t('h5.sov.overall', 'Overall share of voice · last 30 days')}</p>
             <div className="flex flex-col gap-2">
               {ranked.map((t) => (
                 <div key={t.name} className="flex items-center gap-2 text-sm">

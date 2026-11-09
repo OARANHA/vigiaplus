@@ -1,0 +1,150 @@
+
+> social-radar@0.1.0 build
+> next build --webpack
+
+▲ Next.js 16.2.10 (webpack)
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 64s
+  Running TypeScript ...
+  Finished TypeScript in 42s ...
+  Collecting page data using 4 workers ...
+  Generating static pages using 4 workers (0/7) ...
+  Generating static pages using 4 workers (1/7) 
+  Generating static pages using 4 workers (3/7) 
+  Generating static pages using 4 workers (5/7) 
+✓ Generating static pages using 4 workers (7/7) in 228ms
+  Finalizing page optimization ...
+  Collecting build traces ...
+
+Route (app)
+┌ ƒ /
+├ ƒ /_not-found
+├ ƒ /alerts
+├ ƒ /api/admin/mcp-test
+├ ƒ /api/ask
+├ ƒ /api/auth
+├ ƒ /api/brief
+├ ƒ /api/compare
+├ ƒ /api/content-locale
+├ ƒ /api/cron/daily
+├ ƒ /api/cron/reports
+├ ƒ /api/expand
+├ ƒ /api/export/docx
+├ ƒ /api/export/pdf
+├ ƒ /api/export/periodic
+├ ƒ /api/export/pptx
+├ ƒ /api/export/report
+├ ƒ /api/export/xlsx
+├ ƒ /api/facts/refresh
+├ ƒ /api/import/agent
+├ ƒ /api/import/analyze
+├ ƒ /api/import/audit
+├ ƒ /api/import/files
+├ ƒ /api/import/normalized
+├ ƒ /api/import/preview
+├ ƒ /api/import/spotcheck
+├ ƒ /api/influencer
+├ ƒ /api/insights/causal
+├ ƒ /api/insights/clusters
+├ ƒ /api/locale
+├ ƒ /api/mcp
+├ ƒ /api/playbook
+├ ƒ /api/pov
+├ ƒ /api/pov/translate
+├ ƒ /api/refresh
+├ ƒ /api/report/comment
+├ ƒ /api/report/custom
+├ ƒ /api/report/periodic
+├ ƒ /api/report/schedule
+├ ƒ /api/reviews/import
+├ ƒ /api/reviews/lookup-yelp
+├ ƒ /api/reviews/refresh
+├ ƒ /api/sport/lookup-team
+├ ƒ /api/sport/refresh
+├ ƒ /api/studio
+├ ƒ /api/studio/comment
+├ ƒ /api/studio/countries
+├ ƒ /api/studio/hooks
+├ ƒ /api/studio/kit
+├ ƒ /api/studio/refine
+├ ƒ /api/timeline
+├ ƒ /api/translate
+├ ƒ /api/trials/refresh
+├ ƒ /api/wikipedia/lookup-page
+├ ƒ /api/wikipedia/refresh
+├ ƒ /ask
+├ ƒ /audience
+├ ƒ /benchmark
+├ ƒ /brief
+├ ƒ /changes
+├ ƒ /content
+├ ƒ /emv
+├ ƒ /evidenze
+├ ƒ /graph
+├ ○ /icon.svg
+├ ƒ /import
+├ ƒ /impostazioni
+├ ƒ /impostazioni/account
+├ ƒ /impostazioni/budget
+├ ƒ /impostazioni/credits
+├ ƒ /impostazioni/fonti
+├ ƒ /impostazioni/team
+├ ƒ /insights
+├ ƒ /insights/causal
+├ ƒ /insights/clusters
+├ ƒ /insights/constellation
+├ ƒ /insights/crisis
+├ ƒ /insights/emotions
+├ ƒ /insights/flow
+├ ƒ /insights/galaxy
+├ ƒ /insights/geo
+├ ƒ /insights/health
+├ ƒ /insights/heatmap
+├ ƒ /insights/momentum
+├ ƒ /insights/network
+├ ƒ /insights/owned
+├ ƒ /insights/pyramid
+├ ƒ /insights/sov
+├ ƒ /insights/topics
+├ ƒ /insights/waterfall
+├ ƒ /kpi
+├ ƒ /landing
+├ ƒ /listening
+├ ƒ /login
+├ ƒ /mcp
+├ ƒ /measures
+├ ƒ /media
+├ ƒ /messages
+├ ƒ /narratives
+├ ƒ /people
+├ ƒ /podcast
+├ ƒ /pov
+├ ƒ /query
+├ ƒ /report
+├ ƒ /report/periodic
+├ ƒ /reviews
+├ ƒ /riscontri
+├ ƒ /settings
+├ ƒ /share/[token]
+├ ƒ /source/[source]
+├ ƒ /sport
+├ ƒ /stakeholders
+├ ƒ /story
+├ ƒ /studio
+├ ƒ /timeline
+├ ƒ /tv
+├ ƒ /verifiche
+└ ƒ /wikipedia
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

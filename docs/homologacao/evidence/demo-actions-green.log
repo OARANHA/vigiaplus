@@ -1,0 +1,17 @@
+✔ demo recusa POST de Server Action em /settings (10.202283ms)
+✔ demo recusa POST de Server Action em /query (1.34772ms)
+✔ demo recusa POST de Server Action em /messages (0.896089ms)
+✔ demo recusa POST de Server Action em /reviews (0.680996ms)
+✔ demo recusa POST de Server Action em /sport (0.836414ms)
+✔ demo recusa POST de Server Action em /evidenze (0.916925ms)
+✔ demo recusa POST de Server Action em /wikipedia (0.74087ms)
+✔ demo recusa POST de Server Action em /impostazioni/account (0.518114ms)
+✔ demo continua permitindo páginas GET e API de cookie de idioma (1.669291ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 576.673933

@@ -1,0 +1,397 @@
+
+> social-radar@0.1.0 lint
+> eslint
+
+
+/workspace/radar-demo/app/benchmark/page.tsx
+  86:30  warning  'i' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/radar-demo/app/impostazioni/fonti/page.tsx
+  136:36  warning  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/workspace/radar-demo/app/impostazioni/fonti/page.tsx:136:36
+  134 |   // Amber = temporary hiccup (last run failed but it collected within the last
+  135 |   // 24h, typical of GDELT's shared rate limit); red = genuinely down.
+> 136 |   const recentOk = st?.lastOkAt && Date.now() - new Date(st.lastOkAt).getTime() < 24 * 3600_000;
+      |                                    ^^^^^^^^^^ Cannot call impure function
+  137 |   const dot = !enabled
+  138 |     ? 'bg-red-400/70'
+  139 |     : st?.ok === false  react-hooks/purity
+
+/workspace/radar-demo/app/insights/page.tsx
+  4:27  warning  'Globe2' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/radar-demo/app/layout.tsx
+  36:32  warning  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/workspace/radar-demo/app/layout.tsx:36:32
+  34 |   const peopleCount = current ? await countPeople(current.id) : 0;
+  35 |   const pulse = current ? await getPulse(current.id) : { mentions24h: 0, sentiment: null };
+> 36 |   const stale = !lastIngest || Date.now() - lastIngest.getTime() > 2 * 3600_000;
+     |                                ^^^^^^^^^^ Cannot call impure function
+  37 |
+  38 |   const demo = process.env.DEMO_MODE === '1';
+  39 |   const locale = await getLocale();  react-hooks/purity
+
+/workspace/radar-demo/app/settings/page.tsx
+  2:16  warning  'Trash2' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/radar-demo/app/stakeholders/page.tsx
+  16:24  warning  Error: Cannot call impure function during render
+
+`Date.now` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/workspace/radar-demo/app/stakeholders/page.tsx:16:24
+  14 |   if (!project) return <EmptyState message={t('ui.noProject', 'No project configured.')} />;
+  15 |   const db = await getDb();
+> 16 |   const d14 = new Date(Date.now() - 14 * 86400_000).toISOString();
+     |                        ^^^^^^^^^^ Cannot call impure function
+  17 |
+  18 |   // Entità nominate nei contenuti (estratte dall'analisi AI)
+  19 |   const entities = await db.execute(sql`  react-hooks/purity
+
+/workspace/radar-demo/components/command-palette.tsx
+  140:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/command-palette.tsx:140:21
+  138 |   const t = tFor(locale);
+  139 |   const [mac, setMac] = useState(true);
+> 140 |   useEffect(() => { setMac(/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)); }, []);
+      |                     ^^^^^^ Avoid calling setState() directly within an effect
+  141 |
+  142 |   return (
+  143 |     <button  react-hooks/set-state-in-effect
+
+/workspace/radar-demo/components/conversation-galaxy.tsx
+   38:37  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/workspace/radar-demo/components/conversation-galaxy.tsx:38:37
+  36 |   const [showTopics, setShowTopics] = useState(true);
+  37 |   const [showTrends, setShowTrends] = useState(true);
+> 38 |   const selSrcRef = useRef(selSrc); selSrcRef.current = selSrc;
+     |                                     ^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  39 |   const selSentRef = useRef(selSent); selSentRef.current = selSent;
+  40 |   const showTopicsRef = useRef(showTopics); showTopicsRef.current = showTopics;
+  41 |   const showTrendsRef = useRef(showTrends); showTrendsRef.current = showTrends;                                               react-hooks/refs
+   39:39  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/workspace/radar-demo/components/conversation-galaxy.tsx:39:39
+  37 |   const [showTrends, setShowTrends] = useState(true);
+  38 |   const selSrcRef = useRef(selSrc); selSrcRef.current = selSrc;
+> 39 |   const selSentRef = useRef(selSent); selSentRef.current = selSent;
+     |                                       ^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  40 |   const showTopicsRef = useRef(showTopics); showTopicsRef.current = showTopics;
+  41 |   const showTrendsRef = useRef(showTrends); showTrendsRef.current = showTrends;
+  42 |   const [hatch, setHatch] = useState(false);                                                     react-hooks/refs
+   40:45  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/workspace/radar-demo/components/conversation-galaxy.tsx:40:45
+  38 |   const selSrcRef = useRef(selSrc); selSrcRef.current = selSrc;
+  39 |   const selSentRef = useRef(selSent); selSentRef.current = selSent;
+> 40 |   const showTopicsRef = useRef(showTopics); showTopicsRef.current = showTopics;
+     |                                             ^^^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  41 |   const showTrendsRef = useRef(showTrends); showTrendsRef.current = showTrends;
+  42 |   const [hatch, setHatch] = useState(false);
+  43 |   const hatchRef = useRef(() => {}); hatchRef.current = () => setHatch(true);                    react-hooks/refs
+   41:45  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/workspace/radar-demo/components/conversation-galaxy.tsx:41:45
+  39 |   const selSentRef = useRef(selSent); selSentRef.current = selSent;
+  40 |   const showTopicsRef = useRef(showTopics); showTopicsRef.current = showTopics;
+> 41 |   const showTrendsRef = useRef(showTrends); showTrendsRef.current = showTrends;
+     |                                             ^^^^^^^^^^^^^^^^^^^^^ Cannot update ref during render
+  42 |   const [hatch, setHatch] = useState(false);
+  43 |   const hatchRef = useRef(() => {}); hatchRef.current = () => setHatch(true);
+  44 |   const toggle = <T,>(set: React.Dispatch<React.SetStateAction<Set<T>>>, k: T) =>  react-hooks/refs
+   43:38  warning  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/workspace/radar-demo/components/conversation-galaxy.tsx:43:38
+  41 |   const showTrendsRef = useRef(showTrends); showTrendsRef.current = showTrends;
+  42 |   const [hatch, setHatch] = useState(false);
+> 43 |   const hatchRef = useRef(() => {}); hatchRef.current = () => setHatch(true);
+     |                                      ^^^^^^^^^^^^^^^^ Cannot update ref during render
+  44 |   const toggle = <T,>(set: React.Dispatch<React.SetStateAction<Set<T>>>, k: T) =>
+  45 |     set((p) => { const n = new Set(p); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  46 |                                                                          react-hooks/refs
+   45:40  warning  Expected an assignment or function call and instead saw an expression                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-expressions
+  498:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @next/next/no-img-element
+  501:9   warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  @next/next/no-img-element
+
+/workspace/radar-demo/components/copy-button.tsx
+  12:19  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/copy-button.tsx:12:19
+  10 |   // La lingua si legge dopo il montaggio: così server e client partono uguali.
+  11 |   const [mounted, setMounted] = useState(false);
+> 12 |   useEffect(() => setMounted(true), []);
+     |                   ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  13 |   return (
+  14 |     <button
+  15 |       type="button"  react-hooks/set-state-in-effect
+
+/workspace/radar-demo/components/export-bar.tsx
+   44:25  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/export-bar.tsx:44:25
+  42 |     try {
+  43 |       const saved = JSON.parse(localStorage.getItem('sr_export') ?? '{}');
+> 44 |       if (saved.format) setFormat(saved.format);
+     |                         ^^^^^^^^^ Avoid calling setState() directly within an effect
+  45 |       if (saved.scope) setScope(saved.scope);
+  46 |       if (saved.days) setDays(saved.days);
+  47 |       if (Array.isArray(saved.selected)) setSelected(new Set(saved.selected));  react-hooks/set-state-in-effect
+   66:5   warning  Expected an assignment or function call and instead saw an expression                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-expressions
+  207:33  warning  Expected an assignment or function call and instead saw an expression                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         @typescript-eslint/no-unused-expressions
+
+/workspace/radar-demo/components/import-workspace.tsx
+   154:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/import-workspace.tsx:154:21
+  152 |   }, [project.id]);
+  153 |
+> 154 |   useEffect(() => { load(); }, [load]);
+      |                     ^^^^ Avoid calling setState() directly within an effect
+  155 |
+  156 |   /**
+  157 |    * Carica un file. Se contiene più fogli non se ne sceglie uno a caso: si                                                                                                                                                                                                                             react-hooks/set-state-in-effect
+   899:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/import-workspace.tsx:899:5
+  897 |     if (!open) return;
+  898 |     let alive = true;
+> 899 |     setLoading(true);
+      |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  900 |     fetch(`/api/import/audit?project=${projectId}`)
+  901 |       .then((r) => r.json())
+  902 |       .then((d) => { if (alive) setAudit(d.audit ?? []); })                                                                                                                                                                      react-hooks/set-state-in-effect
+   905:5   warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+  1260:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/import-workspace.tsx:1260:21
+  1258 |
+  1259 |   // Se il file cambia sotto (ricaricato dopo un'azione) la bozza locale si allinea.
+> 1260 |   useEffect(() => { setMap(file.mapping); }, [file.mapping]);
+       |                     ^^^^^^ Avoid calling setState() directly within an effect
+  1261 |
+  1262 |   const dirty = JSON.stringify(map) !== JSON.stringify(file.mapping);
+  1263 |   const st = STATUS[file.status];                                                                                                      react-hooks/set-state-in-effect
+  1498:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/import-workspace.tsx:1498:21
+  1496 | }) {
+  1497 |   const [m, setM] = useState<MetricMap>(file.metricMap ?? {});
+> 1498 |   useEffect(() => { setM(file.metricMap ?? {}); }, [file.metricMap]);
+       |                     ^^^^ Avoid calling setState() directly within an effect
+  1499 |   const dirty = JSON.stringify(m) !== JSON.stringify(file.metricMap ?? {});
+  1500 |
+  1501 |   const numeric = file.profiles.filter((p) => p.kind === 'number').map((p) => p.name);                                                      react-hooks/set-state-in-effect
+  1596:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/import-workspace.tsx:1596:21
+  1594 | }) {
+  1595 |   const [ex, setEx] = useState<Record<string, string>>(file.extras ?? {});
+> 1596 |   useEffect(() => { setEx(file.extras ?? {}); }, [file.extras]);
+       |                     ^^^^^ Avoid calling setState() directly within an effect
+  1597 |   const dirty = JSON.stringify(ex) !== JSON.stringify(file.extras ?? {});
+  1598 |   const mapped = new Set(Object.values(file.mapping));
+  1599 |   const available = file.columns.filter((c) => !mapped.has(c) && !(c in ex));  react-hooks/set-state-in-effect
+
+/workspace/radar-demo/components/insight-charts.tsx
+  273:49  warning  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/workspace/radar-demo/components/new-badge.tsx
+  34:7  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/new-badge.tsx:34:7
+  32 |     try { seen = window.localStorage.getItem(KEY + id); } catch { /* privato o pieno */ }
+  33 |     if (!seen || seen < latest) {
+> 34 |       setNew(true);
+     |       ^^^^^^ Avoid calling setState() directly within an effect
+  35 |       // Si marca come visto SUBITO: il badge resta per questa visita e non
+  36 |       // ricompare alla prossima, che è il comportamento che ci si aspetta.
+  37 |       try { window.localStorage.setItem(KEY + id, latest); } catch { /* ignora */ }  react-hooks/set-state-in-effect
+
+/workspace/radar-demo/components/periodic-reports.tsx
+  55:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/periodic-reports.tsx:55:21
+  53 |   }, []);
+  54 |
+> 55 |   useEffect(() => { load(); }, [load]);
+     |                     ^^^^ Avoid calling setState() directly within an effect
+  56 |
+  57 |   const toggle = async (cadence: string) => {
+  58 |     const next = active.includes(cadence) ? active.filter((c) => c !== cadence) : [...active, cadence];  react-hooks/set-state-in-effect
+
+/workspace/radar-demo/components/report-builder.tsx
+  71:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/report-builder.tsx:71:21
+  69 |   }, []);
+  70 |
+> 71 |   useEffect(() => { load(); }, [load]);
+     |                     ^^^^ Avoid calling setState() directly within an effect
+  72 |
+  73 |   useEffect(() => {
+  74 |     fetch('/api/studio')  react-hooks/set-state-in-effect
+  80:9   warning  The 'pages' logical expression could make the dependencies of useMemo Hook (at line 323) change on every render. To fix this, wrap the initialization of 'pages' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  80:9   warning  The 'pages' logical expression could make the dependencies of useMemo Hook (at line 327) change on every render. To fix this, wrap the initialization of 'pages' in its own useMemo() Hook                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+/workspace/radar-demo/components/sidebar.tsx
+   6:10  warning  'Settings' is defined but never used         @typescript-eslint/no-unused-vars
+  11:20  warning  'NavItem' is defined but never used          @typescript-eslint/no-unused-vars
+  46:9   warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/radar-demo/components/studio-graph.tsx
+  202:21  warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/studio-graph.tsx:202:21
+  200 |   }, [spec.source]);
+  201 |
+> 202 |   useEffect(() => { loadFields(); }, [loadFields]);
+      |                     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  203 |
+  204 |   // Il grafico si ridisegna a ogni scelta: costruire alla cieca e premere
+  205 |   // "aggiorna" alla fine è il modo più veloce per non capire cosa fa un campo  react-hooks/set-state-in-effect
+  209:5   warning  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+/workspace/radar-demo/components/studio-graph.tsx:209:5
+  207 |     if (!spec.x || !spec.y) return;
+  208 |     let alive = true;
+> 209 |     setBusy(true); setError('');
+      |     ^^^^^^^ Avoid calling setState() directly within an effect
+  210 |     fetch('/api/studio', {
+  211 |       method: 'POST', headers: { 'Content-Type': 'application/json' },
+  212 |       body: JSON.stringify(spec),                          react-hooks/set-state-in-effect
+  231:6   warning  React Hook useEffect has a missing dependency: 'savedId'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+
+/workspace/radar-demo/components/team-search.tsx
+  114:29  warning  Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` or a custom image loader to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element
+
+/workspace/radar-demo/components/timeline-view.tsx
+  73:11  warning  Error: Cannot reassign variable after render completes
+
+Reassigning `lastMonth` after render has completed can cause inconsistent behavior on subsequent renders. Consider using state instead.
+
+/workspace/radar-demo/components/timeline-view.tsx:73:11
+  71 |           const month = monthLabel(e.date);
+  72 |           const showMonth = month !== lastMonth;
+> 73 |           lastMonth = month;
+     |           ^^^^^^^^^ Cannot reassign `lastMonth` after render completes
+  74 |           const left = i % 2 === 0;
+  75 |
+  76 |           return (  react-hooks/immutability
+
+/workspace/radar-demo/lib/data.ts
+  5:50  warning  'projects' is defined but never used  @typescript-eslint/no-unused-vars
+
+/workspace/radar-demo/lib/i18n.ts
+  21:3  warning  Unused eslint-disable directive (no problems were reported from 'no-var')
+
+/workspace/radar-demo/lib/insights.ts
+  410:9  warning  'totalVol' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/workspace/radar-demo/lib/mcp.ts
+  3:10  warning  'and' is defined but never used   @typescript-eslint/no-unused-vars
+  3:15  warning  'desc' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 44 problems (0 errors, 44 warnings)
+  0 errors and 2 warnings potentially fixable with the `--fix` option.
+
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

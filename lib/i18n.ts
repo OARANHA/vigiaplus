@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { DICT, DEFAULT_LOCALE, localeTag, type Locale } from '@/lib/i18n-dict';
+import { DICT, localeTag, normalizeLocale, type Locale } from '@/lib/i18n-dict';
 
 // Parte SERVER della doppia lingua (legge i cookie). Il dizionario e gli helper
 // condivisi stanno in i18n-dict.ts, così possono usarli anche i componenti client.
@@ -7,7 +7,8 @@ export * from '@/lib/i18n-dict';
 
 export async function getLocale(): Promise<Locale> {
   const v = (await cookies()).get('sr_locale')?.value;
-  return v === 'it' || v === 'pt' ? v : DEFAULT_LOCALE;
+  // ADR-08: sem cookie (ou valor inválido) a interface começa em pt-BR.
+  return normalizeLocale(v);
 }
 
 /** Traduttore per i componenti server. La chiave non tradotta resta in inglese. */

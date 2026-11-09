@@ -1,8 +1,9 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { and, desc, eq } from 'drizzle-orm';
+import { createHash } from 'node:crypto';
+import { and, desc, eq, isNull, type SQL } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { projects, mentions as mentionsTable } from '@/lib/db/schema';
+import { projects, mentions as mentionsTable, mcpTokens } from '@/lib/db/schema';
 import { dashboardData, listeningData, briefList, normSentimentValue } from '@/lib/data';
 import { getTrends } from '@/lib/trends';
 import { getNarratives } from '@/lib/narratives';
@@ -51,6 +52,80 @@ export function readToken(headers: Headers): string | null {
   return headers.get('x-api-key');
 }
 
+// ---------------------------------------------------------------------------
+// MCP por tenant (ADR-08). O escopo NÃO vem de sessão de usuário: vem do token.
+// O token em claro nunca é persistido nem logado — só seu SHA-256.
+// ---------------------------------------------------------------------------
+
+/** Impronta SHA-256 do token: é o que se compara com mcp_tokens.token_hash. */
+export function tokenHash(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Escopo resolvido. `tenantId === 0` é o token global da equipe interna
+ * (RADAR_MCP_TOKEN): enxerga todos os tenants, sem filtro de projeto.
+ * Função pura: testável sem banco.
+ */
+export type McpScope = {
+  tenantId: number;
+  system: boolean;
+  /** null = sem filtro; número = valor para eq(projects.tenantId, ...). */
+  filterTenantId: number | null;
+};
+
+export function scopeFilter(tenantId: number): McpScope {
+  const system = tenantId === 0;
+  return { tenantId, system, filterTenantId: system ? null : tenantId };
+}
+
+/** Condição Drizzle para TODAS as consultas a projects. undefined = sem filtro. */
+export function projectScope(tenantId: number): SQL | undefined {
+  const { filterTenantId } = scopeFilter(tenantId);
+  return filterTenantId === null ? undefined : eq(projects.tenantId, filterTenantId);
+}
+
+/** Resolve o token: primeiro o fallback global (system), depois a tabela. */
+export async function resolveMcpTenant(
+  token: string,
+): Promise<{ tenantId: number; scopes: string[]; rateLimit: number } | null> {
+  const globalToken = mcpToken();
+  if (globalToken && tokenMatches(token, globalToken)) {
+    // Equipe interna: sem filtro de tenant, compatível com /api/admin/mcp-test.
+    return { tenantId: 0, scopes: ['*'], rateLimit: 60 };
+  }
+
+  const hash = tokenHash(token);
+  const db = await getDb();
+  const rows = await db.select().from(mcpTokens)
+    .where(and(eq(mcpTokens.tokenHash, hash), isNull(mcpTokens.revokedAt)))
+    .limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    tenantId: row.tenantId,
+    scopes: row.scopes ?? [],
+    rateLimit: row.rateLimit > 0 ? row.rateLimit : 60,
+  };
+}
+
+// Rate limit em memória, por HASH do token (nunca o token em claro), janela 60s.
+type Bucket = { count: number; resetAt: number };
+const WINDOW_MS = 60_000;
+const buckets = new Map<string, Bucket>();
+
+/** Consome uma chamada. `now` é injetável para os testes puros. */
+export function checkRateLimit(key: string, limit: number, now = Date.now()): boolean {
+  const b = buckets.get(key);
+  if (!b || now >= b.resetAt) {
+    buckets.set(key, { count: 1, resetAt: now + WINDOW_MS });
+    return true;
+  }
+  if (b.count >= limit) return false;
+  b.count += 1;
+  return true;
+}
+
 type ToolText = { content: Array<{ type: 'text'; text: string }>; isError?: boolean };
 
 function ok(payload: unknown, note?: string): ToolText {
@@ -84,14 +159,6 @@ function compactMention(m: typeof mentionsTable.$inferSelect) {
   };
 }
 
-async function resolveProject(id?: number) {
-  const db = await getDb();
-  const rows = id
-    ? await db.select().from(projects).where(eq(projects.id, id))
-    : await db.select().from(projects).orderBy(projects.id).limit(1);
-  return rows[0] ?? null;
-}
-
 /** Gli strumenti del server, con titolo e descrizione: li legge anche la pagina MCP. */
 export const MCP_TOOLS: { name: string; title: string; description: string }[] = [
   { name: 'radar_projects', title: 'List Radar projects', description: 'Lists the projects with their id, kind (listening / upload / talkwalker), query keywords and languages. Start here: every other tool takes a project_id.' },
@@ -112,7 +179,23 @@ const info = (name: string) => {
   return { title: t.title, description: t.description };
 };
 
-export function createRadarMcpServer(): McpServer {
+/**
+ * Cria o servidor MCP já amarrado a um tenant. `tenantId = 0` mantém o
+ * comportamento histórico (token global da equipe interna, sem filtro).
+ * Todas as ferramentas passam por `resolveProject`/`radar_projects`, que
+ * aplicam eq(projects.tenantId, tenantId), então nenhuma lê projeto alheio.
+ */
+export function createRadarMcpServer(tenantId = 0): McpServer {
+  const cond = projectScope(tenantId);
+
+  async function resolveProject(id?: number) {
+    const db = await getDb();
+    const rows = id
+      ? await db.select().from(projects).where(cond ? and(eq(projects.id, id), cond) : eq(projects.id, id))
+      : await db.select().from(projects).where(cond).orderBy(projects.id).limit(1);
+    return rows[0] ?? null;
+  }
+
   const server = new McpServer(
     { name: 'radar', version: '1.0.0' },
     {
@@ -133,7 +216,7 @@ export function createRadarMcpServer(): McpServer {
     },
     async () => {
       const db = await getDb();
-      const rows = await db.select().from(projects).orderBy(projects.id);
+      const rows = await db.select().from(projects).where(cond).orderBy(projects.id);
       return ok({
         projects: rows.map((p) => ({
           id: p.id,

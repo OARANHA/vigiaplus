@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test tests/*.test.ts"
+    "test": "node --import tsx --test tests/*.test.ts",
+    "migrate": "node --import tsx scripts/migrate.ts",
+    "migrate:check": "node --import tsx scripts/migrate.ts --check",
+    "worker:notify": "node --import tsx scripts/workers/notify.ts",
+    "worker:dunning": "node --import tsx scripts/workers/dunning.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.1",

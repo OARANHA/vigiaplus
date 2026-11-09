@@ -64,7 +64,7 @@ export default async function BenchmarkPage() {
         <section className="panel mt-4 px-5 py-4">
           <h2 className="mb-1 text-sm font-semibold text-slate-300">{t('page.benchmark.searchInterest', 'Share of search')}</h2>
           <p className="mb-3 text-[11px] text-slate-600">
-            How often people search for each entity on Google, scaled against each other (100 = the peak across all of them). Via Google Trends&rsquo; internal API — unofficial, best-effort, checked at most once a day.
+            {t('h5.bench.searchInterestHint', 'How often people search for each entity on Google, scaled against each other (100 = the peak across all of them). Via Google Trends’ internal API — unofficial, best-effort, checked at most once a day.')}
           </p>
           <SearchInterestTrend series={searchInterest.filter((s) => s.points.length > 0)} />
         </section>

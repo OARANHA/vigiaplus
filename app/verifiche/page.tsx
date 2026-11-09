@@ -27,14 +27,14 @@ const VERDICT_COLOR: Record<string, string> = {
 };
 
 export default async function FactChecksPage() {
-  const lang: Lang = (await getLocale()) === 'it' ? 'it' : 'en';
+  const lang: Lang = await getLocale();
   const project = await getCurrentProject();
   if (!project) return <EmptyState message={L(lang, 'Nessun progetto selezionato.', 'No project selected.')} />;
 
   await hydrateConnectorCredentials();
   const [d, user, creds] = await Promise.all([factCheckData(project.id), getCurrentUser(), getConnectorCredStatuses()]);
   const admin = isAdmin(user);
-  const date = (s?: string | Date | null) => (s ? new Date(s).toLocaleDateString(lang === 'it' ? 'it-IT' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
+  const date = (s?: string | Date | null) => (s ? new Date(s).toLocaleDateString(lang === 'it' ? 'it-IT' : lang === 'pt' ? 'pt-BR' : 'en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '');
   const hot = d.claims.filter((c) => c.signal === 'debunked-growing' || c.signal === 'debunked-circulating');
 
   return (
@@ -44,10 +44,12 @@ export default async function FactChecksPage() {
         title={L(lang, 'Verifiche', 'Fact checks')}
         subtitle={L(lang,
           'Le affermazioni sul tema già controllate dai fact-checker, e quanto circolano ancora nelle conversazioni.',
-          'Claims on the topic already checked by fact-checkers, and how much they still circulate in the conversation.')}
+          'Claims on the topic already checked by fact-checkers, and how much they still circulate in the conversation.',
+          'Afirmações sobre o tema já checadas por verificadores de fatos, e o quanto ainda circulam na conversa.')}
         info={L(lang,
           'Le verifiche vengono da Google Fact Check Tools, che raccoglie il markup ClaimReview di oltre cento testate di fact-checking. I verdetti si leggono dalle parole dei fact-checker, senza AI. La circolazione si misura cercando nelle menzioni degli ultimi 90 giorni le parole distintive di ogni affermazione: è una corrispondenza per parole, quindi una verifica in inglese trova le menzioni in inglese.',
-          'Checks come from Google Fact Check Tools, which gathers the ClaimReview markup of 100+ fact-checking outlets. Verdicts are read from the fact-checkers’ own words, with no AI. Circulation is measured by looking for each claim’s distinctive words in the last 90 days of mentions: a word match, so an English check finds English mentions.')}
+          'Checks come from Google Fact Check Tools, which gathers the ClaimReview markup of 100+ fact-checking outlets. Verdicts are read from the fact-checkers’ own words, with no AI. Circulation is measured by looking for each claim’s distinctive words in the last 90 days of mentions: a word match, so an English check finds English mentions.',
+          'As checagens vêm do Google Fact Check Tools, que reúne a marcação ClaimReview de mais de cem veículos de checagem. Os veredictos são lidos nas palavras dos próprios checadores, sem IA. A circulação é medida buscando, nas menções dos últimos 90 dias, as palavras distintivas de cada afirmação: é uma correspondência por palavras, portanto uma checagem em inglês encontra menções em inglês.')}
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -68,13 +70,15 @@ export default async function FactChecksPage() {
       {!d.enabled && (
         <EmptyState message={L(lang,
           'Per attivare le verifiche serve una chiave Google con la “Fact Check Tools API” abilitata (gratuita). Inseriscila qui sopra: anche la chiave YouTube va bene, se aggiungi quella API alle sue restrizioni.',
-          'Fact checks need a Google key with the “Fact Check Tools API” enabled (free). Add it above: the YouTube key works too if you add that API to its restrictions.')} />
+          'Fact checks need a Google key with the “Fact Check Tools API” enabled (free). Add it above: the YouTube key works too if you add that API to its restrictions.',
+          'Para ativar as checagens é preciso uma chave Google com a “Fact Check Tools API” habilitada (gratuita). Insira acima: a chave do YouTube também serve, se você adicionar essa API às restrições dela.')} />
       )}
 
       {d.enabled && d.total === 0 && (
         <EmptyState message={L(lang,
           'Nessuna verifica trovata per i termini del progetto. I fact-checker lavorano sulle affermazioni che circolano di più: su temi di nicchia è normale che non ce ne siano.',
-          'No fact checks found for the project terms. Fact-checkers work on the most viral claims: on niche topics it is normal to find none.')} />
+          'No fact checks found for the project terms. Fact-checkers work on the most viral claims: on niche topics it is normal to find none.',
+          'Nenhuma checagem encontrada para os termos do projeto. Os checadores trabalham nas afirmações mais virais: em temas de nicho é normal não haver nenhuma.')} />
       )}
 
       {d.total > 0 && (
@@ -94,7 +98,8 @@ export default async function FactChecksPage() {
               title={L(lang, 'Smentite che circolano ancora', 'Debunked claims still circulating')}
               hint={L(lang,
                 'Affermazioni giudicate false o fuorvianti che compaiono ancora nelle menzioni dell’ultima settimana. Sono il punto da cui partire per una risposta o una correzione.',
-                'Claims rated false or misleading that still appear in last week’s mentions. The place to start for a response or a correction.')}>
+                'Claims rated false or misleading that still appear in last week’s mentions. The place to start for a response or a correction.',
+                'Afirmações classificadas como falsas ou enganosas que ainda aparecem nas menções da última semana. É o ponto de partida para uma resposta ou correção.')}>
               <ClaimList claims={hot.slice(0, 10)} lang={lang} date={date} />
             </Section>
           )}

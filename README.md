@@ -1,119 +1,629 @@
-# VigiaPlus
+<div align="center">
 
-Monitoramento de reputação e gestão de crise para **vários clientes**, com uma área
-para cada cliente e uma área de administração para quem opera o serviço.
+# 📡 Radar
 
-> Em uma frase: você (dono) cadastra e administra os clientes; cada cliente entra
-> e vê **somente** os seus dados, em linguagem que qualquer pessoa entende —
-> sem perder a informação que dá valor à leitura.
+### Open-source media intelligence & social listening
 
----
+**The alternative to Talkwalker or Brandwatch that doesn't cost thousands a month.**
+25 data sources, an AI query builder that turns a sentence into tested boolean queries, an AI engine of your choice, and a set of signals enterprise tools
+don't have at all — self-hosted, bring-your-own-keys, running in 30 seconds flat.
 
-## De onde veio este código
+![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![Connectors](https://img.shields.io/badge/connectors-25-success)
+![AI](https://img.shields.io/badge/AI-Claude%20%7C%20OpenAI%20%7C%20Grok-8a63d2)
+![Self-hosted](https://img.shields.io/badge/self--hosted-zero%20config-orange)
 
-| Item | Origem |
-|---|---|
-| Aplicação | `OARANHA/crises`, branch **`feat/vigiaelus-crfrs-etapas-1-2`** (a que tem o layout, as fontes e o design escolhidos) |
-| Fundação H0 | `OARANHA/vigiaplus` — núcleo Node com isolamento, RBAC, entitlements, LLM Registry e testes adversarial A1–A10, agora em `foundation/` |
-| Documentação | `docs/` — SAD, roadmap, protótipo navegável, análise do `crises`, dossiê de remodelagem e os docs da própria branch |
+[Try it live](https://social-radar-lemon.vercel.app) · [Deploy your own](#deploy-your-own) · [30-second local start](#try-it-in-30-seconds-local-zero-config)
 
-As **64 páginas** do Radar original continuam todas acessíveis à equipe, e a tela
-`/vigia` da branch de origem foi preservada.
+</div>
 
 ---
 
-## As três áreas
+> **Bilingual (English / Italian), on two independent axes.** One flag switches the
+> **interface**; a separate one sets the language the **AI writes in** — briefs, Point of View,
+> answers, narratives. They are deliberately decoupled: you can read Radar in Italian and
+> still generate deliverables in English, because the language of the output depends on who
+> will read it, not on who is using the tool. Your collected data is never translated:
+> mentions, topics and sentiment stay in their original language, because the interface
+> language must not alter the dataset. More languages are welcome as contributions — a
+> missing translation simply falls back to English.
 
-| Endereço | Quem usa | O que aparece |
-|---|---|---|
-| `/portal` | Cliente | Panorama, Crises, Relatórios, Minha conta |
-| `/console` | Dono / equipe | Clientes, planos, motor de IA, contratos, auditoria |
-| `/dashboard` e as demais 64 páginas | Equipe (modo analista) | O Radar completo, sem alterações |
+## Describe it in a sentence — Radar writes the queries
 
-A raiz `/` redireciona automaticamente conforme o papel de quem entrou.
+Boolean queries are where most listening projects quietly go wrong: a missing synonym, a
+brand name that is also an everyday word, a competitor nobody remembered. So Radar doesn't
+hand you three boxes labelled *OR*, *AND* and *NOT*. You write what you want to follow the
+way you would say it to a colleague —
+
+> *Monitor the company Aurora Mobility in relation to the riders' strike and to city bans
+> on e-scooters, and against its competitors Volta Ride, Ruota and Metrolink.*
+
+— and the **query builder** (Setup → *Queries*) turns it into **building blocks**: a
+*subject*, the *contexts* to relate it to, the *competitors*, and an *exclude* block for the
+meanings you don't want. Each block is an OR of the ways people actually write it, in every
+language you follow; the AI adds the variants you would have forgotten and explains why
+each block exists. *(Fictional company and data throughout.)*
+
+![AI query builder](docs/screenshots/query-builder.png)
+
+From the blocks it composes **N queries** — the subject alone, the subject × each context,
+the subject against each competitor, each competitor on its own — every one an AND of
+blocks minus the noise. Edit a block once and every query using it changes; switch a query
+off, rename it, add a block by hand, or start from scratch without the AI at all (a rule-based
+parser understands the same kind of sentence, in Italian or English).
+
+**Test before you save.** *Test on real news* runs every term and every query against the
+last 7 days of Google News, so the numbers appear on the blocks before a single credit is
+spent. Radar then tells you what a person would notice only weeks later: a term that finds
+nothing (*misspelled, too specific, another language?*), a term that alone brings 94% of the
+results (*too generic or ambiguous* — "Ruota" also means *wheel*), a combination too narrow
+to ever fire, a competitor worth keeping as a sentinel:
+
+![Field test on real news](docs/screenshots/query-probe.png)
+
+Each query reads as a sentence, shows its **boolean syntax ready to copy** into Talkwalker,
+Brandwatch or any other tool, a sample of what it finds and how much the archive already
+holds:
+
+![The generated queries](docs/screenshots/query-queries.png)
+
+On save, collection follows the plan — each connector receives the groups in its own syntax,
+the slow ones rotate the queries across runs — and **every mention is tagged with the queries
+it satisfies**, the archive included. In Listening each query becomes a filter, so "Aurora ×
+riders' strike" is one click away:
+
+![Listening filtered by query](docs/screenshots/listening-queries.png)
+
+The model proposes, the data validates: the plan is checked against closed limits (16 blocks,
+20 terms each, 8 active queries), noise can never become a requirement, and projects created
+before the builder are converted without losing a keyword.
 
 ---
 
-## O que já funciona
+## Screenshots
 
-- **Isolamento por cliente** — o `tenant_id` vem da sessão autenticada, nunca do
-  navegador. Um cliente não alcança os dados de outro.
-- **Habilitar recurso por contrato** — plano → override por cliente, com motivo,
-  validade e registro na auditoria. Exemplo: o Grupo Boreal não tem
-  `crisis_playbook` porque não contratou.
-- **Qualquer IA compatível com OpenAI** — provedores são cadastrados pelo console
-  (nome, URL, modelo, chave por variável de ambiente), não fixados no código.
-  Há validação contra SSRF, delimitação de dados não confiáveis e cota por cliente.
-- **Modo básico / avançado e leigo / técnico** — dois eixos independentes.
-  **Nenhum deles altera permissões** (teste A4).
+The whole conversation as a real 3D solar system — sources are planets, sentiment split
+becomes moons, the sun is your Health Index:
 
-### Como o número é mostrado ao cliente
+![Conversation Galaxy](docs/screenshots/galaxy.png)
 
-O cliente **não** recebe um adjetivo vago como "está boa e estável". Ele recebe o
-número, a comparação e a origem — conforme `docs/remodelagem.md §5`:
+Source → Topic → Sentiment flow, with multi-select cross-filtering:
 
-> *Sua marca está em **72 de 100**, 8 pontos acima de Setor de mobilidade
-> urbana (64).*
->
-> 1.240 comentários lidos em 24 jornais e redes nos últimos 14 dias.
-> Base consolidada: 1.240 comentários analisados.
+![Conversation flow](docs/screenshots/flow.png)
 
-No modo avançado aparece também **como o número é formado** (tom das conversas
-35%, comentários favoráveis 25%, ritmo das citações 20%, alcance 20%). No modo
-técnico trocam-se apenas as **palavras** (`Brand Health 72/100 · Δ setor +8 ·
-n=1.240`), nunca os dados. Se não houver histórico, o sistema **diz isso** em vez
-de inventar uma variação.
+Real-world geographic map and the executive Health Index:
+
+![Geographic map](docs/screenshots/geo.png)
+![Health Index](docs/screenshots/health.png)
+
+Pick your AI engine — Claude, OpenAI or Grok — enter its key and set the models, all from
+the app. No code, no redeploy:
+
+![Choose your AI engine](docs/screenshots/ai-engine.png)
+
+**Point of View** — 90 days of data turned into a thesis you can defend, in slide-ready
+blocks with clickable citations, plus the Market × Research crossover that shows where
+academic research is running ahead of the market:
+
+![Point of View](docs/screenshots/pov.png)
+
+**Earned Media Value** — what your coverage would have cost to buy, explained in plain
+language and with every assumption on screen:
+
+![Earned Media Value](docs/screenshots/emv.png)
+
+The **insights hub**: 16 visualizations grouped by the question they answer, so the sidebar
+stays readable and every chart says what it is for:
+
+![Explore insights](docs/screenshots/insights.png)
+
+Zoom into any single channel with a **source deep-dive** — how that channel's volume,
+sentiment, topics and authors compare with the whole project, each figure a verifiable
+subset of the totals:
+
+![Source deep-dive](docs/screenshots/source-deepdive.png)
 
 ---
 
-## Rodar em 30 segundos
+## Three kinds of project
+
+A Radar project starts from one of three places, and everything downstream — charts,
+insights, reports, exports — works the same whichever one you pick. Creating one asks only
+where the data comes from and what you want to monitor; the queries are built afterwards,
+in their own page.
+
+![Three kinds of project](docs/screenshots/project-types.png)
+
+**Listening**: Radar collects the conversation itself from public sources, and you read
+it as it arrives — relevance stars, sentiment, topics, translation on demand:
+
+![Listening](docs/screenshots/listening.png)
+
+**Import**: you already have the data. Drop in one Excel or CSV export — or twenty, with
+every sheet shaped differently — and Radar reads what each column actually contains
+instead of demanding a template. Here one workbook has become four sheets: two of posts,
+one of monthly follower counts, one of personal-branding metrics, each with its own
+mapping. Cells produced by a **formula are stored as their result**, and the columns
+Radar has no field for (`PILLAR`, `CAMPAGNA`, editorial format) are kept as custom fields
+rather than dropped:
+
+![Import workspace](docs/screenshots/import-workspace.png)
+
+**Talkwalker**: your company already pays for a listening platform, and the searches are
+already written in it. Point Radar at a project of **Talkwalker (Lumen by Hootsuite)** and
+it reads the **topics configured there** — `topic=<id>`, no query of its own — so it
+inherits the searches, the tags and the corrections your team made inside Talkwalker
+instead of asking you to write them twice. Tick no topic and it takes everything the
+project collects: the data first, the questions later. Each refresh spends credits from
+your Talkwalker contract (10 per call plus 1 per result), so a Talkwalker project queries
+Talkwalker and nothing else, no other project ever touches it, and a daily ceiling
+(`TALKWALKER_DAILY_CREDITS`, 1000 by default — the standard package's daily limit) stops
+a heavy finger on *Refresh now* from burning a day's allowance before lunch.
+
+Connection happens with your own Talkwalker API token; Radar then lists the project's
+topics and you tick the ones to read:
+
+![Talkwalker project](docs/screenshots/talkwalker-project.png)
+
+For a Talkwalker project the query builder works as a **lens**, never as a search: it does
+not rewrite what Talkwalker collects and spends no extra credit. It tags the incoming
+documents by subject, context and competitor so you can filter them in Listening, and every
+query can be copied as boolean syntax to paste back into Talkwalker if you decide to:
+
+![Query builder as a lens on a Talkwalker project](docs/screenshots/talkwalker-lens.png)
+
+### "Did it load correctly?"
+
+Counts alone don't answer that — you have to take them on faith. So Radar does the check
+you would do yourself: it takes the first row of your sheet, one in the middle and the
+last, and puts your file next to what is actually in the archive, field by field. It is
+not a simulation — it goes and fetches the stored record back:
+
+![Spot check](docs/screenshots/import-spotcheck.png)
+
+The headline numbers count **what is in the archive right now**, not what the import log
+once claimed to have written. When the two diverge — a sheet imported before you changed
+a column assignment — the panel says so in plain language and offers the one gesture that
+fixes it: re-import. The original file is still there; nothing needs re-uploading.
+
+### People
+
+When a sheet is about people rather than channels, Radar recognises it and builds the
+personal-branding view: the team at a glance, audience growth per person, and a focus on
+any single one. *(Fictional names and data.)*
+
+![People](docs/screenshots/people.png)
+
+---
+
+## Studio Graph — the chart nobody planned for
+
+Every other view in Radar answers a question we chose. Studio Graph lets you ask your
+own: pick the **X**, **Y** and **Z** axes from the fields your project actually has —
+listening fields and spreadsheet columns in one list, because it doesn't matter to the
+reader where a number came from — then pick the shape, the aggregation and the palette.
+
+![Studio Graph](docs/screenshots/studio-graph.png)
+
+Three things it does deliberately:
+
+- **No SQL ever leaves the client.** You choose from a closed catalogue of fields; the
+  server translates each id into an expression. A custom column name travels as a
+  *parameter*, never as concatenated SQL.
+- **It warns, it doesn't forbid.** Summing a rate, a pie with twelve slices, a line drawn
+  between categories that have no order, more than eight series — each is stated in plain
+  words under the title, and you decide. Sometimes the unusual choice is the right one.
+- **The palettes are the three jobs of colour**, not three moods: *identity*
+  (categorical), *intensity* (sequential), *polarity* (diverging). All three pass a
+  colour-vision-deficiency check — and the categorical one is validated *as an ordered
+  sequence*, which is why there is no "reorder" option: the same eight hues in a different
+  order put pink next to green at ΔE 1.6 for a deuteranope, i.e. the same colour.
+
+Saved charts show up in **Explore insights** alongside Radar's own — with an **(X)** to
+remove them, which the built-in ones don't have, so the difference needs no explaining:
+
+![Your charts in the insights hub](docs/screenshots/insights-studio.png)
+
+---
+
+## Reports the AI comments, in four formats
+
+Compose a report page by page: pick charts from the catalogue — Radar's own **and** the
+ones you built in Studio Graph — reorder them, and let the AI write the commentary. Each
+comment has a **role** you choose *before* generating it: a presentation *before* the
+chart, a comment *after* it, both, or a synthesis of how the charts on the page relate.
+
+![Custom report](docs/screenshots/custom-report.png)
+
+The model never sees your rows. It receives the figures already computed by SQL and
+writes prose around them — the same rule as the Point of View. A report is a **running
+order, not a snapshot**: re-export it in a month and it redraws with that month's data.
+
+The same charts reach the generic export too — **PDF, Excel, Word and PowerPoint**, each
+rendering what suits it (a table in Word, a sheet of long-format rows in Excel, a bar
+slide in PowerPoint):
+
+![Export panel](docs/screenshots/export-panel.png)
+
+Every exported file carries the **AI Act disclosure** (Reg. (EU) 2024/1689, art. 50) in
+its notes and in its file metadata — not in the title and not in the body, where it would
+read as part of the analysis.
+
+---
+
+## KPIs you can defend
+
+**KPIs & reliability** lists the standard social-listening indicators — mentions, velocity,
+unique authors, potential reach, engagement and its parts, amplification and conversation
+rates, net sentiment — each **with its formula on screen**, the previous period and the delta.
+Next to every number sits a judgement on how solid it is: reach computed on 40% of the
+mentions because the others don't carry it, days without collection, a net sentiment on too
+small a base. The summary on top says whether the data is fit for a report and which caveats
+must be disclosed; the same section travels into every export.
+
+![KPIs & reliability](docs/screenshots/kpi.png)
+
+## Facts & checks — what is said, next to what is known
+
+Not every source is listening. **Facts & checks** puts the conversation next to the sources
+that verify it:
+
+- **Cross-checks** — the page that ties them together: debunked claims still going around,
+  hot topics no fact-checker has ever looked at, news running ahead of the clinical evidence,
+  the voices that return every week in audio.
+- **Fact checks** — claims already rated by fact-checkers (Google Fact Check Tools, i.e. the
+  ClaimReview network), with **how much each one still circulates** in your mentions, whether
+  it is spreading more or less, and where verdicts conflict.
+- **Clinical trials** — ClinicalTrials.gov studies on the terms you follow, linked to the
+  news that cites them, so you can see when coverage is ahead of the evidence.
+- **Podcasts** — episodes from Podcast Index, with the shows that talk about the topic
+  every week.
+
+![Cross-checks](docs/screenshots/crosscheck.png)
+![Fact checks](docs/screenshots/factchecks.png)
+
+*(Fictional fact-checkers, claims and shows.)*
+
+---
+
+## Beyond mentions — signals Talkwalker doesn't have
+
+Not everything worth watching is a keyword match in a stream of posts. Three
+self-contained sections, each with its own sources and its own kind of analysis,
+answer questions that a pure mention-search tool structurally can't:
+
+**Sport** — for publicly listed clubs, match results crossed with fan sentiment and
+share price on one timeline. Three incomparable units (league points, sentiment,
+euros) on hidden axes, so the only question that matters is whether the lines move
+together — plus how long a win's mood boost actually lasts, and whether the margin
+of victory matters at all:
+
+![Sport crossover](docs/screenshots/sport.png)
+
+**Wikipedia edit monitoring** — who is editing a brand's Wikipedia page, and does it
+look like a fight? Reverts, anonymous accounts and a weekly activity chart surface an
+edit war *before* it shows up anywhere else — no AI, just the official MediaWiki API
+reading its own revert/anonymous tags:
+
+![Wikipedia edit monitoring](docs/screenshots/wikipedia.png)
+
+**Reviews** — star ratings from the App Store, Google Places and Yelp in one place,
+because a rating *is* the sentiment already, no AI needed to interpret it:
+
+![Reviews](docs/screenshots/reviews.png)
+
+**Share of search** — Google Trends interest for your brand against its competitors,
+already scaled against each other (100 = the peak across all of them), sitting next
+to Share of Voice on the Benchmark page:
+
+![Share of search](docs/screenshots/benchmark.png)
+
+---
+
+## Why Radar
+
+Enterprise listening tools cost thousands per month. Radar gives a single person or a
+small team the same core workflow — **listen, analyze, decide, create** — using public
+data sources and the Claude API, for the price of an API key (or nothing at all if you
+just want to collect data).
+
+- **Your AI, your choice**: run every AI feature on **Claude (Anthropic), OpenAI or Grok
+  (xAI)**. Pick the engine, paste its key, and even set which models power the fast (bulk
+  tagging) and smart (briefs, insights) tiers — all from *Settings → Budget*, no code and
+  no redeploy. Switch providers anytime; the spend cap works the same for all of them.
+- **21 connectors, 15 free** (11 need no key at all): worldwide news via GDELT (100k+
+  outlets, 65+ languages) and Google News, Bluesky, Mastodon, Hacker News, Telegram, RSS,
+  Stack Exchange, GitHub, SEC EDGAR filings and arXiv papers out of the box — plus Reddit,
+  YouTube, Discord and **public LinkedIn posts** with a free API key. Full table
+  [below](#connectors). Every source is verified live against its real API before shipping,
+  not assumed from documentation — see [CONTRIBUTING.md](CONTRIBUTING.md) for what that means
+  in practice.
+- **Public LinkedIn listening, legally**: LinkedIn offers no public post search, so Radar
+  finds public LinkedIn posts and articles by *anyone* through the [Tavily](https://tavily.com)
+  search index (free tier, 1,000 searches/month) — labelled **LinkedIn (web)** and kept
+  distinct from **LinkedIn (page)** (your own company page via the official API), so the two
+  acquisition models never get mixed.
+- **6 premium connectors ready** (X, Instagram, Facebook, TikTok, NewsAPI, LinkedIn page) —
+  drop in a key and the source turns on.
+- **Beyond mentions** ✦: three self-contained sections outside the keyword-search model —
+  **Sport** (match results × fan sentiment × share price for listed clubs), **Wikipedia
+  edit monitoring** (edit wars and anonymous activity as an early-warning signal) and
+  **Reviews** (App Store, Google Places, Yelp star ratings). See the [screenshots
+  above](#beyond-mentions--signals-talkwalker-doesnt-have).
+- **Share of search**: Google Trends interest for every benchmark entity, already scaled
+  against each other, next to Share of Voice — because how much people search for you
+  matters as much as how much they talk about you.
+- **Import your own data**: create an *Import* project and drop in an Excel/CSV export
+  (from any platform or vendor). Radar runs the whole analysis engine — sentiment, topics,
+  narratives, insights — over rows it never scraped, so external data lives alongside live
+  listening. Many files, many sheets, each shaped differently: Radar reads what the columns
+  *contain* rather than requiring a template, keeps formula cells as their **result**,
+  preserves the columns it has no field for as custom dimensions, and can hand you the
+  **normalised file** back. Nothing is consumed — the raw rows stay, so a re-mapping is a
+  re-import, not a re-upload. See [the walkthrough above](#two-kinds-of-project).
+- **A second data type: measures** — not everything in a spreadsheet is a post. Aggregate
+  sheets (monthly followers, publishing mix, engagement rate per manager) become
+  *who · what · when · how much*, wide or long, and get their own charts. Rates are
+  averaged, cumulative totals take the latest value, counts sum — because summing a rate
+  produces a number with no meaning.
+- **Studio Graph** ✦: build the chart nobody planned for — choose the X, Y and Z axes from
+  your project's real fields (listening and spreadsheet columns in one list), the shape,
+  the aggregation and the palette. It warns instead of forbidding, never lets SQL through
+  from the client, and saved charts turn up in the insights hub, in the custom report and
+  in all four export formats. [Screenshots above](#studio-graph--the-chart-nobody-planned-for).
+- **Point of View** ✦: turns 90 days of data into a defensible thesis for a meeting — 3-5
+  slide-ready blocks (named idea, narrative, supporting figures), counter-signals and
+  clickable citations to the real posts. The numbers come from SQL, never from the model,
+  and invented citations are dropped by a validation pass. It also crosses your market
+  signal with **academic research** (via the open OpenAlex index) to show where research is
+  running ahead of the market, and where the market is loud with no research behind it.
+- **Message pull-through**: whether the messages *you* want to land are actually picked up —
+  by which sources, with what tone, and where exactly they landed.
+- **Earned Media Value**: what the coverage would have cost to buy, computed conservatively
+  with every assumption on screen (negative coverage valued at zero and reported separately,
+  no arbitrary AVE multiplier).
+- **Per-source deep-dive**: focus on one channel and compare its volume, sentiment, topics
+  and authors against the whole project — every number a verifiable subset of the totals,
+  with a banner spelling out how that source's data is collected.
+- **AI analysis with Claude**: sentiment, **emotion** (joy/trust/fear/anger/sadness/
+  surprise), relevance scoring, story clustering, daily executive briefs, conversation
+  clusters, cause-effect chains, quality scores.
+- **Brand vs Market Health Index**: one 0–100 score for the whole theme, and — when you
+  flag one benchmark entity as *your brand* — your brand's score next to the market and a
+  competitive ranking.
+- **12 advanced insight visualizations** (see below), from a live 3D "Conversation Galaxy"
+  to a Share-of-Voice streamgraph, a Source→Topic→Sentiment Sankey and a real-world map.
+- **Content Studio**: turn a concept into a multi-format kit, explore alternative hooks,
+  refine drafts conversationally in your brand voice.
+- **Cost control**: an admin-set spend cap on the AI, a password-protected reset, and an
+  all-time total across every user — the app stops calling the AI at the cap while data
+  collection keeps running.
+- **Custom report with AI commentary** ✦: compose pages from the chart catalogue and your
+  own Studio Graph charts, then have the AI write the text — choosing its **role** before
+  generating: presentation *before* the chart, comment *after*, both, or a synthesis of how
+  the charts on a page relate. The model only ever sees figures already computed by SQL.
+  There is also a **periodic** edition (7 cadences) that freezes the Point of View it used
+  and always states when that POV was written and on what data.
+- **Exports**: branded PDF, PowerPoint, Word, Excel — every insight included, plus the
+  charts you built yourself. Read-only share links. Each file carries the **AI Act
+  disclosure** (Reg. (EU) 2024/1689, art. 50) in its notes and metadata.
+
+## Try it in 30 seconds (local, zero config)
+
+No database, no keys, no cloud account required. Uses an embedded database (PGlite) and
+runs entirely offline. AI features stay idle until you add a key for your chosen engine
+(Claude, OpenAI or Grok).
 
 ```bash
+git clone https://github.com/Scognamiglio1969/radar-intelligence.git
+cd radar-intelligence
 npm install
-DEMO_MODE=1 npm run dev      # http://localhost:3000
+npm run dev
+# open http://localhost:3000  ·  first login: admin@example.com / changeme
 ```
 
-`DEMO_MODE=1` dispensa login e usa dados de exemplo (dois clientes: Aurora
-Mobility e Grupo Boreal). Sem variável de ambiente nenhuma: o banco PGlite
-embutido fica em `.data/pglite`.
+To enable AI, add your own key to `.env.local` (or paste it later from *Settings → Budget*):
 
 ```bash
-npm test                     # 277 testes (245 do Radar + 32 da branch)
-npx tsc --noEmit
-npm run build
+cp .env.example .env.local
+# Claude:  ANTHROPIC_API_KEY=...   (https://console.anthropic.com)
+# OpenAI:  OPENAI_API_KEY=...      (https://platform.openai.com)
+# Grok:    XAI_API_KEY=...         (https://console.x.ai)
 ```
 
-A fundação H0 continua testável à parte:
+## Deploy your own
 
-```bash
-cd foundation && npm test    # testes unitários + adversarial A1–A10
-```
+One-click deploy to Vercel (add a free [Neon](https://neon.tech) Postgres and your keys
+when prompted):
 
----
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Scognamiglio1969/radar-intelligence)
 
-## Estrutura (resumo)
+Minimum production env vars: `DATABASE_URL`, `SESSION_SECRET`. Recommended:
+`ANTHROPIC_API_KEY`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`. See [`.env.example`](.env.example)
+for the full, commented list.
 
-| Pasta | Conteúdo |
+## Bring your own keys (BYOK)
+
+Radar never ships with anyone's keys — you bring your own, and everything is stored
+**encrypted at rest**.
+
+- **AI engine key** — powers all AI features (sentiment, briefs, ratings, clustering,
+  Content Studio, "Ask the data"…). In *Settings → Budget → AI engine* choose your provider —
+  **Claude, OpenAI, Grok or Azure OpenAI** — and paste its key, or set the matching
+  environment variable (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `XAI_API_KEY`, or
+  `AZURE_OPENAI_API_KEY` plus `AZURE_OPENAI_ENDPOINT`). Azure is there for organisations
+  that require the models to run inside their own Microsoft tenant: the v1 API speaks the
+  OpenAI dialect, so the only extras are your resource URL and the deployment names. The default models per provider
+  are editable, so a newly released model just needs its id typed in — no code change. No key
+  needed just to collect data.
+- **Data-source keys** (X, Instagram, Facebook, TikTok, LinkedIn, NewsAPI, Reddit, YouTube,
+  Discord, Talkwalker, Tavily for LinkedIn-web, football-data.org and Alpha Vantage for
+  Sport, Yelp for Reviews) — configured **from the UI** in *Settings → Sources* (or inline on the Sport /
+  Reviews pages, next to the source they unlock), or via environment variables as a
+  fallback.
+
+Nothing requires editing code or redeploying: an admin adds the keys from the app and the
+features turn on immediately.
+
+## Ask it from your own assistant (MCP)
+
+Radar exposes a **Model Context Protocol** endpoint at `/api/mcp` — *streamable HTTP*, the
+transport Microsoft Copilot Studio speaks and Claude accepts for remote servers. Eleven
+read-only tools (`radar_projects`, `radar_overview`, `radar_mentions`, `radar_trends`,
+`radar_narratives`, `radar_briefs`, `radar_kpis`, `radar_reliability`, `radar_fact_checks`,
+`radar_trials`, `radar_crosscheck`) return what the pipeline already computed, so nothing
+there spends AI budget or data-source credits. A library of nine **ready-made prompts** (monthly and weekly
+reports, daily digest, executive brief, alert and response, competitive benchmark, critical
+analysis, news against evidence…) ships with the server and shows up in the
+client's prompt menu, carrying the same data rules Radar applies in its own pages.
+
+The **MCP** page (Setup) manages it: turn it on by generating a token from the app — or set
+`RADAR_MCP_TOKEN` — test the endpoint, copy the configuration for Claude Code, Claude Desktop
+and Copilot Studio, and read every tool and prompt. **Without a token the endpoint is off,
+not open** — an endpoint that exposes the whole archive must never stay public by
+forgetfulness. Clients authenticate with `Authorization: Bearer <token>` or `x-api-key`.
+
+![MCP](docs/screenshots/mcp.png)
+
+Worth knowing if your source is Talkwalker: **Lumen ships its own official MCP server** for
+asking questions in a chat session. Radar's endpoint answers a different need — the
+historicised archive, the aggregates computed over all of it, and every source in one
+place, queried without spending a credit per question.
+
+## Modules
+
+The sidebar is organised by what you are trying to do — **Monitor** (what is happening),
+**Analyze** (understand the numbers), **Interpret** (what it means), **Create** (what you
+produce) and **Setup** — instead of by chart type. The advanced visualizations live in a
+hub that groups them by the question they answer, so the menu stays readable.
+
+| Page | What it does |
 |---|---|
-| `app/` | Páginas e APIs (Next.js App Router) |
-| `lib/tenant/` | Contexto de tenant, RBAC, entitlements, registro de LLMs |
-| `lib/` | Motor do Radar importado, intacto |
-| `components/` | Interface, inclusive o seletor de modo de visualização |
-| `foundation/` | Fundação H0 original, preservada e executável |
-| `docs/` | Documentação de arquitetura, roadmap e protótipo |
-| `deploy/` | Docker + Traefik |
+| Dashboard | KPIs, volume per source, sentiment, emerging topics, latest brief |
+| Queries | The AI query builder: a sentence becomes building blocks and N editable queries, tested on real news before saving, with boolean syntax to copy; a lens on Talkwalker projects |
+| Listening | Stream of every mention with filters (source, sentiment, language, period, text) — filter by a source to open its **deep-dive**, or land on a curated set of posts from a narrative |
+| Source deep-dive | One channel vs the whole project: volume, sentiment, topics and top authors, each a verifiable subset of the totals |
+| Import | Create a project that ingests Excel/CSV files instead of scraping — many files, many sheets, each shaped differently. Guided step by step, with a spot check that puts your rows next to what is in the archive |
+| Measures | The aggregate series a spreadsheet brings — follower growth, publishing mix, engagement rate — as *who · what · when · how much* |
+| People | Personal branding: the team at a glance, audience growth per person and a focus on any single one, built from the sheets that are about people |
+| Studio Graph | Build your own chart: choose the X, Y and Z axes from your project's real fields, the shape and the palette. Saved charts appear in the insights hub, the custom report and every export |
+| KPIs & reliability | Standard indicators with formulas, previous period, and a judgement on how reliable each one is |
+| Facts & checks | Cross-checks, fact checks, clinical trials and podcasts next to the conversation |
+| MCP | Turn on, test and connect Radar's MCP server; the tools and the prompt library |
+| Media | News grouped into stories (AI clustering) + most active outlets |
+| Benchmark | Share of voice, trends and comparative sentiment across configurable entities |
+| Audience | Most active communities, languages, influential authors, topics by community |
+| Content | Engagement ranking (per-platform percentile) + AI quality score |
+| Point of View | An evidence-backed market thesis in slide-ready blocks, with research corroboration |
+| Message pull-through | Are your key messages being picked up, and by whom |
+| Media value | Earned Media Value with every assumption exposed |
+| Explore insights | A hub grouping 16 visualizations by the question they answer — plus the charts you built in Studio Graph, the only ones that can be removed |
+| Content Studio | Concept → multi-format kit, Hook Lab, conversational refinement |
+| Alerts / Brief | Auto-detected volume spikes & sentiment drops; daily executive brief |
+| Custom report | Compose pages from charts and commentary — written by you or generated by the AI in the role you choose (before the chart, after it, both, or a synthesis of the page). Also in a periodic edition across 7 cadences |
+| War Room | Full-screen live view for a wall display |
+| Settings | Tabbed: **My account**, **Team** (mark one entity as *your brand*), **Sources** (connector status & keys), **Budget** (choose the AI engine — Claude/OpenAI/Grok — its key & models, spend cap, admin cost controls), **Credits & Legal** |
+| **Reviews** *(beyond mentions)* | Star ratings from App Store, Google Places and Yelp, plus your own imported file — a self-contained section, since a rating already *is* the sentiment |
+| **Sport** *(beyond mentions)* | For publicly listed clubs: match results crossed with fan sentiment and share price, an edit-anatomy of how long a win's mood boost lasts, and whether the margin of victory matters |
+| **Wikipedia** *(beyond mentions)* | Who edits a followed page, how often, and whether it looks like an edit war — reverts, anonymous accounts, a weekly activity chart |
 
----
+## Advanced insights
 
-## Ainda não está pronto para cobrar
+A suite of purpose-built visualizations, each on its own page and each included in the
+PDF / PowerPoint / Word / Excel exports:
 
-Pagamentos (Stripe + Pix), RLS real no Postgres, migrações versionadas, suíte
-adversarial no CI, worker de notificações e white-label estão no roadmap
-(`docs/vigiaplus-roadmap.md`). Há também um **gate jurídico de AGPL-3.0** descrito
-em `NOTICE.md` — ler antes de qualquer comercialização.
+| Insight | What it shows |
+|---|---|
+| **Conversation Galaxy** ✦ | The whole conversation as a real WebGL solar system: the sun is your Health Index, planets are sources (size = volume) with photographic NASA-based textures, and each planet has three moons sized 1–10 by its sentiment split. Drag to orbit, scroll to fly closer. |
+| **Health Index** | One 0–100 composite (sentiment, positive share, momentum, resonance). Market health always; **Brand health + competitive ranking** when you flag *your brand*. |
+| **Share of Voice** | 100% stacked area of each entity's share of the conversation over time, plus an explicit 30-day ranking. |
+| **Conversation flow** | Source → Topic → Sentiment Sankey. **Multi-select cross-filtering**: pick any sources × sentiments to isolate a sub-flow (e.g. what drives negativity in two sources). Rich hover tooltips. |
+| **Momentum quadrant** | Topics by volume × acceleration: Rising stars / Emerging / Steady / Declining. |
+| **Emotion radar** | The emotional fingerprint beyond sentiment (joy, trust, fear, anger, sadness, surprise). |
+| **Geographic map** | Real-world choropleth: each language shades its countries (English → US/UK/CA/AU, Spanish → Latin America…), colored by sentiment. |
+| **Semantic constellation** | Key terms as a star map — size = frequency, color = sentiment, links = co-occurrence. |
+| **Influencer network** | Force-directed graph of the top authors, clustered by community, sized by engagement. |
+| **Author pyramid** | Authors tiered by influence (mega / macro / micro / long tail) with the share of reach each tier holds — is your conversation carried by a few big voices or broadly distributed? |
+| **Crisis radar** | A risk gauge plus the anatomy of the biggest spike: what drove it, and the content that weighed most. |
+| **Topics · Heatmap · Waterfall · Clusters · Cause-effect** | Topic×sentiment map, hourly heatmap, sentiment waterfall, conversation clusters, AI cause-effect chains. |
 
----
+## Connectors
 
-## Licença
+Every connector is a small, isolated file (`lib/connectors/`) — see
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to add one. **free** works immediately;
+**freekey** needs a free key to turn on; **premium** needs a paid API.
 
-Veja `LICENSE` e `NOTICE.md`. O código importado de `OARANHA/crises` é AGPL-3.0.
+| Source | Tier | Category | Notes |
+|---|---|---|---|
+| Google News | free | General & news | Public articles by keyword |
+| GDELT | free | General & news | 100k+ outlets, 65+ languages |
+| RSS | free | General & news | Any feed you add, unlimited |
+| NewsAPI | premium | General & news | ~150k outlets, boolean search |
+| SEC EDGAR | free | Financial & corporate | US-listed company filings (8-K/10-K/10-Q/DEF 14A) |
+| arXiv | free | Academic | Papers with full abstract, re-checked for literal matches |
+| Stack Exchange | free | Tech & developer | Stack Overflow + 5 other communities |
+| GitHub | free | Tech & developer | Issues/PRs with full text, bot-filtered |
+| Hacker News | free | Tech & developer | Stories and comments |
+| Reddit | freekey | Social & messaging | Posts and comments |
+| Bluesky | free | Social & messaging | Public posts |
+| Mastodon | free | Social & messaging | Public toots |
+| Telegram | free | Social & messaging | Your own watchlist of public channels |
+| Discord | freekey | Social & messaging | Your own server, via your bot |
+| LinkedIn (web) | freekey | Social & messaging | Any public post/article, via Tavily search |
+| LinkedIn (page) | premium | Social & messaging | Your own company page, official API |
+| X (Twitter) | premium | Social & messaging | Real-time search |
+| Instagram | premium | Social & messaging | Hashtag search |
+| Facebook | premium | Social & messaging | Your own linked pages |
+| TikTok | premium | Social & messaging | Research API |
+| YouTube | freekey | Video | Videos by keyword |
+| Lemmy | free | Social & messaging | Federated discussions (the open Reddit alternative) |
+| NewsData.io | freekey | General & news | News from 80k+ sources, with language and country filters |
+| Podcast Index | freekey | Audio | Podcast episodes by keyword |
+| Talkwalker (Lumen) | premium | Listening platform | Reads the topics of your Talkwalker project, within a daily credit ceiling |
+
+Plus, outside the mention model entirely: **App Store**, **Google Places** and **Yelp**
+(review ratings), **football-data.org** and **Alpha Vantage** (Sport), **Google Trends**
+(Share of search), the **MediaWiki API** (Wikipedia edit monitoring), **Google Fact Check
+Tools** and **ClinicalTrials.gov** (Facts & checks) — see
+[Beyond mentions](#beyond-mentions--signals-talkwalker-doesnt-have) above.
+
+## Architecture
+
+- **Next.js 16** (App Router) — deploys on Vercel, dark theme
+- **Postgres**: Neon in production, embedded **PGlite** for local dev (zero setup)
+- **Drizzle ORM**, schema created & migrated automatically on boot
+- **Pluggable AI engine** — Claude (`@anthropic-ai/sdk`), OpenAI or Grok (OpenAI-compatible
+  API), switchable from the UI, all behind one hard monthly spend cap
+- **Recharts** + hand-built SVG/Canvas charts, and **three.js** for the 3D galaxy
+- Pluggable **connectors** (`lib/connectors/`) — adding a source is one small file
+- **Beyond mentions** sections (`lib/sport/`, `lib/reviews/`, `lib/wikipedia/`,
+  `lib/search-interest/`) follow the same self-contained pattern as connectors — their own
+  tables, their own ingest, their own page — for data that isn't a keyword match in a post
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for a walk-through of adding a connector.
+
+Planet/sun/moon textures in the Conversation Galaxy are © [Solar System Scope](https://www.solarsystemscope.com/textures/),
+licensed **CC BY 4.0**.
+
+## Legal & responsible use
+
+Radar collects publicly available data. **You are responsible** for complying with the
+Terms of Service of each data source (Reddit, X, Meta, GDELT, Google News, etc.) and with
+applicable data-protection laws (e.g. GDPR) in your jurisdiction. Some sources restrict
+automated access; enable only what you are entitled to use. Note that **Share of search**
+uses Google Trends' internal, undocumented API (no official public API exists) — it is
+best-effort and checked at most once a day, not a guaranteed-uptime data source. This
+project is provided as-is, without warranty. See [SECURITY.md](SECURITY.md) to report
+vulnerabilities.
+
+## Contributing
+
+Issues and pull requests are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and our
+[Code of Conduct](CODE_OF_CONDUCT.md). Good places to start: internationalization,
+new connectors, tests. See [CHANGELOG.md](CHANGELOG.md) for how the project got here.
+
+## License
+
+[GNU AGPL-3.0](LICENSE) © Massimo Scognamiglio and contributors. If you run a modified
+version as a network service, you must make your source available under the same license.

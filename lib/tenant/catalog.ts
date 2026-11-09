@@ -23,12 +23,15 @@ export const ROLES = {
   client_admin: {
     label: 'Admin do cliente',
     surfaces: ['app'] as Surface[],
-    actions: ['read', 'read_plan', 'export', 'write_preferences', 'approve_note', 'invite'] as string[],
+    actions: [
+      'read', 'read_plan', 'export', 'write_preferences', 'approve_note', 'invite',
+      'read_billing', 'pay_invoice', 'manage_notifications',
+    ] as string[],
   },
   client_viewer: {
     label: 'Leitor do cliente',
     surfaces: ['app'] as Surface[],
-    actions: ['read', 'read_plan'] as string[],
+    actions: ['read', 'read_plan', 'read_billing'] as string[],
   },
 } as const;
 

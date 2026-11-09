@@ -1,0 +1,31 @@
+✖ helpers de países usados no mapa compilam para navegador sem banco ou módulos Node (256.455119ms)
+✔ códigos ISO, nomes e bandeira do Brasil preservados (4.217104ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1034.550919
+
+✖ failing tests:
+
+test at tests/country-browser.test.ts:2:993
+✖ helpers de países usados no mapa compilam para navegador sem banco ou módulos Node (256.455119ms)
+  Error: Build failed with 2 errors:
+  lib/db/index.ts:31:39: ERROR: Could not resolve "node:fs"
+  lib/password.ts:1:57: ERROR: Could not resolve "node:crypto"
+      at failureErrorWithLog (/workspace/radar-demo/node_modules/esbuild/lib/main.js:1467:15)
+      at /workspace/radar-demo/node_modules/esbuild/lib/main.js:926:25
+      at /workspace/radar-demo/node_modules/esbuild/lib/main.js:878:52
+      at buildResponseToResult (/workspace/radar-demo/node_modules/esbuild/lib/main.js:924:7)
+      at /workspace/radar-demo/node_modules/esbuild/lib/main.js:951:16
+      at responseCallbacks.<computed> (/workspace/radar-demo/node_modules/esbuild/lib/main.js:603:9)
+      at handleIncomingPacket (/workspace/radar-demo/node_modules/esbuild/lib/main.js:658:12)
+      at Socket.readFromStdout (/workspace/radar-demo/node_modules/esbuild/lib/main.js:581:7)
+      at Socket.emit (node:events:514:28)
+      at addChunk (node:internal/streams/readable:569:12) {
+    errors: [ { detail: undefined, id: '', location: [Object], notes: [Array], pluginName: '', text: 'Could not resolve "node:fs"' }, { detail: undefined, id: '', location: [Object], notes: [Array], pluginName: '', text: 'Could not resolve "node:crypto"' } ],
+    warnings: []
+  }
