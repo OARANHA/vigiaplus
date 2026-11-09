@@ -19,6 +19,12 @@ import { SESSION_COOKIE, verifySession } from '@/lib/session';
 // getCurrentProject → getCurrentUser, che applica la stessa regola.
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  // A rota verdadeira é encaminhada ao shell para não exibir sidebar em login/portal.
+  const nextWithPath = () => {
+    const h = new Headers(req.headers);
+    h.set('x-vigia-request-path', pathname);
+    return NextResponse.next({ request: { headers: h } });
+  };
   // Public read-only demo: no auth gate at all.
   if (process.env.DEMO_MODE === '1') {
     // Server Actions also accept progressive multipart form submissions without
@@ -26,17 +32,17 @@ export function proxy(req: NextRequest) {
     if (req.method === 'POST' && !pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'demo mode: read-only' }, { status: 403 });
     }
-    return NextResponse.next();
+    return nextWithPath();
   }
   if (pathname.startsWith('/landing') || pathname.startsWith('/login')
     || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron/')
     || pathname.startsWith('/api/health')
     || pathname.startsWith('/share/') || pathname.startsWith('/api/mcp')) {
-    return NextResponse.next();
+    return nextWithPath();
   }
   // Verifica la firma del cookie di sessione (senza toccare il DB)
   if (verifySession(req.cookies.get(SESSION_COOKIE)?.value) !== null) {
-    return NextResponse.next();
+    return nextWithPath();
   }
   if (pathname.startsWith('/api/')) {
     return NextResponse.json({ error: 'non autorizzato' }, { status: 401 });

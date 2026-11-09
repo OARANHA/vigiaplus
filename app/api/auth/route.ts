@@ -86,7 +86,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'email ou senha incorretos' }, { status: 401 });
   }
   await clearSuccessfulLogin(db, email);
-  const res = NextResponse.json({ ok: true, mustChangePassword: user.mustChangePassword === 1 });
+  const redirectTo = user.globalRole === 'owner' ? '/console'
+    : user.globalRole === 'analyst' ? '/' : '/portal';
+  const res = NextResponse.json({ ok: true, mustChangePassword: user.mustChangePassword === 1, redirectTo });
   res.cookies.set(SESSION_COOKIE, signSession(user.id, user.sessionVersion ?? 0), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
