@@ -48,7 +48,7 @@ export function LoginForm({ locale: _locale }: { locale: Locale }) {
           <Mail size={18}/>
           <input id="vigia-login-email" name="email" type="email" required autoComplete="username"
             value={email} onChange={(e) => setEmail(e.target.value)}
-            placeholder="seu@email.com" autoFocus />
+            placeholder="seu@email.com" aria-label="E-mail profissional" autoFocus />
         </div>
       </label>
       <label htmlFor="vigia-login-password">
@@ -57,7 +57,7 @@ export function LoginForm({ locale: _locale }: { locale: Locale }) {
           <LockKeyhole size={18}/>
           <input id="vigia-login-password" name="password" type={visible ? 'text' : 'password'}
             required autoComplete="current-password" value={password}
-            onChange={(e) => setPassword(e.target.value)} placeholder="Sua senha"/>
+            onChange={(e) => setPassword(e.target.value)} placeholder="Sua senha" aria-label="Senha"/>
           <button type="button" aria-label={visible ? 'Ocultar senha' : 'Mostrar senha'}
             onClick={() => setVisible((v) => !v)}>
             {visible ? <EyeOff size={18}/> : <Eye size={18}/>}
