@@ -30,3 +30,32 @@ test('console: gate server para proprietário e tema consistente', () => {
   assert.doesNotMatch(dashboard, /bg-white|bg-gray-50|col-span-3 bg-white/);
   assert.match(dashboard, /var\(--panel\)/);
 });
+
+test('idioma padrão: toda a navegação global tem tradução explícita pt-BR', async () => {
+  const { DICT, DEFAULT_LOCALE } = await import('../lib/i18n-dict');
+  const { NAV_LINKS, NAV_TABS } = await import('../lib/nav');
+  assert.equal(DEFAULT_LOCALE, 'pt');
+  const items = [...NAV_LINKS, ...NAV_TABS];
+  for (const item of items) {
+    assert.ok(DICT.pt[item.key], 'Rótulo da navegação sem pt-BR: ' + item.key);
+  }
+  assert.equal(DICT.pt['nav.dashboard'], 'Painel geral');
+  assert.equal(DICT.pt['nav.tv'], 'Sala de crise');
+  assert.equal(DICT.pt['nav.vigia'], 'Piloto CRF-RS');
+});
+
+test('sidebar do dono reutiliza layout global e remove exportação analítica do console', () => {
+  const side = readFileSync(join(process.cwd(), 'components/sidebar.tsx'), 'utf8');
+  const root = readFileSync(join(process.cwd(), 'app/layout.tsx'), 'utf8');
+  const tabs = readFileSync(join(process.cwd(), 'components/settings-tabs.tsx'), 'utf8');
+  const exportWrapper = readFileSync(join(process.cwd(), 'components/contextual-export-bar.tsx'), 'utf8');
+  assert.match(side, /globalRole === 'owner'/);
+  assert.match(side, /Console do proprietário/);
+  assert.match(root, /globalRole: user.globalRole/);
+  assert.match(root, /ContextualExportBar/);
+  assert.match(exportWrapper, /pathname === '\/console'/);
+  for (const word of ['Minha conta', 'Equipe', 'Fontes', 'Orçamento', 'Créditos e informações legais']) {
+    assert.ok(tabs.includes(word), 'Aba não traduzida: ' + word);
+  }
+  assert.doesNotMatch(tabs, /'My account'|'Sources'|'Credits & Legal'/);
+});
