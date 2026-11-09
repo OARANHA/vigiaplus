@@ -23,11 +23,16 @@ type GdeltArticle = {
   language: string; sourcecountry: string;
 };
 
-function parseSeenDate(s: string): Date {
+export function parseSeenDate(s: string): Date | null {
   // Formato: 20260701T063000Z
   const m = s?.match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/);
-  if (!m) return new Date();
-  return new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+  if (!m) return null;
+  const parsed = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]));
+  // Date.UTC normaliza datas impossíveis; rejeitar em vez de fabricar atualidade.
+  if (parsed.getUTCFullYear() !== +m[1] || parsed.getUTCMonth() !== +m[2] - 1 ||
+      parsed.getUTCDate() !== +m[3] || parsed.getUTCHours() !== +m[4] ||
+      parsed.getUTCMinutes() !== +m[5] || parsed.getUTCSeconds() !== +m[6]) return null;
+  return parsed;
 }
 
 export const gdelt: Connector = {
@@ -56,7 +61,10 @@ export const gdelt: Connector = {
         if (waitMs === waits[waits.length - 1]) throw e;
       }
     }
-    return (data?.articles ?? []).map((a) => ({
+    return (data?.articles ?? []).flatMap((a) => {
+      const publishedAt = parseSeenDate(a.seendate);
+      if (!publishedAt) return []; // Sem timestamp verificável, não inventar data de publicação.
+      return [{
       source: 'gdelt',
       externalId: a.url,
       url: a.url,
@@ -67,9 +75,10 @@ export const gdelt: Connector = {
       country: a.sourcecountry,
       author: a.domain,
       community: a.domain,
-      publishedAt: parseSeenDate(a.seendate),
+      publishedAt,
       // Lingue non mappate: lasciamo vuoto, ci penserà l'analisi Claude
       language: LANG_MAP[a.language?.toLowerCase()],
-    } satisfies RawMention)).filter((m) => m.title);
+    } satisfies RawMention].filter((m) => m.title);
+    });
   },
 };
