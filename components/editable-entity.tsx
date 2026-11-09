@@ -28,12 +28,12 @@ export function EditableEntity({
       >
         <input type="hidden" name="id" value={entity.id} />
         <input name="name" defaultValue={entity.name} className={inputCls} required />
-        <input name="keywords" defaultValue={entity.keywords.join(', ')} placeholder="keywords" className={inputCls} />
+        <input name="keywords" defaultValue={entity.keywords.join(', ')} placeholder="Termos relacionados" className={inputCls} />
         <div className="flex shrink-0 gap-1.5">
-          <SubmitButton pendingLabel="Saving…" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5">
-            Save
+          <SubmitButton pendingLabel="Salvando…" className="rounded-lg border border-[var(--border)] px-3 py-1.5 text-xs text-slate-300 hover:bg-white/5">
+            Salvar
           </SubmitButton>
-          <button type="button" onClick={() => setEditing(false)} className="rounded-lg border border-[var(--border)] px-2 py-1.5 text-slate-500 hover:text-slate-300" aria-label="Cancel">
+          <button type="button" onClick={() => setEditing(false)} className="rounded-lg border border-[var(--border)] px-2 py-1.5 text-slate-500 hover:text-slate-300" aria-label="Cancelar">
             <X className="size-3.5" />
           </button>
         </div>
@@ -45,23 +45,23 @@ export function EditableEntity({
     <div className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${entity.isOwnBrand === 1 ? 'bg-amber-500/10 ring-1 ring-amber-500/30' : 'bg-white/5'}`}>
       <span className="font-medium">{entity.name}</span>
       {entity.isOwnBrand === 1 && (
-        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">Your brand</span>
+        <span className="rounded-full bg-amber-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-300">Sua marca</span>
       )}
       <span className="truncate text-xs text-slate-500">{entity.keywords.join(', ')}</span>
-      <button type="button" onClick={() => setEditing(true)} className="ml-auto shrink-0 text-slate-600 hover:text-sky-400" aria-label={`Edit ${entity.name}`}>
+      <button type="button" onClick={() => setEditing(true)} className="ml-auto shrink-0 text-slate-600 hover:text-sky-400" aria-label={`Editar ${entity.name}`}>
         <Pencil className="size-3.5" />
       </button>
-      <form action={setOwnBrand} className="shrink-0" title={entity.isOwnBrand === 1 ? 'Unset as your brand' : 'Set as your brand'}>
+      <form action={setOwnBrand} className="shrink-0" title={entity.isOwnBrand === 1 ? 'Remover como sua marca' : 'Definir como sua marca'}>
         <input type="hidden" name="id" value={entity.id} />
         <input type="hidden" name="projectId" value={projectId} />
         <input type="hidden" name="makeBrand" value={entity.isOwnBrand === 1 ? '0' : '1'} />
-        <button type="submit" className={entity.isOwnBrand === 1 ? 'text-amber-400 hover:text-amber-300' : 'text-slate-600 hover:text-amber-400'} aria-label={entity.isOwnBrand === 1 ? `Unset ${entity.name} as your brand` : `Set ${entity.name} as your brand`}>
+        <button type="submit" className={entity.isOwnBrand === 1 ? 'text-amber-400 hover:text-amber-300' : 'text-slate-600 hover:text-amber-400'} aria-label={entity.isOwnBrand === 1 ? `Remover ${entity.name} como sua marca` : `Definir ${entity.name} como sua marca`}>
           <Star className="size-4" fill={entity.isOwnBrand === 1 ? 'currentColor' : 'none'} />
         </button>
       </form>
-      <form action={deleteEntity} className="shrink-0" title={`Delete ${entity.name}`}>
+      <form action={deleteEntity} className="shrink-0" title={`Excluir ${entity.name}`}>
         <input type="hidden" name="id" value={entity.id} />
-        <button type="submit" className="text-slate-600 hover:text-red-400" aria-label={`Delete ${entity.name}`}>
+        <button type="submit" className="text-slate-600 hover:text-red-400" aria-label={`Excluir ${entity.name}`}>
           <Trash2 className="size-4" />
         </button>
       </form>
