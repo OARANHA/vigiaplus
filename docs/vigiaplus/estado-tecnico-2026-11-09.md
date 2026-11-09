@@ -8,7 +8,7 @@
 
 Produto de monitoramento de reputação, escuta de mídia, análise, gestão de crise e entrega de informações a clientes, derivado do Radar Intelligence (`OARANHA/crises`), preservando o modo analista e adicionando o núcleo B2B multi-tenant.
 
-**Três superfícies:** `/portal` (cliente), `/console` (proprietário/admin) e `/dashboard` (analista); `app/page.tsx` encaminha conforme `globalRole`. A aplicação do Radar preserva diversas páginas analíticas (`/listening`, `/query`, `/insights/*`, `/reports`, `/import`, `/studio`, etc.). `app/portal/page.tsx` apresenta Panorama, Crises, Relatórios e Conta. `app/console/page.tsx` lista áreas administrativas, mas parte dos botões é demonstrativa e alguns KPIs são literais fixos.
+**Três superfícies:** `/portal` (cliente), `/console` (proprietário/admin) e `/dashboard` (analista); `app/page.tsx` encaminha conforme `globalRole`. A aplicação do Radar preserva diversas páginas analíticas (`/listening`, `/query`, `/insights/*`, `/report`, `/import`, `/studio`, etc.). `app/portal/page.tsx` apresenta Panorama, Crises, Relatórios e Conta. `app/console/page.tsx` lista áreas administrativas, mas parte dos botões é demonstrativa e alguns KPIs são literais fixos.
 
 **Inventário da árvore Git:** 560 arquivos; 73 `app/api/**/route.ts`; 54 tabelas `pgTable` no Drizzle; 25 conectores no registro `lib/connectors/index.ts`. Contagem de arquivos, tabelas e rotas não equivale a cobertura funcional.
 
