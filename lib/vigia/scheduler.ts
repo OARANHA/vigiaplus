@@ -5,7 +5,7 @@ import { collectProject } from './collection';
 import { safeSourceError, validateSourceIds } from './core';
 
 type Project = typeof projects.$inferSelect;
-type CollectResult = { runId: number; status: 'success' | 'partial' | 'failed' };
+type CollectResult = { runId: number; status: string };
 export const QUARTER_HOUR_MS = 15 * 60_000;
 
 export function quarterHourSlot(now: Date): Date {
