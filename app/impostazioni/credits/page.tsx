@@ -2,7 +2,7 @@ import { PageHeader } from '@/components/ui';
 import { getT } from '@/lib/i18n';
 import { Heart, Scale, Package, Image as ImageIcon, Database, ShieldAlert, ExternalLink } from 'lucide-react';
 
-export const metadata = { title: 'Credits & Legal' };
+export const metadata = { title: 'Créditos e informações legais' };
 
 const DEPS: { name: string; license: string; url: string }[] = [
   { name: 'Next.js', license: 'MIT', url: 'https://github.com/vercel/next.js' },
@@ -39,37 +39,37 @@ export default async function CreditsPage() {
   const t = await getT();
   return (
     <>
-      <PageHeader title={t('page.credits.title', 'Credits & Legal')} subtitle="Who built Radar, what it's made of, and the terms it's released under." />
+      <PageHeader title={t('page.credits.title', 'Créditos e informações legais')} subtitle="Créditos do projeto original, licenças, bibliotecas e condições de uso." />
 
       <div className="flex max-w-2xl flex-col gap-4">
         {/* Chi */}
         <section className="panel px-5 py-4">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300"><Heart className="size-4 text-pink-400" /> Made by</h2>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300"><Heart className="size-4 text-pink-400" /> Autoria original</h2>
           <div className="flex flex-col gap-2 text-sm text-slate-300">
-            <p><span className="text-slate-500">Creator & product:</span> <span className="font-medium text-slate-100">Massimo Scognamiglio</span> — idea, design, direction and every decision behind Radar.</p>
-            <p><span className="text-slate-500">Built in pair with:</span> <span className="font-medium text-slate-100">Claude</span> by <Ext href="https://www.anthropic.com">Anthropic</Ext> — the AI collaborator that wrote and shaped the code side by side with the author, and that also powers Radar’s in-app AI features (sentiment, emotion, briefs, clustering, Content Studio…).</p>
-            <p className="text-xs text-slate-500">A one-person team plus an AI partner — enterprise-grade media intelligence at a thousandth of the price. And yes, we had a lot of fun together. 🐣</p>
+            <p><span className="text-slate-500"> Criador e responsável pelo produto original:</span> <span className="font-medium text-slate-100">Massimo Scognamiglio</span> — concepção, design e direção do projeto Radar original.</p>
+            <p><span className="text-slate-500"> Desenvolvimento com apoio de:</span> <span className="font-medium text-slate-100">Claude</span> da <Ext href="https://www.anthropic.com">Anthropic</Ext> — ferramenta de IA utilizada no desenvolvimento original e em recursos de análise de conteúdo do Radar.</p>
+            <p className="text-xs text-slate-500">O projeto original foi desenvolvido por uma equipe pequena com colaboração de inteligência artificial. 🐣</p>
           </div>
         </section>
 
         {/* Licenza */}
         <section className="panel px-5 py-4">
-          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300"><Scale className="size-4 text-sky-400" /> License</h2>
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300"><Scale className="size-4 text-sky-400" /> Licença</h2>
           <p className="text-sm text-slate-300">
-            Radar is <span className="font-medium text-slate-100">free and open source</span> under the{' '}
-            <Ext href="https://www.gnu.org/licenses/agpl-3.0.html">GNU AGPL-3.0</Ext> license.
+            O projeto original Radar é <span className="font-medium text-slate-100">software livre e de código aberto</span>, distribuído sob a licença{' '}
+            <Ext href="https://www.gnu.org/licenses/agpl-3.0.html">GNU AGPL-3.0</Ext>.
             © {new Date().getFullYear()} Massimo Scognamiglio and contributors.
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            If you run a modified version as a network service, the AGPL requires you to make your source available under the same license.
-            Source code: <Ext href="https://github.com/Scognamiglio1969/radar-intelligence">github.com/Scognamiglio1969/radar-intelligence</Ext>.
+            Caso opere uma versão modificada como serviço em rede, verifique as obrigações de disponibilização do código-fonte previstas na AGPL.
+            Código-fonte original: <Ext href="https://github.com/Scognamiglio1969/radar-intelligence">github.com/Scognamiglio1969/radar-intelligence</Ext>.
           </p>
         </section>
 
         {/* Open source */}
         <section className="panel px-5 py-4">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300"><Package className="size-4 text-violet-400" /> Built with open source</h2>
-          <p className="mb-3 text-xs text-slate-500">Radar stands on the shoulders of these projects. Each package’s authoritative license text ships in its own folder under <code className="text-slate-400">node_modules/</code>.</p>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300"><Package className="size-4 text-violet-400" /> Tecnologias de código aberto</h2>
+          <p className="mb-3 text-xs text-slate-500">O projeto utiliza as bibliotecas abaixo. Os termos integrais das licenças devem ser consultados nos respectivos pacotes em <code className="text-slate-400">node_modules/</code>.</p>
           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-3">
             {DEPS.map((d) => (
               <div key={d.name} className="flex flex-col text-xs">
@@ -82,41 +82,41 @@ export default async function CreditsPage() {
 
         {/* Media / asset */}
         <section className="panel px-5 py-4">
-          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300"><ImageIcon className="size-4 text-emerald-400" /> Media & assets</h2>
+          <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-slate-300"><ImageIcon className="size-4 text-emerald-400" /> Mídia e recursos visuais</h2>
           <ul className="flex flex-col gap-2 text-xs text-slate-400">
             <li>
-              Planet, sun and moon textures in the <span className="text-slate-300">Conversation Galaxy</span> — © <Ext href="https://www.solarsystemscope.com/textures/">Solar System Scope</Ext>, licensed <span className="text-slate-300">CC BY 4.0</span>.
+              Texturas de planetas, Sol e Lua presentes no <span className="text-slate-300">Conversation Galaxy</span> — © <Ext href="https://www.solarsystemscope.com/textures/">Solar System Scope</Ext>, sob a licença <span className="text-slate-300">CC BY 4.0</span>.
             </li>
             <li>
-              Egg photo (easter egg) — “White chicken egg” via <Ext href="https://commons.wikimedia.org/wiki/File:White_chicken_egg_square.jpg">Wikimedia Commons</Ext>, <span className="text-slate-300">CC BY 2.0</span>.
+              Fotografia de ovo (conteúdo adicional) — “White chicken egg”, via <Ext href="https://commons.wikimedia.org/wiki/File:White_chicken_egg_square.jpg">Wikimedia Commons</Ext>, <span className="text-slate-300">CC BY 2.0</span>.
             </li>
             <li>
-              Chick photo (easter egg) — “Day old chick” via <Ext href="https://commons.wikimedia.org/wiki/File:Day_old_chick_white_background.jpg">Wikimedia Commons</Ext>, <span className="text-slate-300">GFDL 1.2</span>.
+              Fotografia de pintinho (conteúdo adicional) — “Day old chick”, via <Ext href="https://commons.wikimedia.org/wiki/File:Day_old_chick_white_background.jpg">Wikimedia Commons</Ext>, <span className="text-slate-300">GFDL 1.2</span>.
             </li>
           </ul>
         </section>
 
         {/* Fonti dati */}
         <section className="panel px-5 py-4">
-          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300"><Database className="size-4 text-amber-400" /> Data sources</h2>
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300"><Database className="size-4 text-amber-400" /> Fontes de dados</h2>
           <p className="text-xs leading-relaxed text-slate-400">
-            Radar reads publicly available data from: <span className="text-slate-300">{SOURCES}</span>.
-            All trademarks and content belong to their respective owners; Radar is not affiliated with or endorsed by any of them.
+            O Radar original consulta dados públicos das seguintes fontes: <span className="text-slate-300">{SOURCES}</span>.
+            Marcas, nomes e conteúdos pertencem aos respectivos titulares; a ferramenta não representa vínculo ou endosso dessas organizações.
           </p>
         </section>
 
         {/* Legale */}
         <section className="panel px-5 py-4">
-          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300"><ShieldAlert className="size-4 text-red-400" /> Legal & responsible use</h2>
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-300"><ShieldAlert className="size-4 text-red-400" /> Condições legais e uso responsável</h2>
           <p className="text-xs leading-relaxed text-slate-400">
-            Radar is provided <span className="text-slate-300">“as is”, without warranty of any kind</span>. You are responsible for complying with the
-            Terms of Service of each data source and with applicable data-protection laws (e.g. GDPR) in your jurisdiction. Some sources restrict
-            automated access — enable only what you are entitled to use. AI outputs can be imprecise or biased and should be reviewed before acting on them.
-            To report a security issue, see <Ext href="https://github.com/Scognamiglio1969/radar-intelligence/blob/main/SECURITY.md">SECURITY.md</Ext>.
+            A ferramenta original é disponibilizada <span className="text-slate-300">no estado em que se encontra, sem garantia de qualquer natureza</span>. O operador deve respeitar
+            os termos de cada fonte e a legislação aplicável de proteção de dados, incluindo a LGPD no Brasil. Algumas fontes restringem
+            o acesso automatizado. Resultados produzidos por IA podem conter erros ou vieses e exigem revisão humana.
+            Para comunicar falhas de segurança do projeto original, consulte <Ext href="https://github.com/Scognamiglio1969/radar-intelligence/blob/main/SECURITY.md">SECURITY.md</Ext>.
           </p>
         </section>
 
-        <p className="pb-6 text-center text-[11px] text-slate-600">Made with curiosity by a human and an AI. 🛰️</p>
+        <p className="pb-6 text-center text-[11px] text-slate-600">Desenvolvido originalmente com colaboração entre pessoas e inteligência artificial. 🛰️</p>
       </div>
     </>
   );
