@@ -11,9 +11,10 @@
 // Senao, cai para o sistema legado (env/meta) — compatibilidade total.
 // ---------------------------------------------------------------------------
 
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { llmProviders } from '@/lib/db/schema';
+import { llmProviders, llmRoutes } from '@/lib/db/schema';
+import { pickRoutedProvider } from '@/lib/tenant/provider-routing';
 import { resolveTenantContext, type TenantContext } from '@/lib/tenant/context';
 
 export type ResolvedProvider = {
@@ -36,22 +37,26 @@ export type ResolvedProvider = {
  * sessao (ex.: cron job sem surface), usa o provedor global sem contexto de tenant.
  */
 export async function resolveActiveProvider(opts: { ctx?: TenantContext; purpose?: string } = {}): Promise<ResolvedProvider> {
-  // Tentar via registry primeiro
   const db = await getDb();
-  const [registryProvider] = await db.select().from(llmProviders)
-    .where(and(eq(llmProviders.scope, 'global'), eq(llmProviders.enabled, 1)))
-    .limit(1);
-
+  const tenantId = opts.ctx?.tenantId ?? null;
+  const purpose = opts.purpose ?? 'classification';
+  const [providers, routes] = await Promise.all([
+    db.select().from(llmProviders).where(eq(llmProviders.enabled, 1)),
+    db.select().from(llmRoutes).where(eq(llmRoutes.purpose, purpose)),
+  ]);
+  const registryProvider = pickRoutedProvider(tenantId, purpose, providers, routes);
   if (registryProvider) {
     const apiKey = resolveApiKey(registryProvider.apiKeyRef);
     return {
-      source: 'registry',
-      id: registryProvider.id,
-      name: registryProvider.name,
-      baseUrl: registryProvider.baseUrl,
-      apiKey: apiKey ?? undefined,
+      source: 'registry', id: registryProvider.id, name: registryProvider.name,
+      baseUrl: registryProvider.baseUrl, apiKey: apiKey ?? undefined,
       model: registryProvider.model,
     };
+  }
+  // Para cliente, jamais recuar silenciosamente para chave legacy global:
+  // o dono precisa configurar uma rota global ou específica para o tenant.
+  if (tenantId != null) {
+    throw new Error(`Nenhum provedor autorizado para tenant ${tenantId} e finalidade ${purpose}`);
   }
 
   // Fallback: sistema legado (env/meta)
@@ -82,18 +87,13 @@ function resolveApiKey(ref: string): string | null {
 /**
  * Verifica se ha algum provedor LLM configurado (registry ou legacy).
  */
-export async function llmAvailable(): Promise<boolean> {
-  const db = await getDb();
-  const [registryProvider] = await db.select().from(llmProviders)
-    .where(and(eq(llmProviders.scope, 'global'), eq(llmProviders.enabled, 1)))
-    .limit(1);
-  if (registryProvider) {
-    const key = resolveApiKey(registryProvider.apiKeyRef);
-    return Boolean(key);
+export async function llmAvailable(ctx?: TenantContext, purpose = 'classification'): Promise<boolean> {
+  try {
+    const provider = await resolveActiveProvider({ ctx, purpose });
+    return Boolean(provider.apiKey);
+  } catch {
+    return false;
   }
-  // Fallback legacy
-  const { aiProvider, providerKey } = await import('@/lib/ai-provider');
-  return Boolean(await providerKey(await aiProvider()));
 }
 
 /**
