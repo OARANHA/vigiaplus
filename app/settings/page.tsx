@@ -257,7 +257,7 @@ export default async function SettingsPage({ searchParams }: {
                   <input name="keywords" placeholder="Termos associados (opcional)" className={inputCls} />
                   <SubmitButton pendingLabel="Adicionando…"
                     className="shrink-0 rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-slate-300 hover:bg-white/5">
-                    Add
+                    Adicionar
                   </SubmitButton>
                 </form>
 
@@ -297,7 +297,7 @@ export default async function SettingsPage({ searchParams }: {
                   </select>
                   <SubmitButton pendingLabel="Criando link…"
                     className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-slate-300 hover:bg-white/5">
-                    Create shareable link
+                    Criar link de compartilhamento
                   </SubmitButton>
                 </form>
 
@@ -336,7 +336,7 @@ function TalkwalkerFields({ project, topics, topicsError }: {
   return (
     <>
       <label className="text-xs text-slate-400">
-        Nome do projeto (in Radar)
+        Nome do projeto (no VigiaPlus)
         <input name="name" defaultValue={project?.name} className={`${inputCls} mt-1`}
           placeholder="Ex.: reputação institucional" required />
       </label>
@@ -347,7 +347,7 @@ function TalkwalkerFields({ project, topics, topicsError }: {
       <label className="text-xs text-slate-400">
         Identificador do projeto Talkwalker
         <input name="talkwalkerProject" defaultValue={project?.talkwalkerProject ?? ''}
-          className={`${inputCls} mt-1`} placeholder="e.g. kpnutesu_123456" required />
+          className={`${inputCls} mt-1`} placeholder="Ex.: kpnutesu_123456" required />
         <span className="mt-1 block text-[11px] text-slate-500">
           Consulte o responsável pela conta ou a URL do projeto no Talkwalker.
         </span>
