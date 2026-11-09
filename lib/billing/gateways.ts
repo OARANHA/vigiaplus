@@ -17,6 +17,7 @@ export type ChargeInput = {
   dueDate?: string;
   successUrl?: string;
   cancelUrl?: string;
+  customerId?: string | null; // customer criado/recuperado no Asaas para este tenant
 };
 
 export type ChargeResult = {
@@ -92,7 +93,7 @@ export async function createStripeCheckout(input: ChargeInput): Promise<ChargeRe
   };
 }
 
-async function asaas(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
+export async function asaas(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
   const key = asaasKey();
   if (!key) throw new Error('ASAAS_API_KEY ausente');
   const r = await fetch(`${asaasBase()}${path}`, {
@@ -115,13 +116,17 @@ export async function createPixCharge(input: ChargeInput): Promise<ChargeResult>
   if (!asaasKey()) {
     return manual(input, 'Configure ASAAS_API_KEY para gerar o QR Code Pix real.');
   }
-  const payment = await asaas('/api/v3/payments', {
+  if (!input.customerId || !/^cus_[A-Za-z0-9]+$/.test(input.customerId)) {
+    throw new Error('Cadastro do pagador Asaas é obrigatório antes da cobrança Pix');
+  }
+  const payment = await asaas('/v3/payments', {
     method: 'POST',
     body: JSON.stringify({
+      customer: input.customerId,
       billingType: 'PIX',
       value: Number(input.amountBrl.toFixed(2)),
       dueDate: input.dueDate ?? new Date().toISOString().slice(0, 10),
-      externalReference: String(input.tenantId),
+      externalReference: `vigiaplus-invoice-${input.invoiceId}-tenant-${input.tenantId}`,
       description: `VigiaPlus fatura #${input.invoiceId} — ${input.description}`,
     }),
   });
@@ -129,7 +134,7 @@ export async function createPixCharge(input: ChargeInput): Promise<ChargeResult>
   let copiaCola: string | null = null;
   let qrImage: string | null = null;
   try {
-    const qr = await asaas(`/api/v3/payments/${id}/pixQrCode`);
+    const qr = await asaas(`/v3/payments/${id}/pixQrCode`);
     copiaCola = typeof qr.payload === 'string' ? qr.payload : null;
     qrImage = typeof qr.encodedImage === 'string' ? qr.encodedImage : null;
   } catch {
@@ -161,7 +166,7 @@ function manual(input: ChargeInput, reason: string): ChargeResult {
 export function gatewayStatus() {
   return {
     stripe: { configured: Boolean(stripeKey()), webhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET) },
-    pix: { configured: Boolean(asaasKey()), webhook: Boolean(process.env.PIX_WEBHOOK_SECRET) },
+    pix: { configured: Boolean(asaasKey()), webhook: Boolean(process.env.ASAAS_WEBHOOK_AUTH_TOKEN) },
     appUrl: publicUrl(),
   };
 }

@@ -1,6 +1,7 @@
 import { XMLParser } from 'fast-xml-parser';
 import type { Connector, RawMention } from './types';
-import { collect, fetchText, stripHtml, truncate } from './util';
+import { collect, stripHtml, truncate } from './util';
+import { fetchSafeRssText } from './safe-rss';
 
 // Feed RSS/Atom personalizzati: qualsiasi sito che espone un feed
 // (testate, blog, Google Alerts, subreddit, canali YouTube…).
@@ -33,7 +34,7 @@ function atomLink(link: unknown): string {
 }
 
 async function fetchFeed(url: string): Promise<RawMention[]> {
-  const xml = await fetchText(url);
+  const xml = await fetchSafeRssText(url);
   const parsed = new XMLParser({ ignoreAttributes: false }).parse(xml);
   if (!parsed?.rss?.channel && !parsed?.feed) throw new Error('Resposta não contém RSS ou Atom');
   const feedHost = new URL(url).host.replace(/^www\./, '');

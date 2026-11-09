@@ -41,10 +41,12 @@ services:
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-}
       ASAAS_API_KEY: ${ASAAS_API_KEY:-}
       ASAAS_BASE_URL: ${ASAAS_BASE_URL:-https://api.asaas.com}
+      ASAAS_WEBHOOK_AUTH_TOKEN: ${ASAAS_WEBHOOK_AUTH_TOKEN:-}
       PIX_WEBHOOK_SECRET: ${PIX_WEBHOOK_SECRET:-}
       CRON_SECRET: ${CRON_SECRET:-}
       RADAR_MCP_TOKEN: ${RADAR_MCP_TOKEN:-}
       DEMO_MODE: ${DEMO_MODE:-}
+      AUTH_TRUST_PROXY: ${AUTH_TRUST_PROXY:-1}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.vigiaplus.rule=Host(`${APP_DOMAIN}`)"

@@ -4,7 +4,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend,
   PieChart, Pie, Cell, LineChart, Line, CartesianGrid,
 } from 'recharts';
-import { SOURCE_META } from '@/lib/connectors';
+import { SOURCE_META } from '@/lib/connectors/source-meta';
 import { ENTITY_COLORS, OVERFLOW_COLOR, entityColor } from '@/lib/entity-colors';
 import { clientLocale, tFor } from '@/lib/i18n-dict';
 

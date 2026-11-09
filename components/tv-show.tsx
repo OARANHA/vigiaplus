@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Flame, GitBranch, Bell, X, AlertTriangle, Globe2, Users, Clock, HeartPulse, Orbit } from 'lucide-react';
 import { VolumeChart, SentimentPie } from './charts';
 import { ParticleField } from './particle-field';
-import { SOURCE_META } from '@/lib/connectors';
+import { SOURCE_META } from '@/lib/connectors/source-meta';
 import { prettySource } from '@/lib/source-label';
 import { APP_BYLINE } from './brand';
 import {
