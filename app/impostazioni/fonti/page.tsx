@@ -2,7 +2,7 @@ import { Info } from 'lucide-react';
 import { getMeta } from '@/lib/db';
 import { getCurrentProject } from '@/lib/data';
 import {
-  CONNECTORS, SOURCE_CATEGORY, CATEGORY_ORDER, CATEGORY_LABEL, type SourceCategory,
+  CONNECTORS, SOURCE_CATEGORY, CATEGORY_ORDER, type SourceCategory,
 } from '@/lib/connectors';
 import { getConnectorCredStatuses, hydrateConnectorCredentials, type ConnectorCredStatus } from '@/lib/connector-credentials';
 import { getCurrentUser, isAdmin } from '@/lib/auth';
@@ -12,6 +12,28 @@ import { getT } from '@/lib/i18n';
 import type { SourceStatus } from '@/lib/ingest';
 
 export const metadata = { title: 'Fontes de dados' };
+
+const CATEGORY_LABEL_PT: Record<SourceCategory, string> = {
+  general: 'Notícias e fontes gerais',
+  finance: 'Finanças e empresas',
+  academic: 'Produção acadêmica',
+  tech: 'Tecnologia e desenvolvimento',
+  social: 'Redes sociais e mensagens',
+  video: 'Vídeos',
+  audio: 'Podcasts e áudio',
+};
+
+function sourceDisabledMessage(reason: string | undefined): string {
+  if (!reason) return 'Fonte indisponível';
+  if (/key|token|credential|chave|api key|access_token|secret/i.test(reason)) {
+    return 'Chave ou token não configurado';
+  }
+  if (/plan|paid|premium|payment|subscription/i.test(reason)) {
+    return 'Requer plano ou permissão do provedor';
+  }
+  return 'Fonte não habilitada';
+}
+
 
 // What each source is and what data Radar collects from it: shown in the hover tooltip.
 const SOURCE_INFO: Record<string, string> = {
@@ -109,7 +131,7 @@ function TierSection({ heading, headingClass, description, connectors, sourceSta
         {byCategory.map(({ cat, items }) => (
           <div key={cat}>
             {byCategory.length > 1 && (
-              <p className="mb-1.5 text-[10px] font-medium text-slate-600">{CATEGORY_LABEL[cat]}</p>
+              <p className="mb-1.5 text-[10px] font-medium text-slate-600">{CATEGORY_LABEL_PT[cat]}</p>
             )}
             <div className="flex flex-col gap-2">
               {items.map((c) => (
