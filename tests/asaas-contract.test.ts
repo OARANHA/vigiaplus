@@ -27,3 +27,18 @@ test('evento Asaas sem id evt é inválido, não usa categoria como id', () => {
 test('evento Stripe sem data.object não causa crash na normalização', () => {
   assert.equal(StripeAdapter.normalize({ id: 'evt_x', type: 'unknown' }).id, 'evt_x');
 });
+
+test('Stripe não libera assinatura em checkout completo ainda não pago', () => {
+  const pending = StripeAdapter.normalize({ id: 'evt_pending',
+    type: 'checkout.session.completed',
+    data: { object: { id: 'cs_pending', payment_status: 'unpaid', amount_total: 12000 } } });
+  assert.notEqual(pending.type, 'payment.succeeded');
+  const paid = StripeAdapter.normalize({ id: 'evt_paid',
+    type: 'checkout.session.completed',
+    data: { object: { id: 'cs_paid', payment_status: 'paid', amount_total: 12000 } } });
+  assert.equal(paid.type, 'payment.succeeded');
+  const async = StripeAdapter.normalize({ id: 'evt_async',
+    type: 'checkout.session.async_payment_succeeded',
+    data: { object: { id: 'cs_async', amount_total: 12000 } } });
+  assert.equal(async.type, 'payment.succeeded');
+});
