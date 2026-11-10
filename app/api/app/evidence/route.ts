@@ -5,6 +5,8 @@ import { getDb, type DB } from '@/lib/db';
 import { mentions, projects } from '@/lib/db/schema';
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction, requireSurface } from '@/lib/tenant/rbac';
+import { requireFeature } from '@/lib/tenant/entitlements';
+import { AppError } from '@/lib/tenant/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,6 +36,17 @@ export async function GET(request: Request) {
   requireSurface(ctx, 'app');
   requireAction(ctx, 'read');
   if (!ctx.tenantId) return NextResponse.json({ error: 'Selecione um cliente autorizado' }, { status: 400 });
+  // SEC-01: conhecer a organização não concede acesso a dados coletados.
+  // O contrato e a feature são revalidados em cada consulta e negam
+  // organizações pendentes/suspensas, assinatura ausente ou vencida.
+  try {
+    await requireFeature(ctx, 'reputation_dual');
+  } catch (error) {
+    if (error instanceof AppError) {
+      return NextResponse.json({ error: error.code, message: error.message }, { status: error.status });
+    }
+    throw error;
+  }
   const db = await getDb();
   const items = await listTenantEvidence(db, ctx.tenantId);
   return NextResponse.json({
