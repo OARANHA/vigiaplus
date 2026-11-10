@@ -23,6 +23,7 @@ type Summary = {
   greeting?: string; error?: string;
   work_evidence?: {
     sources_monitored?: number; comments_analyzed?: number; mentions_collected?: number; subjects_tracked?: number;
+    window_days?: number;
     detection_minutes?: number | null; updated_at?: string | null;
   };
   reputations?: Reputation[]; incidents?: Incident[]; open_incidents?: number;
@@ -95,9 +96,13 @@ export default function ClientPortal() {
     let mounted = true;
     (async () => {
       try {
-        const permissions = await getJson<{ permissions?: { system?: boolean } }>('/api/me/permissions');
+        const permissions = await getJson<{ permissions?: { role?: string; system?: boolean } }>('/api/me/permissions');
         if (!mounted) return;
-        if (permissions.permissions?.system) {
+        if (permissions.permissions?.role === 'analyst') {
+          window.location.replace('/');
+          return;
+        }
+        if (permissions.permissions?.role === 'owner') {
           const result = await getJson<{ tenants: Tenant[] }>('/api/console/tenants');
           if (!mounted) return;
           setOwner(true);
@@ -152,9 +157,9 @@ export default function ClientPortal() {
 
   const selected = tenants.find((t) => t.id === tenantId);
   const metrics = [
-    { name: 'Menções coletadas', value: numberOrDash(summary?.work_evidence?.mentions_collected), note: 'Últimos 14 dias' },
-    { name: 'Menções analisadas', value: numberOrDash(summary?.work_evidence?.comments_analyzed), note: 'Últimos 14 dias' },
-    { name: 'Fontes com publicações', value: numberOrDash(summary?.work_evidence?.sources_monitored), note: 'Fontes distintas, últimos 14 dias' },
+    { name: 'Menções coletadas', value: numberOrDash(summary?.work_evidence?.mentions_collected), note: 'Janela de ' + (summary?.work_evidence?.window_days ?? 14) + ' dias' },
+    { name: 'Menções analisadas', value: numberOrDash(summary?.work_evidence?.comments_analyzed), note: 'Janela de ' + (summary?.work_evidence?.window_days ?? 14) + ' dias' },
+    { name: 'Fontes com publicações', value: numberOrDash(summary?.work_evidence?.sources_monitored), note: 'Fontes distintas na janela' },
     { name: 'Ocorrências abertas', value: numberOrDash(summary?.open_incidents), note: 'Registros em acompanhamento' },
   ];
   const reputations = summary?.reputations ?? [];
