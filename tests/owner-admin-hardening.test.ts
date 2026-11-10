@@ -30,6 +30,8 @@ test('featureState nega organizações inativas e assinaturas conflitantes antes
   assert.ok(tenantGate > 0 && duplicateGate > tenantGate && manualGrant > duplicateGate);
   assert.match(src, /cliente_inativo_ou_pendente/);
   assert.match(src, /contratos_conflitantes/);
+  assert.match(src, /permissoes_duplicadas/);
+  assert.match(src, /existing.length > 1/);
   assert.match(src, /T23:59:59\.999-03:00/);
 });
 
