@@ -1,9 +1,9 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import {
   Activity, AlertTriangle, BookOpen, Bot, Building2, CreditCard, FileText,
-  Globe, Layers, LockKeyhole, Palette, RadioTower, Receipt, Settings,
+  Layers, LockKeyhole, Palette, RadioTower, Receipt, Settings,
   Shield, SlidersHorizontal, Users,
 } from 'lucide-react';
 import { VigiaDashboardShell } from '@/components/vpx-dashboard-shell';
@@ -76,7 +76,7 @@ async function api<T>(path:string, init?:RequestInit):Promise<T> {
   return response.json() as Promise<T>;
 }
 const json=(obj:unknown):RequestInit=>({method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)});
-function SubPanel({title,children}: {title:string;children:React.ReactNode}) {
+function SubPanel({title,children}: {title:string;children:ReactNode}) {
   return <section className="vpx-owner-card"><h2>{title}</h2>{children}</section>;
 }
 function Destinations({items}: {items:{label:string;href?:string;description:string;pending?:boolean}[]}) {
