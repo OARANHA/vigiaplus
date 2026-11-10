@@ -7,6 +7,7 @@ import {
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireOwner } from '@/lib/tenant/rbac';
 import { gatewayStatus } from '@/lib/billing/gateways';
+import { brazilCivilDate, isInvoiceOverdue } from '@/lib/billing/overdue';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,9 +30,7 @@ export async function GET() {
   ]);
 
   const planByKey = new Map(allPlans.map((p) => [p.key, p]));
-  const dueToday = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(new Date());
+  const dueToday = brazilCivilDate(new Date());
   const subsByTenant = new Map<number, typeof subs>();
   for (const subscription of subs) {
     const existing = subsByTenant.get(subscription.tenantId) ?? [];
@@ -45,9 +44,7 @@ export async function GET() {
     const sub = activeSubs.length === 1 ? activeSubs[0] : undefined;
     const plan = sub ? planByKey.get(sub.planKey) : undefined;
     const inadimplente = openInvoices
-      .filter(i => i.tenantId === t.id && (
-        i.status === 'overdue' || (i.status === 'open' && i.dueAt != null && i.dueAt < dueToday)
-      ))
+      .filter(i => i.tenantId === t.id && isInvoiceOverdue(i, dueToday))
       .reduce((sum, i) => sum + i.amountBrl, 0);
     const custoIa = usage
       .filter((u) => u.tenantId === t.id)
