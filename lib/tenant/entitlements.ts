@@ -52,7 +52,12 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
   // Um bloqueio vencido não pode continuar negando acesso.
   const vigente = (o: typeof featureOverrides[number]) =>
     !o.expiresAt || new Date(o.expiresAt).getTime() > now.getTime();
-  const denied = featureOverrides.find((o) => o.enabled === 0 && vigente(o));
+  const currentOverrides = featureOverrides.filter(vigente);
+  // Dados duplicados são ambíguos: falhar fechado até saneamento/migração UNIQUE.
+  if (currentOverrides.length > 1) {
+    return { enabled: false, reason: 'permissoes_duplicadas', source: 'override' };
+  }
+  const denied = currentOverrides.find((o) => o.enabled === 0);
 
   // Estado financeiro dirige o contrato (ADR-07 + dunning H3).
   // Nunca confiamos no frontend: o gateway so muda `status`, e o entitlement
@@ -158,6 +163,7 @@ export async function setTenantFeature(
   const existing = await db.select().from(tenantFeatures)
     .where(and(eq(tenantFeatures.tenantId, tenantId), eq(tenantFeatures.featureKey, input.feature_key)));
 
+  if (existing.length > 1) throw AppError.badRequest('Permissões duplicadas: concilie os registros antes de alterar');
   if (existing.length > 0) {
     await db.update(tenantFeatures).set({
       enabled: input.enabled ? 1 : 0,
