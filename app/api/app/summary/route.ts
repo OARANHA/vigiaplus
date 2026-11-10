@@ -7,9 +7,9 @@
 //   - linguagem de gente no vocabulario leigo, termos tecnicos no tecnico,
 //     com EXATAMENTE os mesmos dados (ADR-03).
 import { NextResponse } from 'next/server';
-import { eq, and, ne, gte, sql } from 'drizzle-orm';
+import { eq, and, ne, gte, sql, desc } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { reputationTargets, incidents, notificationChannels, mentions, projects } from '@/lib/db/schema';
+import { reputationTargets, incidents, notificationChannels, mentions, projects, collectionRuns } from '@/lib/db/schema';
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction, requireSurface } from '@/lib/tenant/rbac';
 import { requireFeature, enabledFeatures } from '@/lib/tenant/entitlements';
@@ -59,6 +59,17 @@ export async function GET(request: Request) {
     latest: sql<Date | null>`max(${mentions.fetchedAt})`,
   }).from(mentions).innerJoin(projects, eq(mentions.projectId, projects.id))
     .where(and(eq(projects.tenantId, ctx.tenantId), gte(mentions.publishedAt, since)));
+
+  // Última tentativa de coleta independe de haver menções. Não confundir
+  // ausência de publicações na janela com ausência de execução do coletor.
+  const [lastCollection] = await db.select({
+    status: collectionRuns.status,
+    startedAt: collectionRuns.startedAt,
+    finishedAt: collectionRuns.finishedAt,
+    newCount: collectionRuns.newCount,
+  }).from(collectionRuns).innerJoin(projects, eq(collectionRuns.projectId, projects.id))
+    .where(eq(projects.tenantId, ctx.tenantId))
+    .orderBy(desc(collectionRuns.startedAt), desc(collectionRuns.id)).limit(1);
 
   const sampleSize = Number(observed?.analyzed ?? 0);
   const sourceCount = Number(observed?.sources ?? 0);
@@ -146,6 +157,12 @@ export async function GET(request: Request) {
       id: i.id, title: i.title, status: i.status, severity: i.severity, owner: i.owner,
     })),
     work_evidence: workEvidence,
+    collection: lastCollection ? {
+      status: lastCollection.status,
+      lastAttemptAt: lastCollection.startedAt.toISOString(),
+      finishedAt: lastCollection.finishedAt?.toISOString() ?? null,
+      newCount: lastCollection.newCount,
+    } : null,
     features,
     view: { density: ctx.density, vocabulary: ctx.vocabulary },
     channels: channels.map((c) => ({ channel: c.channel, destination: c.destination, active: c.active })),
