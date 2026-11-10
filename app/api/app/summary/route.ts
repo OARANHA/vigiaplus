@@ -13,6 +13,7 @@ import { reputationTargets, incidents, notificationChannels, mentions, projects,
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction, requireSurface } from '@/lib/tenant/rbac';
 import { requireFeature, enabledFeatures } from '@/lib/tenant/entitlements';
+import { AppError } from '@/lib/tenant/errors';
 
 const WINDOW_DAYS = 14;
 
@@ -39,7 +40,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Sem tenant ativo' }, { status: 400 });
   }
 
-  await requireFeature(ctx, 'reputation_dual');
+  try {
+    await requireFeature(ctx, 'reputation_dual');
+  } catch (error) {
+    if (error instanceof AppError) {
+      return NextResponse.json({ error: error.code, message: error.message }, { status: error.status });
+    }
+    throw error;
+  }
 
   const db = await getDb();
   const targets = await db.select().from(reputationTargets)
