@@ -15,8 +15,8 @@ test('console operacional exige owner e comunica fila e proveniência',()=>{
 test('falha em publicações não derruba resumo, e recuperação está disponível',()=>{
   const page=source('app/portal/page.tsx');
   assert.match(page,/Promise\.allSettled/);
-  assert.match(page,/overview\.status === 'fulfilled'/);
-  assert.match(page,/publications\.status === 'fulfilled'/);
+  assert.match(page,/overview\.status\s*===\s*'fulfilled'/);
+  assert.match(page,/publications\.status\s*===\s*'fulfilled'/);
   assert.match(page,/setEvidenceError/);
   assert.match(page,/setRefreshToken/);
   assert.match(page,/Fontes com publicações/);

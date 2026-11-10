@@ -75,7 +75,8 @@ test('cliente não herda console nem credenciais de outros tenants pela API de e
   assert.match(code, /resolveTenantContext/);
   assert.match(code, /eq\(projects\.tenantId, tenantId\)/);
   assert.match(code, /requireSurface\(ctx, 'app'\)/);
-  assert.match(portal, /aria-label="Navegação do cliente"/);
+  const shared = readFileSync(join(process.cwd(), 'components/vpx-dashboard-shell.tsx'), 'utf8');
+  assert.match(shared, /aria-label={role==='cliente'\?'Navegação do cliente'/);
   assert.match(portal, /Nenhuma publicação coletada/);
   assert.match(loginAPI, /redirectTo/);
 });
