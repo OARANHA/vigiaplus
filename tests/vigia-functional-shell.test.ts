@@ -60,7 +60,7 @@ test('login público usa layout em duas colunas sem sidebar administrativa', () 
   const root = readFileSync(join(process.cwd(), 'app/layout.tsx'), 'utf8');
   const login = readFileSync(join(process.cwd(), 'app/login/page.tsx'), 'utf8');
   const proxy = readFileSync(join(process.cwd(), 'proxy.ts'), 'utf8');
-  assert.match(root, /pageIsPublic \|\| pageIsClient/);
+  assert.match(root, /pageIsPublic \|\| pageIsEntryRedirect \|\| pageIsClient/);
   assert.match(root, /redirect\('\/portal'\)/);
   assert.match(proxy, /x-vigia-request-path/);
   assert.match(login, /va-story/);
