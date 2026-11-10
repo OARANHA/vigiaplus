@@ -8,6 +8,7 @@ import { resolveTenantContext, parseRequestedTenantId, type TenantContext } from
 import { requireAction } from '@/lib/tenant/rbac';
 import { AppError } from '@/lib/tenant/errors';
 import { RULE_TYPES } from '@/lib/notifications/evaluate';
+import { requireFeature } from '@/lib/tenant/entitlements';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,8 @@ async function authorize(request: Request, action: string): Promise<number> {
   const requestedTenantId = parseRequestedTenantId(url.searchParams, request.headers);
   const ctx: TenantContext = await resolveTenantContext({ surface: 'app', requestedTenantId });
   requireAction(ctx, action);
+  // SEC-01: regras e destinos não podem ser geridos sem contrato ativo.
+  await requireFeature(ctx, 'crisis_management');
   if (!ctx.tenantId) throw AppError.badRequest('Sem tenant ativo na sessao');
   return ctx.tenantId;
 }
