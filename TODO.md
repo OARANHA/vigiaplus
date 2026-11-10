@@ -1,0 +1,117 @@
+# VIGIAPLUS — TODO mestre de produto, segurança e operação
+
+**Atualizado:** 2026-11-10 · **Repositório:** `OARANHA/vigiaplus` · **Dono da decisão de merge/deploy:** proprietário  
+**Estado comercial:** **NÃO HOMOLOGADO para clientes externos**  
+**Base verificada antes deste TODO:** PR #24 DRAFT, commit `57b82de9497ade909b8f6e222df5d8f3af66081f`, empilhada sobre #23; `main` em `d2d9eafe7667b21a4badc14a3161501f5c72513d`.  
+**Ambiente de prévia:** `D:\VIGIAPLUS`, porta **3199**. Porta **3100 encerrada** (antigo `D:\CRISE_APP`).  
+**Auditoria de origem:** 2026-11-10, proprietário + cliente + notificações + segurança. Este documento é o backlog executável dessa auditoria.
+
+> **Regra operacional:** nenhuma tarefa pode ser marcada `[x]` somente porque existe código, tela, PR ou CI de outro SHA. Fechar apenas após evidência do critério de aceite. Não executar merge, deploy, migrações de banco remoto, cobrança real nem exclusão de dados sem autorização explícita do proprietário.
+
+## Legenda e rotina de acompanhamento
+
+- `[ ]` pendente; `[x]` verificado; `[~]` não é checkbox válido — usar `[ ]` e registrar bloqueio abaixo do item.
+- **P0**: segurança, onboarding, confiabilidade dos alertas; impede cliente real. **P1**: operação e produto; impede oferta profissional plena. **P2**: acabamento, performance e diferenciação.
+- Em cada entrega: confirmar `HEAD` da branch e base da PR; implementar em PR **DRAFT**; testes unitários + integração PGlite/Neon descartável + E2E; CI dos workflows obrigatórios no **SHA exato**; QA local na **3199**; registrar resultado e pendências no **ELUS Memory Admin / banco `vigiaelus`**.
+- Roteiro de atualização local: verificar `git status` e PID/processo da porta 3199, preservar `.env.local`, `.data` e alterações do usuário; fazer backup antes de trocar branch; atualizar via **fast-forward**, sem `reset --hard`; deixar o processo existente em 3199 ativo quando possível; **não abrir segunda instância na mesma porta**. Conferir `http://127.0.0.1:3199/login`, `/console`, `/console/admin`, `/portal` com usuários de teste apropriados. Nunca reabrir 3100 por conveniência.
+
+## Situação confirmada — não confundir código com produção
+
+- [x] **BASE-01** — Console owner, catálogo de planos, cadastro inicial de organizações e permissões implementados em PRs #22–#24 (DRAFT, **não integradas à main**).
+- [x] **BASE-02** — Proteção de unicidade comercial + SQL atômico em PR #24; **CI GREEN do SHA `8f198aef...`** ([run 42756850646](https://github.com/OARANHA/vigiaplus/actions/runs/42756850646); 369 testes). **Não vale como aprovação do HEAD atual**.
+- [x] **BASE-03** — Prévia local VIGIAPLUS atualizada para commit `57b82de...`, em porta 3199, e porta 3100 encerrada; backup local anterior `D:\VIGIAPLUS_LOCAL_SAFETY_20261110`.
+- [x] **BASE-04** — Smoke HTTP **sem sessão**: `/api/health` 200, `/portal` e `/console` 307, `/api/console/tenants` e `/api/app/evidence` 401; **não substitui teste com dois clientes**.
+- [ ] **BASE-05** — CI completo no **HEAD atual da PR #24**, QA autenticado desktop/tablet/mobile e validação de sessão real. É uma pendência de homologação, não uma afirmação de falha.
+- [ ] **BASE-06** — Revisar conflitos e dependências entre as PRs DRAFT [#11 scheduler](https://github.com/OARANHA/vigiaplus/pull/11), [#14 RLS](https://github.com/OARANHA/vigiaplus/pull/14), [#15 webhooks](https://github.com/OARANHA/vigiaplus/pull/15) e [#20–#24 UI/owner](https://github.com/OARANHA/vigiaplus/pull/24). Produzir matriz de compatibilidade antes de sugerir integração.
+
+## Fase 1 — P0 · Cliente real consegue entrar SEM acessar dados de outro cliente
+
+**Entrega-alvo:** proprietário cadastra organização → vincula usuário → convida → usuário define senha → login no portal → acesso limitado ao contrato e tenant.
+
+- [ ] **SEC-01 — Bloqueio contratual server-side em todas as consultas de cliente.** Em `app/api/app/evidence/route.ts` e demais APIs/exports, exigir tenant **ativo**, assinatura elegível e feature correspondente; preservar acesso mínimo e explícito a conta/fatura/suporte. Aceite: tenant pending/suspended/cancelled recebe 403 nas evidências, inclusive por URL direta; owner consegue diagnosticar sem burlar auditoria.
+- [ ] **SEC-02 — Imposição de senha temporária no servidor.** Negar APIs/páginas de negócio para `mustChangePassword=1`; liberar apenas autenticação, troca de senha e logout. Aceite: tentativas diretas em REST não funcionam antes da troca; após troca a versão da sessão é renovada, a sessão antiga deixa de funcionar.
+- [ ] **CL-01 — Onboarding transacional da organização.** Criar usuário ou vincular existente a `memberships` com papel `client_admin`/`client_viewer` e tenant explícito, auditando alterações. Aceite: cliente sem vínculo não entra, cliente com vínculo entra apenas no próprio tenant; duplicidades concorrentes não criam membros extras.
+- [ ] **CL-02 — Convites seguros e recuperações.** Token aleatório de uso único armazenado somente como hash, expiração, aceite, revogação, reenvio, throttling e recuperação de senha sem enviar senha em texto claro. Aceite: convite expirado/reutilizado/revogado inválido; endereço informado recebe convite **apenas se transporte certificado**; estado visível na ficha do cliente.
+- [ ] **SEC-03 — Proteção integral do modo demo.** Em `DEMO_MODE=1`, qualquer mutação (inclusive ações owner e APIs SaaS) responde 403 no servidor, sem depender do proxy. Aceite: suíte parametrizada POST/PATCH/PUT/DELETE para rotas administrativas/cliente, nenhuma linha alterada.
+- [ ] **SEC-04 — Isolamento de dois tenants e RLS.** Inspecionar e homologar [PR #14](https://github.com/OARANHA/vigiaplus/pull/14) no PostgreSQL/Neon descartável com role sem `BYPASSRLS`, transaction-scoped tenant e cobertura das tabelas; validar atual uso de Neon HTTP. Aceite: matriz A/B com endpoints, exports, jobs e acesso por ID cruzado sempre negados; não ativar política em base real antes de teste e autorização.
+- [ ] **SEC-05 — MFA real + sessão de proprietário.** Implementar desafio verificável (TOTP/passkey) para owner e admins, recuperação segura, revogação e gestão de sessões. Aceite: `two_factor_enabled` só habilita depois da prova; segunda etapa é obrigatória no login; dispositivos revogados recebem 401.
+- [ ] **SEC-06 — Gate de entrada sem regressão.** Testar servidor/cliente para `/`, `/login`, `/console`, `/portal`; sem flash de sidebar antiga, sem troca de tema após hidratação, sem informação de cliente anterior. Aceite: capturas autenticadas e sem sessão em 390/768/1440 px, light/dark, sem hidratação inconsistente.
+
+**Gate Fase 1:** dois clientes reais de teste em banco descartável + owner passam E2E; nenhuma rota lê dados cruzados; cadastro-convite-login-troca de senha funciona; CI GREEN no SHA exato. **Sem esse gate, não há cliente externo.**
+
+## Fase 2 — P0 · Alerta detectado se transforma em aviso confiável
+
+**Entrega-alvo:** registrar evento → gerar destinos verificados → enfileirar sem perda → enviar → acompanhar aceitação/entrega/falha → consultar histórico pelo proprietário e cliente.
+
+- [ ] **ALT-01 — Corrigir dedupe multicanal e concorrência.** Idempotência por `tenant + regra + tipo/id de evento + canal + destino` (identificador canônico sem expor PII), com índice único e migração conservadora. Aceite: 2 e-mails e 1 canal adicional criam 3 entregas; rerun não duplica nenhuma; concorrência não gera colisões.
+- [ ] **ALT-02 — Fila/outbox confiável.** Reserva atômica `queued → processing` com lease, tentativas, retry/backoff e dead-letter; manter auditoria do erro. Aceite: dois workers concorrentes não fazem envio duplo, timeout é recuperado, falha permanente fica visível e reprocessável.
+- [ ] **ALT-03 — Unificar eventos analíticos e operacionais.** Ligar `lib/alerts.ts` (picos/sentimento) aos fatos consumidos por `worker:notify`; conciliar incidentes, faturamento e alertas com ID de correlação. Aceite: anomalia real detectada gera entrega; ausência de fato não gera alerta falso.
+- [ ] **ALT-04 — E-mail Resend real, sem segredos na UI/banco.** Configurar `RESEND_API_KEY` e `ALERT_EMAIL_FROM` via ambiente seguro, domínio e remetente verificados; botão owner de diagnóstico, nunca envio automático para terceiros de teste. Aceite: teste controlado de envio com credencial real, logs e ID do provedor; se sem chave, tela exibe “não configurado”, não “ativo”.
+- [ ] **ALT-05 — Verificação de destinatários.** Proibir `PATCH verified=true` sem token de prova de posse; habilitar/desabilitar canais por tenant e perfil. Aceite: só endereço verificado pode receber aviso; tentativa de autoaprovação sem token falha.
+- [ ] **ALT-06 — Confirmação real de entrega.** `accepted`/HTTP 2xx não significa `delivered`; consumir webhooks autenticados de delivered/bounced/complained quando disponíveis. Aceite: histórico mostra estados e horários distintos, destinatário, tentativas e motivo sanitizado de falha.
+- [ ] **ALT-07 — Fuso horário e regras de crise.** Silêncio com timezone por tenant, rate de alertas, severidade e SLA de reação; só considerar fatura `open` vencida pela data civil correta. Aceite: testes em `America/Sao_Paulo`, virada de dia e quiet hours atravessando meia-noite.
+- [ ] **ALT-08 — Worker agendado e observável.** Integrar scheduler de envio, health e métricas de atraso; permitir execução de teste segura e limitada ao owner. Aceite: execução periódica registrada, falhas visíveis, sem processo dependente de terminal aberto.
+- [ ] **ALT-09 — Telas de alertas.** Configurar regra, destinatários, verificação, último disparo, histórico, falhas, reconhecimento e responsável no owner e no portal do cliente (conforme papel). Aceite: usuário distingue “evento encontrado”, “notificação pendente”, “aceita pelo provedor” e “entregue”.
+
+**Gate Fase 2:** disparar evento real em ambiente de teste → 2 e-mails + 1 canal alternativo → comprovar 3 registros, idempotência, retry e pelo menos um estado de entrega real, sem misturar clientes.
+
+## Fase 3 — P0/P1 · Coleta e prestação de serviço comprováveis
+
+- [ ] **OPS-01 — Integrar e homologar [PR #11](https://github.com/OARANHA/vigiaplus/pull/11).** Rodízio de **1 cliente a cada 15 minutos (4/hora)**, lease por execução, dedupe, rate limits por fonte, 429 GDELT com retry controlado e histórico por projeto. Aceite: teste com quatro tenants, sem coletas paralelas indevidas, última e próxima execução reais.
+- [ ] **OPS-02 — Centro operacional do proprietário.** Painel por cliente: fontes ativas, última coleta, novas menções, erros, backlog, tempo de processamento e incidentes. Aceite: falha de fonte visível, sem exibir 0 como sinônimo de sucesso.
+- [ ] **OPS-03 — Health vs readiness.** Manter `/api/health` como liveness; criar readiness restrito com banco, fila, worker, coleta, provedores/credenciais (somente status, nunca segredos). Aceite: banco indisponível implica readiness degradado, não serviço operacional.
+- [ ] **OPS-04 — Fontes e políticas por cliente.** Termos, entidades, fontes e frequência gerenciados na ficha da organização; validar isolamento, quotas e permissões no backend. Aceite: cliente A não vê ou altera a coleta do cliente B.
+- [ ] **OPS-05 — Cobrança e limites comerciais.** Integrar [PR #15](https://github.com/OARANHA/vigiaplus/pull/15) em sandbox: assinatura, webhook, reconciliação, idempotência, dunning e recebimento verdadeiro; aplicar limites de menções, IA e retenção por plano. Aceite: webhook repetido não duplica, pagamento manual não aparece como recebido; excedente bloqueia conforme contrato.
+- [ ] **OPS-06 — LGPD e backups.** Definir retenção executável, exportação, exclusão auditada, papel do controlador/operador, política de consentimento quando aplicável, backup e restauração testada. Aceite: demonstração de expurgo/restore em ambiente descartável; aprovação explícita antes de ação destrutiva.
+
+## Fase 4 — P1 · Produto que dono e cliente entendem e confiam
+
+- [ ] **ADM-01 — Ficha única do cliente.** Unificar cadastro/contato, status da organização, pessoas com acesso, convites, plano, recursos, fontes, última coleta, alertas, consumo, faturas e eventos de auditoria. Aceite: owner resolve abertura e suspensão sem navegar por 17 seções.
+- [ ] **ADM-02 — Ciclo de vida explícito.** Estados `rascunho → convite → primeiro acesso → configurar fontes → testar alertas → operacional → suspenso/encerrado`; suspender/restabelecer com motivo e trilha. Aceite: “operacional” só após login, coleta e envio de teste certificados; suspensão corta acessos de negócio.
+- [ ] **ADM-03 — Provedor LLM de verdade.** Corrigir `app/api/console/llm-providers/[id]/test/route.ts`, que hoje injeta `fetchImpl`/DNS mock (HTTP 200 simulado). Aceite: teste real seguro, timeout, validação de resposta OpenAI-compatible e diagnóstico sem expor chave, com testes mock só na suíte.
+- [ ] **UX-01 — Portal centrado na decisão.** Mostrar período real, entidades monitoradas, fontes disponíveis, menções verificáveis, tendências calculadas, incidentes, providências, notificações e histórico. Aceite: cada número tem janela e fonte; dados ausentes ficam “não medido”, nunca KPI fictício.
+- [ ] **UX-02 — Reputação calculada ou retirada.** Resolver `score=null` fora da demo com cálculo por alvo auditável, amostra e confiança; ou usar apenas métricas confiáveis até existir modelo homologado. Aceite: números reproduzíveis no banco e explicação de método no portal.
+- [ ] **UX-03 — Filtros e relatórios.** Busca, período, fonte, relevância, paginação, export por tenant e relatórios com evidências e período. Aceite: 200+ menções navegáveis, PDF/export sem cruzamento de tenants.
+- [ ] **UX-04 — Design e consistência.** QA de login, admin e portal nas resoluções 390/768/1440, light/dark sem flash e sem sidebar legada, contraste, teclado, estados loading/error/empty e somente pt-BR. Aceite: screenshots antes/depois e revisão manual autenticada.
+- [ ] **UX-05 — Marca comercial.** Identidade própria, rodapé, domínio, e-mails transacionais, páginas de política/contato e white-label somente quando contratado. Aceite: portal transmite origem, atualidade, responsabilidade e segurança sem alegações não verificadas.
+
+## Gate final — liberar primeiro cliente externo SOMENTE com evidências
+
+- [ ] **GO-01** — Onboarding de owner + administrador cliente + leitor, convite seguro, MFA owner e troca obrigatória de senha.
+- [ ] **GO-02** — Isolamento cross-tenant A/B, autorização para todas as APIs/exports e RLS no PostgreSQL homologado.
+- [ ] **GO-03** — Coleta agendada e observável; 4 clientes/hora com falhas recuperáveis.
+- [ ] **GO-04** — E-mail real com múltiplos destinatários, regra, retry, logs e estados de aceitação/entrega.
+- [ ] **GO-05** — Portal e console com informações verificáveis, ações reais e QA de dois temas e três viewports.
+- [ ] **GO-06** — Limites de plano e retenção impostos; cobrança em sandbox homologada, se habilitada.
+- [ ] **GO-07** — CI GREEN no **HEAD exato**, teste de restore, revisão de segurança e autorização **explícita do proprietário** para merge/deploy.
+
+**Regra de decisão:** qualquer item do gate sem evidência = **NO-GO**, independentemente de screenshots, PR aberta, testes parciais ou feedback visual positivo.
+
+## Controle de execução / checkpoint
+
+| Campo | Valor inicial |
+|---|---|
+| Próximo lote recomendado | Fase 1: `SEC-01` + `SEC-02` + testes cross-tenant; em seguida `CL-01`/`CL-02` |
+| Branch de prévia local | `preview/owner-admin-pr24-20261110` |
+| PR de referência | [#24](https://github.com/OARANHA/vigiaplus/pull/24) (DRAFT, base #23) |
+| Último SHA verificado antes deste documento | `57b82de9497ade909b8f6e222df5d8f3af66081f` |
+| Estado CI do SHA acima | **Não confirmado** — último GREEN conhecido é de SHA anterior |
+| Ambiente local | `http://127.0.0.1:3199`; 3100 fechada |
+| Banco de memória | ELUS Memory Admin → `vigiaelus` |
+| Merge/deploy | **NÃO AUTORIZADO** |
+
+### Template de atualização a cada lote
+
+```text
+TODO IDs: SEC-01, ...
+PR / branch / base:
+HEAD SHA:
+Mudanças feitas:
+Testes (comando, resultado, banco):
+GitHub Actions run + conclusão do HEAD exato:
+QA local 3199 (rotas, login, dark/light, screenshots):
+Riscos e bloqueios:
+Estado: PENDENTE | GREEN | RED
+ELUS Memory Admin (vigiaelus): checkpoint registrado?
+Merge/deploy: não autorizado
+```
