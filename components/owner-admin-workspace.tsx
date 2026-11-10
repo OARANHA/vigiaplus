@@ -9,7 +9,7 @@ import {
 import { VigiaDashboardShell } from '@/components/vpx-dashboard-shell';
 
 type Section = 'clientes'|'planos'|'recursos'|'contratos'|'financeiro'|'fontes'|
-  'coleta'|'crises'|'relatorios'|'ia'|'acessos'|'privacidade'|'marca'|'sistema';
+  'coleta'|'crises'|'relatorios'|'ia'|'acessos'|'privacidade'|'auditoria'|'consumo'|'marca'|'sistema';
 const GROUPS = [
   { label: 'GESTÃO COMERCIAL', items: [
     { id: 'clientes', label: 'Clientes', icon: Building2 },
@@ -17,6 +17,7 @@ const GROUPS = [
     { id: 'recursos', label: 'Permissões por cliente', icon: SlidersHorizontal },
     { id: 'contratos', label: 'Contratos', icon: FileText },
     { id: 'financeiro', label: 'Faturamento e Pix', icon: CreditCard },
+    { id: 'consumo', label: 'Consumo e cotas', icon: Activity },
   ] },
   { label: 'OPERAÇÃO', items: [
     { id: 'fontes', label: 'Fontes e conectores', icon: RadioTower },
@@ -30,6 +31,7 @@ const GROUPS = [
   { label: 'PLATAFORMA', items: [
     { id: 'acessos', label: 'Usuários e segurança', icon: Users },
     { id: 'privacidade', label: 'LGPD e retenção', icon: Shield },
+    { id: 'auditoria', label: 'Trilha de auditoria', icon: BookOpen },
     { id: 'marca', label: 'Marca e comunicação', icon: Palette },
     { id: 'sistema', label: 'Sistema e integrações', icon: Settings },
   ] },
@@ -40,13 +42,15 @@ const HEADINGS: Record<Section, { title: string; detail: string }> = {
   recursos: {title: 'Permissões por cliente',detail: 'Consulte direitos efetivos e registre liberações ou bloqueios com motivo e prazo.'},
   contratos: {title: 'Contratos manuais',detail: 'Atribuição explícita de plano. Esta ação não cobra nem confirma pagamentos.'},
   financeiro: {title: 'Faturamento',detail: 'Receita contratual, custos de IA e configuração dos gateways, sem presumir recebimentos.'},
+  consumo: {title: 'Consumo e limites por cliente',detail: 'Medições reais de menções coletadas e chamadas de IA nos últimos 30 dias. Cotas ainda não são bloqueadas automaticamente.'},
   fontes: {title: 'Fontes e conectores',detail: 'Configuração dos conectores existentes e visibilidade das pendências de integrações por cliente.'},
   coleta: {title: 'Coleta e fila',detail: 'Acompanhamento e operação; agendamento por cliente exige homologação específica.'},
   crises: {title: 'Alertas e crises',detail: 'Ocorrências reais, regras e fluxos de acompanhamento.'},
   relatorios: {title: 'Relatórios',detail: 'Produção e exportação dos relatórios disponíveis.'},
   ia: {title: 'Modelos e custos de IA',detail: 'Provedores compatíveis e controle de disponibilidade, custo e credenciais.'},
   acessos: {title: 'Usuários e segurança',detail: 'Equipe, permissões e controles de acesso.'},
-  privacidade: {title: 'Privacidade e retenção',detail: 'Políticas de dados, retenção, solicitações e trilha de auditoria.'},
+  privacidade: {title: 'Privacidade e retenção',detail: 'Políticas de dados, retenção e solicitações de titulares.'},
+  auditoria: {title: 'Trilha de auditoria',detail: 'Registros recentes de mudanças, com data, operador, organização e justificativa. Dados sensíveis são omitidos.'},
   marca: {title: 'Marca e comunicação',detail: 'Identidade visual e canais de avisos, separados por cliente.'},
   sistema: {title: 'Sistema e integrações',detail: 'Conectividade, monitoramento e configuração da plataforma.'},
 };
@@ -60,6 +64,13 @@ type Billing = {resumo?:{mrr?:number;faturasEmAberto?:number;custoIa?:number;ina
   gateways?:{stripe?:{configured:boolean;webhook:boolean};pix?:{configured:boolean;webhook:boolean}};
   carteira?:{id:number;nome:string;status:string;plano:string;inadimplencia:number;custoIa:number}[]};
 type Provider = {id:string;name:string;model:string;scope:string;baseUrl:string};
+type Usage = { window:{start:string;end:string;days:number};quotasEnforced:boolean;clients:{
+  tenantId:number;name:string;status:string;subscriptionStatus:string;planKey:string|null;
+  mentions:{used:number;limit:number|null};ai:{usedBrl:number;limitBrl:number|null;calls:number};
+  retentionMonths:number|null;
+}[] };
+type Audit = {events:{id:number;actor:string|null;tenantId:number|null;action:string;
+  target:string|null;reason:string|null;createdAt:string}[]};
 type PlanDraft = {key:string;label:string;priceBrl:number|null;aiQuotaBrl:number;
   mentionsLimit:number;retentionMonths:number;features:string[];reason:string};
 const emptyDraft=():PlanDraft=>({key:'',label:'',priceBrl:0,aiQuotaBrl:0,mentionsLimit:5000,retentionMonths:1,features:[],reason:''});
@@ -95,6 +106,9 @@ export function OwnerAdminWorkspace() {
   const [contracts,setContracts]=useState<Contract[]>([]);
   const [billing,setBilling]=useState<Billing|null>(null);
   const [providers,setProviders]=useState<Provider[]>([]);
+  const [usage,setUsage]=useState<Usage|null>(null);
+  const [audit,setAudit]=useState<Audit|null>(null);
+  const [auditTenant,setAuditTenant]=useState(0);
   const [selectedTenant,setSelectedTenant]=useState<number|null>(null);
   const [features,setFeatures]=useState<Feature[]|null>(null);
   const [draft,setDraft]=useState<PlanDraft>(emptyDraft);
@@ -134,6 +148,19 @@ export function OwnerAdminWorkspace() {
     const value=new URLSearchParams(window.location.search).get('section');
     if(value && valid.some(x=>x===value))setSection(value as Section);
   },[]);
+  useEffect(()=>{
+    if(section!=='consumo'&&section!=='auditoria')return;
+    if(section==='consumo') {
+      setUsage(null);
+      void api<Usage>('/api/console/usage').then(setUsage)
+        .catch(e=>setError('Consumo indisponível: '+String(e)));
+    } else {
+      setAudit(null);
+      void api<Audit>('/api/console/audit'+(auditTenant?'?tenant_id='+auditTenant:''))
+        .then(setAudit).catch(e=>setError('Auditoria indisponível: '+String(e)));
+    }
+  },[section,auditTenant]);
+
   useEffect(()=>{
     if(!selectedTenant){setFeatures(null);return;}
     setFeatures(null);
@@ -362,6 +389,23 @@ export function OwnerAdminWorkspace() {
                 <td>{c.subscriptions[0]?.status??'Sem contrato'}</td><td>{c.subscriptions[0]?.gateway??'—'}</td></tr>)}
             </tbody></table></div></SubPanel>
         </>}
+        {section==='consumo'&&<>
+          <SubPanel title="Uso nos últimos 30 dias">
+            <p className="vpx-owner-muted">Janela móvel de 30 dias: menções pelo horário de coleta e consumo de IA registrado. Não são estimativas.</p>
+            <div className="vpx-alert">Monitoramento informativo: o bloqueio automático de cotas ainda não está implementado em todas as APIs e coletores.</div>
+            {usage===null?<p className="vpx-owner-muted">Consultando medições…</p>:
+              <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
+                <thead><tr><th>Organização</th><th>Plano</th><th>Menções / limite</th><th>IA / teto</th><th>Chamadas IA</th></tr></thead>
+                <tbody>{usage.clients.map(c=><tr key={c.tenantId}>
+                  <td className="vpx-maincell">{c.name}<small className="vpx-owner-sub">{c.status}</small></td>
+                  <td>{c.planKey??c.subscriptionStatus}</td>
+                  <td>{c.mentions.used.toLocaleString('pt-BR')} / {c.mentions.limit?.toLocaleString('pt-BR')??'—'}</td>
+                  <td>{currency(c.ai.usedBrl)} / {currency(c.ai.limitBrl)}</td>
+                  <td>{c.ai.calls.toLocaleString('pt-BR')}</td>
+                </tr>)}</tbody>
+              </table></div>}
+          </SubPanel>
+        </>}
         {section==='financeiro'&&<>
           <div className="vpx-owner-metrics">
             <div><small>MRR contratual</small><strong>{currency(billing?.resumo?.mrr)}</strong></div>
@@ -415,12 +459,34 @@ export function OwnerAdminWorkspace() {
         {section==='acessos'&&<SubPanel title="Acesso e segurança"><Destinations items={[
           {label:'Equipe e usuários',href:'/impostazioni/team',description:'Administração de equipe disponível na área analítica.'},
           {label:'Minha conta',href:'/impostazioni/account',description:'Preferências e credenciais do usuário atual.'},
-          {label:'MFA, sessões e auditoria consolidada',description:'Controles administrativos e verificação cross-tenant pendentes.',pending:true},
+          {label:'MFA e sessões de segurança',description:'Controle de sessões e homologação cross-tenant ainda pendentes.',pending:true},
         ]}/></SubPanel>}
         {section==='privacidade'&&<SubPanel title="Governança de dados"><Destinations items={[
           {label:'Políticas de retenção por cliente',description:'Expurgo e exportação seguros ainda não homologados.',pending:true},
-          {label:'Solicitações LGPD e trilha de acesso',description:'Fluxos de solicitações, auditoria e evidências ainda pendentes.',pending:true},
+          {label:'Solicitações de titulares e expurgo',description:'Fluxos de solicitações, auditoria de exclusão e evidências ainda pendentes.',pending:true},
         ]}/></SubPanel>}
+        {section==='auditoria'&&<>
+          <SubPanel title="Eventos de auditoria">
+            <div className="vpx-owner-formgrid">
+              <label>Filtrar organização<select value={auditTenant} onChange={e=>setAuditTenant(Number(e.target.value))}>
+                <option value={0}>Todas as organizações</option>
+                {clients.map(c=><option value={c.id} key={c.id}>{c.name}</option>)}
+              </select></label>
+            </div>
+            <p className="vpx-owner-muted">Até 50 registros mais recentes. Endereços IP e metadados não são expostos nesta consulta.</p>
+            {audit===null?<p className="vpx-owner-muted">Consultando eventos…</p>:
+              <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
+                <thead><tr><th>Quando</th><th>Operador</th><th>Organização</th><th>Ação</th><th>Motivo</th></tr></thead><tbody>
+                  {audit.events.map(e=><tr key={e.id}>
+                    <td>{new Date(e.createdAt).toLocaleString('pt-BR')}</td>
+                    <td>{e.actor??'Não identificado'}</td>
+                    <td>{clients.find(c=>c.id===e.tenantId)?.name??(e.tenantId===null?'Plataforma':'#'+e.tenantId)}</td>
+                    <td>{e.action}</td><td>{e.reason??'Não informado'}</td>
+                  </tr>)}
+                  {audit.events.length===0&&<tr><td colSpan={5}>Nenhum evento para o filtro selecionado.</td></tr>}
+                </tbody></table></div>}
+          </SubPanel>
+        </>}
         {section==='marca'&&<SubPanel title="Identidade e comunicação"><Destinations items={[
           {label:'Marca por cliente',description:'Configuração de white-label com domínio e logotipo ainda pendente.',pending:true},
           {label:'Canais e modelos de aviso',description:'Preferências de WhatsApp/e-mail por cliente requerem interface de configuração.',pending:true},
