@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useState} from 'react';
 import Link from 'next/link';
-import {ArrowUpRight,CalendarDays,ExternalLink,FileSearch,ShieldAlert,ShieldCheck} from 'lucide-react';
+import {ArrowUpRight,ExternalLink,ShieldCheck} from 'lucide-react';
 import {VigiaDashboardShell,VigiaCoverageGauge,VigiaStatTile,type DashboardTab} from '@/components/vpx-dashboard-shell';
 import {ClientDecisionBrief} from '@/components/client-decision-brief';
 
