@@ -1,9 +1,10 @@
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { users } from '@/lib/db/schema';
 import { SESSION_COOKIE, verifySession, isDemoMode } from '@/lib/session';
 import { readViewPrefs } from '@/lib/view-prefs';
+import { canUseBusinessSurface } from '@/lib/password-access';
 
 export type User = typeof users.$inferSelect;
 
@@ -37,6 +38,10 @@ export async function getCurrentUser(): Promise<User | null> {
     const [u] = await db.select().from(users).where(eq(users.id, session.userId));
     if (!u) return null;
     if ((u.sessionVersion ?? 0) !== session.version) return null; // sessione revocata
+    // A sessão HMAC pode ser válida, mas uma senha temporária ainda não permite
+    // consultar APIs, exports nem navegar pelo produto. Somente trocar a senha.
+    const pathname = (await headers()).get('x-vigia-request-path');
+    if (!canUseBusinessSurface(u.mustChangePassword, pathname)) return null;
     user = u;
   }
 
