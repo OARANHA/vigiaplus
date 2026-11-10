@@ -40,9 +40,6 @@ function collectionPT(status:string):string{
   em_andamento:'Em andamento'};
  return values[status]??'Não identificado';
 }
-function signalTab(kind:string):Tab{
- return kind==='invoice'?'financeiro':'operacao';
-}
 
 export function ConsoleOwnerDashboard(){
  const [tab,setTab]=useState<Tab>('inicio');
