@@ -52,6 +52,13 @@ async function init(): Promise<DB> {
   // Instalações antigas podem ter tenants, mas não um catálogo inicial.
   const { ensureInitialPlanCatalog } = await import('./ensure-plan-catalog');
   await ensureInitialPlanCatalog(db);
+  // Índices únicos comerciais apenas em bases sem duplicidade histórica.
+  // Havendo conflito legado, o console segue consultável e escritas P0 falham fechado.
+  const { ensureCommercialConstraints } = await import('./commercial-constraints');
+  const commercial = await ensureCommercialConstraints(db);
+  if (!commercial.featureIndex || !commercial.subscriptionIndex) {
+    console.warn('VigiaPlus: duplicidades comerciais detectadas. Escritas de contratos e permissões bloqueadas.');
+  }
   return db;
 }
 
