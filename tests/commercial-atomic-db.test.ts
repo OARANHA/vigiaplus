@@ -19,7 +19,13 @@ async function fixture() {
       name TEXT NOT NULL,
       slug TEXT NOT NULL UNIQUE,
       status TEXT NOT NULL DEFAULT 'pending',
-      plan_key TEXT NOT NULL DEFAULT 'trial'
+      plan_key TEXT NOT NULL DEFAULT 'trial',
+      cnpj TEXT,
+      domain TEXT,
+      locale TEXT NOT NULL DEFAULT 'pt-BR',
+      retention_days INTEGER NOT NULL DEFAULT 180,
+      brand_config JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE TABLE plans (
       key TEXT PRIMARY KEY,
@@ -31,10 +37,12 @@ async function fixture() {
       plan_key TEXT NOT NULL,
       gateway TEXT NOT NULL DEFAULT 'manual',
       gateway_id TEXT,
+      gateway_customer_id TEXT,
       status TEXT NOT NULL DEFAULT 'active',
       vigencia_ate TIMESTAMPTZ,
       grace_until TIMESTAMPTZ,
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     );
     CREATE TABLE tenant_features (
       id SERIAL PRIMARY KEY,
