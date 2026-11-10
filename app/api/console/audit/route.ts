@@ -18,7 +18,9 @@ export async function GET(request: Request) {
   if (rawTenant !== null && (!Number.isSafeInteger(tenantId) || tenantId! <= 0)) {
     return NextResponse.json({ error: 'TENANT_INVALIDO' }, { status: 400 });
   }
-  const limit = Math.min(100, Math.max(1, Number(params.get('limit')) || 50));
+  const requestedLimit = Number(params.get('limit'));
+  const limit = Number.isSafeInteger(requestedLimit)
+    ? Math.min(100, Math.max(1, requestedLimit)) : 50;
   const db = await getDb();
   const rows = await db.select({
     id: auditEvents.id,
