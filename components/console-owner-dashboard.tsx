@@ -1,272 +1,228 @@
 'use client';
-
+import {useCallback,useEffect,useState} from 'react';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { ArrowUpRight, BrainCircuit, CreditCard, RefreshCw, ShieldCheck, Users } from 'lucide-react';
-import { ViewModeToggle } from '@/components/view-mode-toggle';
-import { CONSOLE_GROUPS } from '@/lib/admin-navigation';
-import { OwnerOperationalOverview, type OperationalOverview } from '@/components/owner-operational-overview';
+import {ArrowUpRight,ExternalLink,ShieldCheck} from 'lucide-react';
+import {VigiaDashboardShell,VigiaCoverageGauge,VigiaStatTile,type DashboardTab} from '@/components/vpx-dashboard-shell';
+import type {OperationalOverview} from '@/components/owner-operational-overview';
+import {CONSOLE_GROUPS} from '@/lib/admin-navigation';
 
-type Tenant = {
-  id: number; name: string; plan: string; status: string; domain: string | null;
-};
-type Provider = {
-  id: string | number; name: string; model: string; baseUrl: string;
-  scope: string; enabled?: boolean;
-};
-type Billing = {
-  resumo?: { mrr?: number; faturasEmAberto?: number; custoIa?: number; clientesAtivos?: number };
-  gateways?: {
-    stripe?: { configured?: boolean; webhook?: boolean };
-    pix?: { configured?: boolean; webhook?: boolean };
-  };
-};
-type AiStatus = { available: boolean; active?: { name: string; source: string; model?: string } | null };
+type Tenant={id:number;name:string;plan:string;status:string;domain:string|null};
+type Provider={id:string|number;name:string;model:string;baseUrl:string;scope:string};
+type Billing={resumo?:{mrr?:number;faturasEmAberto?:number;custoIa?:number;clientesAtivos?:number};
+ gateways?:{stripe?:{configured?:boolean;webhook?:boolean};pix?:{configured?:boolean;webhook?:boolean}}};
+type AiStatus={available:boolean;active?:{name:string;source:string;model?:string}|null};
+type Tab='inicio'|'clientes'|'operacao'|'financeiro'|'config';
+const TABS:DashboardTab[]=[
+ {id:'inicio',label:'Visão geral'},{id:'clientes',label:'Clientes'},
+ {id:'operacao',label:'Operação'},{id:'financeiro',label:'Faturamento'},
+ {id:'config',label:'Configurações'},
+];
+async function apiJson<T>(url:string):Promise<T>{
+ const response=await fetch(url,{cache:'no-store'});
+ if(!response.ok)throw Error('HTTP '+response.status);
+ return response.json() as Promise<T>;
+}
+function num(n:number|null|undefined):string{
+ return typeof n==='number'&&Number.isFinite(n)?n.toLocaleString('pt-BR'):'—';
+}
+function money(n:number|undefined):string{
+ return typeof n==='number'&&Number.isFinite(n)?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'—';
+}
+function date(iso:string|null|undefined):string{
+ if(!iso)return 'Sem registro';
+ const d=new Date(iso);
+ return Number.isNaN(d.getTime())?'Data indisponível':
+  d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'});
+}
+function collectionPT(status:string):string{
+ const values:Record<string,string>={falha:'Falha registrada',parcial:'Parcial',
+  sem_projeto:'Sem projeto',sem_historico:'Sem histórico',concluida:'Concluída',
+  em_andamento:'Em andamento'};
+ return values[status]??'Não identificado';
+}
+function signalTab(kind:string):Tab{
+ return kind==='invoice'?'financeiro':'operacao';
+}
 
-async function apiJson<T>(url: string): Promise<T> {
-  const response = await fetch(url, { cache: 'no-store' });
-  if (!response.ok) throw new Error('HTTP ' + response.status);
-  return response.json() as Promise<T>;
-}
-function real(n: number | undefined): string {
-  return typeof n === 'number' && Number.isFinite(n)
-    ? n.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : '—';
-}
-function situacao(status: string): string {
-  const known: Record<string, string> = {
-    active: 'Ativo', inactive: 'Inativo', suspended: 'Suspenso', trial: 'Em avaliação',
-    past_due: 'Em atraso', canceled: 'Cancelado', paused: 'Pausado', none: 'Sem assinatura',
-  };
-  return known[status] ?? status;
-}
-function Kpi({ label, value, note, icon: Icon }: {
-  label: string; value: string | number; note: string; icon: typeof Users;
-}) {
-  return (
-    <div className="rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4 sm:p-5">
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-xs font-medium leading-5 text-slate-400">{label}</p>
-        <Icon className="size-4 shrink-0 text-sky-400" aria-hidden="true" />
-      </div>
-      <p className="mt-3 text-2xl font-semibold tracking-tight text-slate-50">{value}</p>
-      <p className="mt-1 text-xs leading-5 text-slate-500">{note}</p>
+export function ConsoleOwnerDashboard(){
+ const [tab,setTab]=useState<Tab>('inicio');
+ const [tenants,setTenants]=useState<Tenant[]|null>(null);
+ const [providers,setProviders]=useState<Provider[]|null>(null);
+ const [billing,setBilling]=useState<Billing|null>(null);
+ const [ai,setAi]=useState<AiStatus|null>(null);
+ const [operation,setOperation]=useState<OperationalOverview|null>(null);
+ const [loading,setLoading]=useState(true);
+ const [errors,setErrors]=useState<string[]>([]);
+ const [updatedAt,setUpdatedAt]=useState<string|null>(null);
+ const refresh=useCallback(async()=>{
+   setLoading(true);
+   const [t,p,b,a,o]=await Promise.allSettled([
+     apiJson<{tenants:Tenant[]}>('/api/console/tenants'),
+     apiJson<{providers:Provider[]}>('/api/console/llm-providers'),
+     apiJson<Billing>('/api/console/billing'),
+     apiJson<AiStatus>('/api/console/llm-status'),
+     apiJson<OperationalOverview>('/api/console/operations'),
+   ]);
+   const fails:string[]=[];
+   if(t.status==='fulfilled')setTenants(t.value.tenants??[]);else{setTenants(null);fails.push('Clientes');}
+   if(p.status==='fulfilled')setProviders(p.value.providers??[]);else{setProviders(null);fails.push('Provedores de IA');}
+   if(b.status==='fulfilled')setBilling(b.value);else{setBilling(null);fails.push('Faturamento');}
+   if(a.status==='fulfilled')setAi(a.value);else{setAi(null);fails.push('Disponibilidade de IA');}
+   if(o.status==='fulfilled')setOperation(o.value);else{setOperation(null);fails.push('Situação operacional');}
+   setErrors(fails);setUpdatedAt(new Date().toISOString());setLoading(false);
+ },[]);
+ useEffect(()=>{void refresh();},[refresh]);
+ useEffect(()=>{
+   const selected=new URLSearchParams(window.location.search).get('tab');
+   if(selected&&TABS.some(t=>t.id===selected))setTab(selected as Tab);
+ },[]);
+ async function logout(){
+  await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({logout:true})}).catch(()=>{});
+  window.location.replace('/login');
+ }
+ const summary=operation?.summary;
+ const coverage=summary&&summary.projects>0
+  ?Math.round((summary.projects-summary.projectsWithoutRuns)/summary.projects*100):null;
+ const critical=summary?.criticalIncidents??null;
+ const topSignals=operation?.signals.slice(0,3)??[];
+ const gateway=(name:'stripe'|'pix')=>{
+   if(!billing)return 'Não verificado';
+   const conf=billing.gateways?.[name];
+   if(!conf)return 'Não verificado';
+   if(!conf.configured)return 'Não configurado';
+   return conf.webhook?'Credenciais configuradas':'Webhook não configurado';
+ };
+ function navigate(href:string){
+   if(href==='#clientes')setTab('clientes');
+   else if(href==='#financeiro')setTab('financeiro');
+   else if(href==='#ia')setTab('config');
+   else window.location.assign(href);
+ }
+ return <VigiaDashboardShell role="proprietario" tabs={TABS} activeTab={tab}
+  onTab={v=>setTab(v as Tab)} onLogout={logout} onRefresh={()=>{void refresh();}}
+  extra={<span>Proprietário · {updatedAt?'Consulta '+date(updatedAt):'Consultando…'}</span>}>
+  {errors.length>0&&<div role="alert" className="vpx-alert">
+   Dados temporariamente indisponíveis: {errors.join(', ')}. Não foram substituídos por zero.
+  </div>}
+  {tab==='inicio'&&<div className="vpx-workspace">
+   <div className="vpx-left">
+    <section>
+     <div className="vpx-section-top"><span className="vpx-eyebrow"><ShieldCheck size={14}/> CENTRAL DO PROPRIETÁRIO</span>
+      <button className="vpx-linkbutton" type="button" onClick={()=>setTab('operacao')}>Abrir operação <ArrowUpRight size={14}/></button>
+     </div>
+     <h1>Sua operação, em um só olhar</h1>
+     <p className="vpx-description">Situação da carteira, coleta e pendências. Informações registradas, organizadas para definir a próxima ação.</p>
+    </section>
+    <div className="vpx-pipeline" aria-label="Etapas da operação">
+     <div className="vpx-step"><small>Etapa 1</small><div className="vpx-step-row"><span className="vpx-step-number">1</span>
+      <div><strong>Clientes</strong><p>{num(summary?.clients)} organizações cadastradas</p></div></div></div>
+     <div className="vpx-step"><small>Etapa 2</small><div className="vpx-step-row"><span className="vpx-step-number">2</span>
+      <div><strong>Monitoramento</strong><p>{num(summary?.projects)} projetos de escuta</p></div></div></div>
+     <div className="vpx-step"><small>Etapa 3</small><div className="vpx-step-row"><span className="vpx-step-number">3</span>
+      <div><strong>Intervenção</strong><p>{num(operation?.signals.length)} sinais para verificar</p></div></div></div>
     </div>
-  );
-}
-
-export function ConsoleOwnerDashboard() {
-  const [tenants, setTenants] = useState<Tenant[] | null>(null);
-  const [providers, setProviders] = useState<Provider[] | null>(null);
-  const [billing, setBilling] = useState<Billing | null>(null);
-  const [ai, setAi] = useState<AiStatus | null>(null);
-  const [operation, setOperation] = useState<OperationalOverview | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [errors, setErrors] = useState<string[]>([]);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    const [tenantResult, providerResult, billingResult, aiResult, operationResult] = await Promise.allSettled([
-      apiJson<{ tenants: Tenant[] }>('/api/console/tenants'),
-      apiJson<{ providers: Provider[] }>('/api/console/llm-providers'),
-      apiJson<Billing>('/api/console/billing'),
-      apiJson<AiStatus>('/api/console/llm-status'),
-      apiJson<OperationalOverview>('/api/console/operations'),
-    ]);
-    const failures: string[] = [];
-    if (tenantResult.status === 'fulfilled') setTenants(tenantResult.value.tenants ?? []);
-    else { setTenants(null); failures.push('clientes'); }
-    if (providerResult.status === 'fulfilled') setProviders(providerResult.value.providers ?? []);
-    else { setProviders(null); failures.push('provedores de IA'); }
-    if (billingResult.status === 'fulfilled') setBilling(billingResult.value);
-    else { setBilling(null); failures.push('faturamento'); }
-    if (aiResult.status === 'fulfilled') setAi(aiResult.value);
-    else { setAi(null); failures.push('disponibilidade de IA'); }
-    if(operationResult.status==='fulfilled')setOperation(operationResult.value);
-    else {setOperation(null);failures.push('prioridades operacionais');}
-    setErrors(failures);
-    setUpdatedAt(new Date());
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { void refresh(); }, [refresh]);
-
-  const gateway = (name: 'pix' | 'stripe'): string => {
-    const conf = billing?.gateways?.[name];
-    if (!conf) return 'Não verificado';
-    if (!conf.configured) return 'Não configurado';
-    return conf.webhook ? 'Credenciais configuradas' : 'Webhook não configurado';
-  };
-
-  return (
-    <div className="space-y-7 pb-12 text-slate-100">
-      <header className="flex flex-wrap items-start justify-between gap-4 border-b border-[var(--border)] pb-6">
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-sky-300">Administração · VigiaPlus</p>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">Console do proprietário</h1>
-          <p className="max-w-2xl text-sm leading-6 text-slate-400">
-            Clientes, operação, inteligência artificial e faturamento em um único lugar.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <ViewModeToggle compact />
-          <button type="button" onClick={() => { void refresh(); }} disabled={loading}
-            className="inline-flex min-h-9 items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2 text-xs font-medium text-slate-200 transition hover:border-sky-500/40 hover:bg-[var(--panel-2)] disabled:opacity-50">
-            <RefreshCw className={loading ? 'size-4 animate-spin' : 'size-4'} aria-hidden="true" />
-            {loading ? 'Consultando…' : 'Atualizar dados'}
-          </button>
-        </div>
-      </header>
-
-      {errors.length > 0 && (
-        <div role="alert" className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm leading-6 text-amber-100">
-          Não foi possível consultar: {errors.join(', ')}. Os indicadores correspondentes aparecem como indisponíveis, não como zero.
-        </div>
-      )}
-      {updatedAt && (
-        <p className="text-xs text-slate-500" aria-live="polite">
-          Última consulta: {updatedAt.toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}
-        </p>
-      )}
-
-      <OwnerOperationalOverview overview={operation} loading={loading}/>
-
-      <section aria-label="Indicadores contratuais e de IA" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi icon={Users} label="Clientes ativos cadastrados"
-          value={tenants ? tenants.filter((t) => t.status === 'active').length : '—'}
-          note="Clientes com cadastro ativo, não assinaturas pagas." />
-        <Kpi icon={BrainCircuit} label="Provedores de IA cadastrados"
-          value={providers ? providers.length : '—'}
-          note="Quantidade no registro, não chamadas concluídas." />
-        <Kpi icon={CreditCard} label="Receita mensal contratual"
-          value={real(billing?.resumo?.mrr)}
-          note="Estimativa contratual; não representa dinheiro recebido." />
-        <Kpi icon={ShieldCheck} label="Faturas em aberto"
-          value={billing?.resumo?.faturasEmAberto ?? '—'}
-          note="Inclui faturas pendentes de processamento." />
-      </section>
-
-      <details className="group rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5">
-        <summary className="cursor-pointer text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-sky-400">Ferramentas e configurações <span className="text-xs font-normal text-slate-400">(expandir)</span></summary>
-        <div className="mt-4 grid gap-4 xl:grid-cols-3">
-          {CONSOLE_GROUPS.map((group) => (
-            <div key={group.label} className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
-              <h3 className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                {group.label}
-              </h3>
-              <div className="space-y-1">
-                {group.links.map((item) => (
-                  <Link href={item.href} key={item.href}
-                    className="group flex min-h-14 items-center justify-between gap-2 rounded-xl px-3 py-2 transition hover:bg-white/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400">
-                    <span className="min-w-0">
-                      <span className="block text-sm font-medium text-slate-200 group-hover:text-sky-200">{item.label}</span>
-                      <span className="mt-0.5 block text-xs leading-5 text-slate-500">{item.description}</span>
-                    </span>
-                    <ArrowUpRight className="size-4 shrink-0 text-slate-600 group-hover:text-sky-300" aria-hidden="true" />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </details>
-
-      <section id="clientes" aria-labelledby="clientes-heading" className="scroll-mt-6 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4 sm:p-5">
-        <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-          <div>
-            <h2 id="clientes-heading" className="text-lg font-semibold text-slate-100">Clientes</h2>
-            <p className="mt-1 text-xs text-slate-400">Situação cadastral e plano associado a cada organização.</p>
-          </div>
-          <span className="text-xs text-slate-500">{tenants ? tenants.length + ' cadastrados' : 'Consulta indisponível'}</span>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[550px] text-left text-sm">
-            <thead className="border-b border-[var(--border)] text-xs text-slate-400">
-              <tr><th scope="col" className="py-3 pr-4 font-medium">Organização</th>
-                <th scope="col" className="py-3 pr-4 font-medium">Plano</th>
-                <th scope="col" className="py-3 pr-4 font-medium">Situação</th>
-                <th scope="col" className="py-3 font-medium">Domínio</th></tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {tenants?.length ? tenants.map((tenant) => (
-                <tr key={tenant.id} className="text-slate-200">
-                  <td className="py-3 pr-4 font-medium">{tenant.name}</td>
-                  <td className="py-3 pr-4 text-slate-400">{tenant.plan}</td>
-                  <td className="py-3 pr-4">{situacao(tenant.status)}</td>
-                  <td className="py-3 text-slate-400">{tenant.domain || 'Não informado'}</td>
-                </tr>
-              )) : <tr><td colSpan={4} className="py-6 text-center text-slate-400">
-                {tenants === null ? 'Não foi possível consultar os clientes.' : 'Nenhum cliente cadastrado.'}
-              </td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section id="financeiro" aria-labelledby="financeiro-heading" className="scroll-mt-6 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4 sm:p-5">
-        <div className="mb-4">
-          <h2 id="financeiro-heading" className="text-lg font-semibold text-slate-100">Planos e faturamento</h2>
-          <p className="mt-1 text-xs text-slate-400">A configuração de gateways não confirma que pagamentos foram homologados.</p>
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <div className="rounded-xl bg-[var(--panel-2)] p-4">
-            <p className="text-xs text-slate-400">Receita mensal contratual</p>
-            <p className="mt-2 text-lg font-semibold">{real(billing?.resumo?.mrr)}</p>
-          </div>
-          <div className="rounded-xl bg-[var(--panel-2)] p-4">
-            <p className="text-xs text-slate-400">Custo de IA registrado</p>
-            <p className="mt-2 text-lg font-semibold">{real(billing?.resumo?.custoIa)}</p>
-          </div>
-          <div className="rounded-xl bg-[var(--panel-2)] p-4">
-            <p className="text-xs text-slate-400">Pix / Asaas</p>
-            <p className="mt-2 text-sm font-medium text-slate-200">{gateway('pix')}</p>
-          </div>
-          <div className="rounded-xl bg-[var(--panel-2)] p-4">
-            <p className="text-xs text-slate-400">Stripe</p>
-            <p className="mt-2 text-sm font-medium text-slate-200">{gateway('stripe')}</p>
-          </div>
-        </div>
-      </section>
-
-      <section id="ia" aria-labelledby="ia-heading" className="scroll-mt-6 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4 sm:p-5">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <h2 id="ia-heading" className="text-lg font-semibold text-slate-100">Inteligência artificial</h2>
-            <p className="mt-1 text-xs text-slate-400">Registro de modelos e disponibilidade da conexão.</p>
-          </div>
-          <span className={ai?.available
-            ? 'rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300'
-            : 'rounded-full border border-[var(--border)] bg-[var(--panel-2)] px-3 py-1 text-xs text-slate-400'}>
-            {ai === null ? 'Não verificado' : ai.available ? 'Chave de IA configurada' : 'Chave de IA indisponível'}
-          </span>
-        </div>
-        {ai?.active && <p className="mb-4 text-xs text-slate-400">
-          Provedor selecionado: <strong className="font-medium text-slate-200">{ai.active.name}</strong>
-          {ai.active.model ? ' · ' + ai.active.model : ''}
-        </p>}
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[600px] text-left text-sm">
-            <thead className="border-b border-[var(--border)] text-xs text-slate-400">
-              <tr><th scope="col" className="py-3 pr-4 font-medium">Provedor</th>
-                <th scope="col" className="py-3 pr-4 font-medium">Modelo</th>
-                <th scope="col" className="py-3 pr-4 font-medium">Endereço da API</th>
-                <th scope="col" className="py-3 font-medium">Escopo</th></tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--border)]">
-              {providers?.length ? providers.map((provider) => (
-                <tr key={provider.id}>
-                  <td className="py-3 pr-4 font-medium text-slate-200">{provider.name}</td>
-                  <td className="py-3 pr-4 text-slate-400">{provider.model}</td>
-                  <td className="max-w-[220px] truncate py-3 pr-4 text-xs text-slate-500" title={provider.baseUrl}>{provider.baseUrl}</td>
-                  <td className="py-3 text-slate-400">{provider.scope === 'tenant' ? 'Cliente' : provider.scope === 'global' ? 'Global' : provider.scope}</td>
-                </tr>
-              )) : <tr><td colSpan={4} className="py-6 text-center text-slate-400">
-                {providers === null ? 'Não foi possível consultar os provedores.' : 'Nenhum provedor cadastrado.'}
-              </td></tr>}
-            </tbody>
-          </table>
-        </div>
-      </section>
+    <div className="vpx-counts">
+     <span className="vpx-count coral"><b>{num(critical)}</b> Alta prioridade</span>
+     <span className="vpx-count yellow"><b>{num(summary?.projectsWithFailedRuns)}</b> Falhas de coleta</span>
+     <span className="vpx-count"><b>{num(summary?.invoicesOverdue)}</b> Faturas em atraso</span>
     </div>
-  );
+    <section className="vpx-card">
+     <div className="vpx-section-top"><div><h2>Carteira de clientes</h2><p className="vpx-card-sub">Situação registrada por organização</p></div>
+      <button type="button" className="vpx-linkbutton" onClick={()=>setTab('clientes')}>Ver carteira ↗</button></div>
+     <div className="vpx-table-wrap"><table className="vpx-data-table">
+      <thead><tr><th>Cliente</th><th>Coleta</th><th>Ocorrências</th><th>Visão</th></tr></thead>
+      <tbody>
+       {operation?.clients.slice(0,5).map(c=><tr key={c.id}>
+        <td className="vpx-maincell"><span>{c.name}</span></td>
+        <td>{collectionPT(c.collection)}</td><td>{c.incidentsOpen}</td>
+        <td><Link href={'/portal?tenant_id='+c.id} title="Abrir visão do cliente"><ExternalLink size={14}/></Link></td>
+       </tr>)}
+       {!operation?.clients.length&&<tr><td colSpan={4} className="vpx-placeholder">{loading?'Consultando clientes…':operation?'Nenhum cliente cadastrado.':'Carteira indisponível.'}</td></tr>}
+      </tbody></table></div>
+    </section>
+    <div className="vpx-left-pair">
+     <section className="vpx-card"><h2>Fila de atenção</h2>
+      <strong className="vpx-insight-emphasis">{operation?num(operation.signals.length)+' sinais':'—'}</strong>
+      <p className="vpx-insight-body">{topSignals[0]?topSignals[0].tenantName+': '+topSignals[0].title:'Não há pendências registradas nas categorias verificadas. Isso não exclui riscos externos.'}</p>
+      <button className="vpx-linkbutton" type="button" onClick={()=>setTab('operacao')}>Examinar fila ↗</button>
+     </section>
+     <section className="vpx-card"><h2>Última tentativa de coleta</h2>
+      <strong className="vpx-insight-emphasis">{date(summary?.lastCollectionAt)}</strong>
+      <p className="vpx-insight-body">{num(summary?.projectsWithoutRuns)} projetos sem histórico. A ausência de execução não comprova falha.</p>
+      <button className="vpx-linkbutton" type="button" onClick={()=>setTab('operacao')}>Ver cobertura ↗</button>
+     </section>
+    </div>
+   </div>
+   <aside className="vpx-hero" aria-label="Indicadores da operação">
+    <div className="vpx-hero-head"><small>VISÃO DO PROPRIETÁRIO</small>
+     <h2>Olá, proprietário <span aria-hidden="true">✳</span></h2>
+     <p>Veja a cobertura de execução da carteira sem dados presumidos.</p>
+    </div>
+    <VigiaCoverageGauge value={coverage} label="Projetos com histórico"
+     description="Percentual de projetos de monitoramento com ao menos uma execução registrada. Não indica saúde da reputação."
+     actionLabel="Explorar operação" onAction={()=>setTab('operacao')}/>
+    <div className="vpx-stat-grid">
+     <VigiaStatTile title="Clientes cadastrados" value={num(summary?.clients)} note="Carteira" tone="lime" onClick={()=>setTab('clientes')}/>
+     <VigiaStatTile title="Projetos de escuta" value={num(summary?.projects)} note="Monitoramento" tone="yellow" onClick={()=>setTab('operacao')}/>
+     <VigiaStatTile title="Ocorrências abertas" value={num(summary?.openIncidents)} note="Registradas" tone="blue" onClick={()=>setTab('operacao')}/>
+     <VigiaStatTile title="Coletas com falha" value={num(summary?.projectsWithFailedRuns)} note="Última execução" tone="coral" onClick={()=>setTab('operacao')}/>
+     <VigiaStatTile title="Faturas em atraso" value={num(summary?.invoicesOverdue)} note="Financeiro" tone="yellow" onClick={()=>setTab('financeiro')}/>
+     <VigiaStatTile title="Provedores de IA" value={providers?num(providers.length):'—'} note="Registrados" tone="lime" onClick={()=>setTab('config')}/>
+    </div>
+   </aside>
+  </div>}
+  {tab==='clientes'&&<section id="clientes" className="vpx-secondary">
+   <h2>Carteira de clientes</h2><p>Contratos, situação e cobertura; a consulta é limitada ao proprietário.</p>
+   <div className="vpx-table-wrap"><table className="vpx-data-table"><thead><tr>
+    <th>Organização</th><th>Plano</th><th>Cadastro</th><th>Coleta</th><th>Visão</th></tr></thead>
+    <tbody>{tenants?.map(t=>{
+      const client=operation?.clients.find(c=>c.id===t.id);
+      return <tr key={t.id}><td className="vpx-maincell"><span>{t.name}</span></td><td>{t.plan}</td>
+       <td>{t.status==='active'?'Ativo':t.status}</td><td>{client?collectionPT(client.collection):'Sem medição'}</td>
+       <td><Link href={'/portal?tenant_id='+t.id} aria-label="Abrir visão do cliente"><ExternalLink size={15}/></Link></td></tr>;
+    })}
+    {!tenants?.length&&<tr><td colSpan={5} className="vpx-placeholder">{tenants?'Nenhum cliente cadastrado.':'Consulta indisponível.'}</td></tr>}
+    </tbody></table></div>
+  </section>}
+  {tab==='operacao'&&<section className="vpx-secondary">
+   <h2>Ocorrências e coleta</h2>
+   <p>Fila ordenada por gravidade declarada, falha de coleta e pendência. Sem classificação inferida.</p>
+   <div className="vpx-table-wrap"><table className="vpx-data-table">
+    <thead><tr><th>Cliente</th><th>Prioridade</th><th>Situação</th><th>Ação</th></tr></thead><tbody>
+     {operation?.signals.map(s=><tr key={s.id}>
+      <td className="vpx-maincell"><span>{s.tenantName}</span></td>
+      <td><span className={'vpx-status-dot '+(s.priority==='critica'?'coral':'yellow')}/>{s.priority==='critica'?'Alta':s.priority==='atencao'?'Verificar':'Informação'}</td>
+      <td>{s.title}<p className="vpx-footnote">{s.explanation}</p></td>
+      <td><Link href={'/portal?tenant_id='+s.tenantId} aria-label="Visualizar cliente"><ExternalLink size={15}/></Link></td>
+     </tr>)}
+     {!operation?.signals.length&&<tr><td colSpan={4} className="vpx-placeholder">{operation?'Nenhum sinal registrado nas categorias consultadas.':'Operação indisponível.'}</td></tr>}
+    </tbody></table></div>
+  </section>}
+  {tab==='financeiro'&&<section id="financeiro" className="vpx-secondary">
+   <h2>Planos e faturamento</h2><p>Indicadores contratuais. Recebimento não é confirmado por cadastro de credenciais.</p>
+   <div className="vpx-stat-grid">
+    <VigiaStatTile title="Receita mensal contratual" value={money(billing?.resumo?.mrr)} note="MRR" tone="lime"/>
+    <VigiaStatTile title="Faturas em aberto" value={num(billing?.resumo?.faturasEmAberto)} note="Registradas" tone="yellow"/>
+    <VigiaStatTile title="Custo de IA registrado" value={money(billing?.resumo?.custoIa)} note="Medido" tone="blue"/>
+   </div>
+   <div className="vpx-left-pair" style={{marginTop:18}}>
+    <div className="vpx-card"><h2>Pix / Asaas</h2><p className="vpx-insight-body">{gateway('pix')}</p></div>
+    <div className="vpx-card"><h2>Stripe</h2><p className="vpx-insight-body">{gateway('stripe')}</p></div>
+   </div>
+  </section>}
+  {tab==='config'&&<section id="ia" className="vpx-secondary">
+   <h2>Ferramentas e configurações</h2><p>Atalhos reais, organizados por operação e administração.</p>
+   <div className="vpx-stat-grid">{CONSOLE_GROUPS.flatMap(group=>group.links.map(item=>
+    <button key={group.label+item.href} className="vpx-stat-tile" type="button" onClick={()=>navigate(item.href)}>
+     <span className="vpx-tile-label">{item.label}</span><small className="vpx-muted">{item.description}</small>
+     <b className="vpx-tile-arrow">↗</b>
+    </button>))}</div>
+   <div className="vpx-card" style={{marginTop:18}}>
+    <h2>Inteligência artificial</h2>
+    <p className="vpx-insight-body">Chave de IA: {ai==null?'Não verificada':ai.available?'Configurada':'Indisponível'}.</p>
+    {providers?.length?providers.map(p=><p key={p.id} className="vpx-insight-body">{p.name} · {p.model} · {p.scope==='tenant'?'Cliente':'Global'}</p>):
+     <p className="vpx-insight-body">Nenhum provedor consultado.</p>}
+   </div>
+  </section>}
+ </VigiaDashboardShell>;
 }
