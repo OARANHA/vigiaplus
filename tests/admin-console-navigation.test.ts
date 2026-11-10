@@ -28,7 +28,7 @@ test('console: gate server para proprietário e tema consistente', () => {
   assert.match(server, /globalRole !== 'owner'/);
   assert.match(server, /notFound\(\)/);
   assert.doesNotMatch(dashboard, /\bbg-white(?:\s|["']|$)|\bbg-gray-50\b/);
-  assert.match(dashboard, /var\(--panel\)/);
+  assert.match(dashboard, /VigiaDashboardShell/);
 });
 
 test('idioma padrão: toda a navegação global tem tradução explícita pt-BR', async () => {

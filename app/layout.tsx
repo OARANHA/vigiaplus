@@ -5,6 +5,7 @@ import Link from 'next/link';
 import localFont from 'next/font/local';
 import './globals.css';
 import './vigia-client-auth.css';
+import './vpx-dashboard.css';
 import { Sidebar } from '@/components/sidebar';
 import { getLocale, getT, setServerLocaleTag } from '@/lib/i18n';
 import { AutoRefresh } from '@/components/auto-refresh';
@@ -30,13 +31,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const demo = process.env.DEMO_MODE === '1';
   const pageIsPublic = !user || pathname.startsWith('/login') || pathname.startsWith('/landing');
   const pageIsClient = pathname === '/portal' || pathname.startsWith('/portal/');
+  const pageIsConsole = pathname === '/console' || pathname.startsWith('/console/');
   const customer = !!user && user.globalRole !== 'owner' && user.globalRole !== 'analyst';
 
   if (customer && !pageIsClient && !pathname.startsWith('/impostazioni/account') && !pageIsPublic) {
     redirect('/portal');
   }
   // Estrutura pública e do cliente NÃO recebem sidebar da administração.
-  if (pageIsPublic || pageIsClient || (customer && pathname.startsWith('/impostazioni/account'))) {
+  if (pageIsPublic || pageIsClient || pageIsConsole || (customer && pathname.startsWith('/impostazioni/account'))) {
     return (
       <html lang={locale === 'pt' ? 'pt-BR' : locale} className={geistSans.variable + ' ' + geistMono.variable + ' h-full antialiased'}>
         <body className="min-h-full">
