@@ -30,6 +30,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const pathname = requestHeaders.get('x-vigia-request-path') ?? '';
   const demo = process.env.DEMO_MODE === '1';
   const pageIsPublic = !user || pathname.startsWith('/login') || pathname.startsWith('/landing');
+  // "/" é uma rota de redirecionamento. Nunca montar a sidebar legado neste instante,
+  // pois o Next pode enviar o HTML do layout antes de completar o redirect() da página.
+  const pageIsEntryRedirect = pathname === '/';
   const pageIsClient = pathname === '/portal' || pathname.startsWith('/portal/');
   const pageIsConsole = pathname === '/console' || pathname.startsWith('/console/');
   const customer = !!user && user.globalRole !== 'owner' && user.globalRole !== 'analyst';
@@ -38,7 +41,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     redirect('/portal');
   }
   // Estrutura pública e do cliente NÃO recebem sidebar da administração.
-  if (pageIsPublic || pageIsClient || pageIsConsole || (customer && pathname.startsWith('/impostazioni/account'))) {
+  if (pageIsPublic || pageIsEntryRedirect || pageIsClient || pageIsConsole || (customer && pathname.startsWith('/impostazioni/account'))) {
     return (
       <html lang={locale === 'pt' ? 'pt-BR' : locale} className={geistSans.variable + ' ' + geistMono.variable + ' h-full antialiased'}>
         <body className="min-h-full">
