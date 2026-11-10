@@ -29,7 +29,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   setServerLocaleTag(locale);
   const pathname = requestHeaders.get('x-vigia-request-path') ?? '';
   const demo = process.env.DEMO_MODE === '1';
-  const pageIsPublic = !user || pathname.startsWith('/login') || pathname.startsWith('/landing');
+  const pageIsPublic = !user || pathname.startsWith('/login') || pathname.startsWith('/landing') || pathname.startsWith('/convite');
   // "/" é uma rota de redirecionamento. Nunca montar a sidebar legado neste instante,
   // pois o Next pode enviar o HTML do layout antes de completar o redirect() da página.
   const pageIsEntryRedirect = pathname === '/';

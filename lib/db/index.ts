@@ -54,6 +54,8 @@ async function init(): Promise<DB> {
   await ensureInitialPlanCatalog(db);
   // Índices únicos comerciais apenas em bases sem duplicidade histórica.
   // Havendo conflito legado, o console segue consultável e escritas P0 falham fechado.
+  const { ensureMembershipUniqueness } = await import('./client-constraints');
+  await ensureMembershipUniqueness(db);
   const { ensureCommercialConstraints } = await import('./commercial-constraints');
   const commercial = await ensureCommercialConstraints(db);
   if (!commercial.featureIndex || !commercial.subscriptionIndex) {
@@ -700,8 +702,10 @@ const DDL = [
     token_hash TEXT NOT NULL UNIQUE,
     expires_at TIMESTAMPTZ NOT NULL,
     used_at TIMESTAMPTZ,
+    revoked_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ`,
   // Colunas VigiaPlus aditivas nas tabelas existentes
   `ALTER TABLE projects ADD COLUMN IF NOT EXISTS tenant_id INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS global_role TEXT`,

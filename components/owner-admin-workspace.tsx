@@ -56,6 +56,8 @@ const HEADINGS: Record<Section, { title: string; detail: string }> = {
   marca: {title: 'Marca e comunicação',detail: 'Identidade visual e canais de avisos, separados por cliente.'},
   sistema: {title: 'Sistema e integrações',detail: 'Conectividade, monitoramento e configuração da plataforma.'},
 };
+type ClientInvitation = {id:number;tenantId:number;email:string;role:string;status:string;
+  createdAt:string;expiresAt:string};
 type Feature = { key: string; label: string; group: string; enabled?: boolean; reason?: string; source?: string; plan?: string };
 type Plan = { key: string; label: string; priceBrl: number|null; aiQuotaBrl: number;
   mentionsLimit: number; retentionMonths: number; features: string[]; inUse: boolean };
@@ -125,6 +127,11 @@ export function OwnerAdminWorkspace() {
   const [contractReason,setContractReason]=useState('');
   const [manualApproval,setManualApproval]=useState(false);
   const [newClient,setNewClient]=useState({name:'',slug:'',cnpj:''});
+  const [invitations,setInvitations]=useState<ClientInvitation[]>([]);
+  const [inviteEmail,setInviteEmail]=useState('');
+  const [inviteRole,setInviteRole]=useState<'client_admin'|'client_viewer'>('client_admin');
+  const [inviteReason,setInviteReason]=useState('');
+  const [inviteLink,setInviteLink]=useState('');
   const [message,setMessage]=useState('');
   const [error,setError]=useState('');
   const [busy,setBusy]=useState(false);
@@ -175,6 +182,12 @@ export function OwnerAdminWorkspace() {
   },[section,auditTenant]);
 
   useEffect(()=>{
+    if(section!=='acessos'||!selectedTenant)return;
+    void api<{invitations:ClientInvitation[]}>('/api/console/invitations?tenant_id='+selectedTenant)
+      .then(data=>setInvitations(data.invitations))
+      .catch(e=>setError('Convites indisponíveis: '+String(e)));
+  },[section,selectedTenant]);
+  useEffect(()=>{
     if(!selectedTenant){setFeatures(null);return;}
     setFeatures(null);
     void api<{catalog:Feature[]}>('/api/console/tenants/'+selectedTenant+'/features')
@@ -215,6 +228,35 @@ export function OwnerAdminWorkspace() {
       await api('/api/console/tenants',json(newClient));
       setNewClient({name:'',slug:'',cnpj:''});
       await reload();setMessage('Cliente cadastrado como pendente; ainda não possui contrato nem acesso.');
+    }catch(e){setError(String(e));}finally{setBusy(false);}
+  }
+  async function createInvitation(){
+    if(!selectedTenant)return;
+    setBusy(true);setMessage('');setError('');setInviteLink('');
+    try{
+      const result=await api<{inviteUrl?:string;message:string}>('/api/console/invitations',json({
+        tenantId:selectedTenant,email:inviteEmail,role:inviteRole,reason:inviteReason,
+      }));
+      setInviteEmail('');setInviteReason('');
+      setInviteLink(result.inviteUrl??'');
+      setMessage(result.message);
+      const updated=await api<{invitations:ClientInvitation[]}>(
+        '/api/console/invitations?tenant_id='+selectedTenant);
+      setInvitations(updated.invitations);
+    }catch(e){setError(String(e));}finally{setBusy(false);}
+  }
+  async function revokeInvitation(id:number){
+    if(!selectedTenant)return;
+    setBusy(true);setError('');setMessage('');setInviteLink('');
+    try{
+      await api('/api/console/invitations',{method:'DELETE',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({tenantId:selectedTenant,invitationId:id,
+          reason:inviteReason.trim()||'Revogado pelo proprietário no painel'}),
+      });
+      const updated=await api<{invitations:ClientInvitation[]}>(
+        '/api/console/invitations?tenant_id='+selectedTenant);
+      setInvitations(updated.invitations);setMessage('Convite revogado sem alterar outras contas.');
     }catch(e){setError(String(e));}finally{setBusy(false);}
   }
   async function changeFeature(f:Feature) {
@@ -469,11 +511,55 @@ export function OwnerAdminWorkspace() {
           {label:'Relatórios disponíveis',href:'/report',description:'Geração e consulta dos relatórios existentes.'},
           {label:'Periodicidade e entrega automática',description:'Gestão da entrega por plano e cliente ainda pendente.',pending:true},
         ]}/></SubPanel>}
-        {section==='acessos'&&<SubPanel title="Acesso e segurança"><Destinations items={[
-          {label:'Equipe e usuários',href:'/impostazioni/team',description:'Administração de equipe disponível na área analítica.'},
-          {label:'Minha conta',href:'/impostazioni/account',description:'Preferências e credenciais do usuário atual.'},
-          {label:'MFA e sessões de segurança',description:'Controle de sessões e homologação cross-tenant ainda pendentes.',pending:true},
-        ]}/></SubPanel>}
+        {section==='acessos'&&<>
+          <SubPanel title="Convites de acesso por cliente">
+            <p className="vpx-owner-muted">A conta só é criada após o aceite. Um convite tem 48 horas, é de uso único e não libera dados de um contrato inativo.</p>
+            <div className="vpx-owner-formgrid">
+              <label>Organização
+                <select value={selectedTenant??''} onChange={e=>{
+                    setSelectedTenant(Number(e.target.value));setInviteLink('');}}>
+                  {clients.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                </select></label>
+              <label>E-mail do convidado
+                <input type="email" value={inviteEmail} autoComplete="off"
+                  onChange={e=>setInviteEmail(e.target.value)} placeholder="pessoa@empresa.com.br"/></label>
+              <label>Perfil inicial
+                <select value={inviteRole} onChange={e=>setInviteRole(e.target.value as typeof inviteRole)}>
+                  <option value="client_admin">Administrador do cliente</option>
+                  <option value="client_viewer">Somente leitura</option>
+                </select></label>
+              <label>Justificativa
+                <input value={inviteReason} maxLength={300}
+                  onChange={e=>setInviteReason(e.target.value)}
+                  placeholder="Primeiro acesso contratado"/></label>
+            </div>
+            <button type="button" className="vpx-owner-button" disabled={busy||!selectedTenant||!inviteEmail.includes('@')||inviteReason.trim().length<5}
+              onClick={()=>{void createInvitation();}}>Gerar convite de uso único</button>
+            {inviteLink&&<div className="vpx-alert" role="status">
+              <p>Link de ativação (desenvolvimento local, apenas uma exibição; sem envio automático):</p>
+              <input value={inviteLink} readOnly aria-label="Link temporário de convite"/>
+              <button type="button" onClick={()=>{void navigator.clipboard.writeText(inviteLink);}}>Copiar link</button>
+            </div>}
+          </SubPanel>
+          <SubPanel title="Convites registrados">
+            <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
+              <thead><tr><th>E-mail</th><th>Perfil</th><th>Situação</th><th>Vencimento</th><th>Ação</th></tr></thead>
+              <tbody>{invitations.map(i=><tr key={i.id}>
+                <td>{i.email}</td><td>{i.role==='client_admin'?'Administrador':'Leitura'}</td>
+                <td>{i.status}</td><td>{new Date(i.expiresAt).toLocaleString('pt-BR')}</td>
+                <td>{i.status==='pendente'?<button type="button" disabled={busy}
+                  onClick={()=>{void revokeInvitation(i.id);}}>Revogar</button>:'—'}</td>
+              </tr>)}
+              {!invitations.length&&<tr><td colSpan={5}>Nenhum convite registrado para o cliente selecionado.</td></tr>}
+              </tbody></table></div>
+          </SubPanel>
+          <SubPanel title="Acesso e segurança"><Destinations items={[
+            {label:'Equipe interna',href:'/impostazioni/team',description:'Gestão da equipe de análise, separada dos convites dos clientes.'},
+            {label:'Minha conta',href:'/impostazioni/account',description:'Alterar sua senha e consultar seu perfil.'},
+            {label:'Convite para usuário já cadastrado',description:'Vinculação multi-organização exige validação autenticada e ainda não está liberada.',pending:true},
+            {label:'MFA e sessões de segurança',description:'Autenticação multifator e gestão de dispositivos ainda pendentes.',pending:true},
+          ]}/></SubPanel>
+        </>}
         {section==='privacidade'&&<SubPanel title="Governança de dados"><Destinations items={[
           {label:'Políticas de retenção por cliente',description:'Expurgo e exportação seguros ainda não homologados.',pending:true},
           {label:'Solicitações de titulares e expurgo',description:'Fluxos de solicitações, auditoria de exclusão e evidências ainda pendentes.',pending:true},

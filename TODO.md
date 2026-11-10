@@ -29,9 +29,19 @@
 **Entrega-alvo:** proprietário cadastra organização → vincula usuário → convida → usuário define senha → login no portal → acesso limitado ao contrato e tenant.
 
 - [ ] **SEC-01 — Bloqueio contratual server-side em todas as consultas de cliente.** Em `app/api/app/evidence/route.ts` e demais APIs/exports, exigir tenant **ativo**, assinatura elegível e feature correspondente; preservar acesso mínimo e explícito a conta/fatura/suporte. Aceite: tenant pending/suspended/cancelled recebe 403 nas evidências, inclusive por URL direta; owner consegue diagnosticar sem burlar auditoria.
+  - [x] 2026-11-10 — `app/api/app/evidence`, `summary`, notificações e projetos/exports legados protegidos no servidor (PR #25).
+  - [x] 2026-11-10 — testes com banco PGlite e clientes Alfa/Beta, incluindo suspensão/cancelamento.
+  - [ ] Inventário de todas as demais rotas, RLS/Neon descartável e E2E autenticado de dois clientes — **item SEC-01 ainda aberto**.
 - [ ] **SEC-02 — Imposição de senha temporária no servidor.** Negar APIs/páginas de negócio para `mustChangePassword=1`; liberar apenas autenticação, troca de senha e logout. Aceite: tentativas diretas em REST não funcionam antes da troca; após troca a versão da sessão é renovada, a sessão antiga deixa de funcionar.
+  - [x] 2026-11-10 — gate central de `mustChangePassword` em `lib/auth.ts` e teste de política, com a tela de alteração permitida (PR #25).
+  - [ ] Prova E2E de REST com cookie real e da rotação da sessão pós-alteração — **item SEC-02 ainda aberto**.
 - [ ] **CL-01 — Onboarding transacional da organização.** Criar usuário ou vincular existente a `memberships` com papel `client_admin`/`client_viewer` e tenant explícito, auditando alterações. Aceite: cliente sem vínculo não entra, cliente com vínculo entra apenas no próprio tenant; duplicidades concorrentes não criam membros extras.
+  - [x] 2026-11-10 — aceite de convite cria **novo** usuário + membership com tenant/papel e auditoria numa instrução SQL (PR #26), teste PGlite.
+  - [ ] Vinculação autenticada de conta preexistente e E2E do fluxo completo owner→cliente — **item CL-01 ainda aberto**.
 - [ ] **CL-02 — Convites seguros e recuperações.** Token aleatório de uso único armazenado somente como hash, expiração, aceite, revogação, reenvio, throttling e recuperação de senha sem enviar senha em texto claro. Aceite: convite expirado/reutilizado/revogado inválido; endereço informado recebe convite **apenas se transporte certificado**; estado visível na ficha do cliente.
+  - [x] 2026-11-10 — token 256 bits persistido apenas como hash, validade 48h, aceite único, revogação e UI do proprietário (PR #26).
+  - [x] 2026-11-10 — produção bloqueia emissão sem Resend, remetente e URL HTTPS configurados; local permite apenas link manual de teste.
+  - [ ] Recuperação de senha, reenvio, throttling distribuído, webhook de entrega e teste com e-mail real — **item CL-02 ainda aberto**.
 - [ ] **SEC-03 — Proteção integral do modo demo.** Em `DEMO_MODE=1`, qualquer mutação (inclusive ações owner e APIs SaaS) responde 403 no servidor, sem depender do proxy. Aceite: suíte parametrizada POST/PATCH/PUT/DELETE para rotas administrativas/cliente, nenhuma linha alterada.
 - [ ] **SEC-04 — Isolamento de dois tenants e RLS.** Inspecionar e homologar [PR #14](https://github.com/OARANHA/vigiaplus/pull/14) no PostgreSQL/Neon descartável com role sem `BYPASSRLS`, transaction-scoped tenant e cobertura das tabelas; validar atual uso de Neon HTTP. Aceite: matriz A/B com endpoints, exports, jobs e acesso por ID cruzado sempre negados; não ativar política em base real antes de teste e autorização.
 - [ ] **SEC-05 — MFA real + sessão de proprietário.** Implementar desafio verificável (TOTP/passkey) para owner e admins, recuperação segura, revogação e gestão de sessões. Aceite: `two_factor_enabled` só habilita depois da prova; segunda etapa é obrigatória no login; dispositivos revogados recebem 401.
