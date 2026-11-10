@@ -143,7 +143,7 @@ export async function setTenantFeature(
   // Input da UI é uma data civil; a exceção vence ao final desse dia (Brasília).
   const expirationInput = typeof input.expires_at === 'string' ? input.expires_at : null;
   const expiresAt: Date | null = expirationInput
-    ? new Date(/^\\d{4}-\\d{2}-\\d{2}$/.test(expirationInput)
+    ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(expirationInput)
       ? expirationInput + 'T23:59:59.999-03:00' : expirationInput)
     : null;
   if (expiresAt && (!Number.isFinite(expiresAt.getTime()) || expiresAt <= new Date())) {
