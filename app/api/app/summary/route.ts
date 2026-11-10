@@ -76,6 +76,7 @@ export async function GET(request: Request) {
   const lastCollected = observed?.latest ? new Date(observed.latest).toISOString() : null;
   const workEvidence = {
     sources_monitored: sourceCount,
+    window_days: WINDOW_DAYS,
     comments_analyzed: sampleSize,
     mentions_collected: Number(observed?.received ?? 0),
     detection_minutes: null, // sem SLA medido e verificável
