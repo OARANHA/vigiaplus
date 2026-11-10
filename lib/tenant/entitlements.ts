@@ -34,6 +34,13 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
 
   const db = await getDb();
 
+  // Cliente pendente, suspenso ou inativo não deve ter acesso por contrato ou exceção.
+  const [organization] = await db.select({ status: tenants.status })
+    .from(tenants).where(eq(tenants.id, ctx.tenantId)).limit(1);
+  if (!organization || organization.status !== 'active') {
+    return { enabled: false, reason: 'cliente_inativo_ou_pendente', source: 'billing' };
+  }
+
   // Overrides do tenant
   const overrides = await db.select().from(tenantFeatures)
     .where(eq(tenantFeatures.tenantId, ctx.tenantId));
@@ -54,11 +61,17 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
   const subs = await db.select().from(subscriptions)
     .where(eq(subscriptions.tenantId, ctx.tenantId));
   // `now` ja foi declarado acima para validar a expiracao dos overrides.
-  const active = subs.find((s) => s.status === 'active');
-  const inGrace = subs.find(
-    (s) => s.status === 'past_due' && s.graceUntil && new Date(s.graceUntil) > now,
+  const validSubscriptions = subs.filter((s) =>
+    (s.status === 'active' || (s.status === 'past_due' && s.graceUntil && new Date(s.graceUntil) > now)) &&
+    (!s.vigenciaAte || new Date(s.vigenciaAte) >= now),
   );
-  const sub = active ?? inGrace;
+  // Mais de uma assinatura válida é um estado ambíguo: negar até conciliação.
+  if (validSubscriptions.length > 1) {
+    return { enabled: false, reason: 'contratos_conflitantes', source: 'billing' };
+  }
+  const sub = validSubscriptions[0];
+  const inGrace = sub?.status === 'past_due' ? sub : undefined;
+  const active = sub?.status === 'active' ? sub : undefined;
 
   if (!sub) {
     const hasVencida = subs.some((s) => s.status === 'past_due');
