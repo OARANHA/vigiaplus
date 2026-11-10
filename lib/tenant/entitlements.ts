@@ -1,9 +1,9 @@
 // Entitlements: o que este contrato pode usar, resolvido no SERVIDOR.
-// Ordem: override explicito do tenant -> feature do plano -> negacao.
+// Ordem: assinatura válida -> override vigente -> direitos persistidos do plano -> negação.
 import { eq, and } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { tenantFeatures, subscriptions, planFeatures, tenants } from '@/lib/db/schema';
-import { FEATURE_KEYS, PLAN_FEATURES } from './catalog';
+import { FEATURE_KEYS } from './catalog';
 import { AppError } from './errors';
 import type { TenantContext } from './context';
 import { appendAudit } from './context';
@@ -41,17 +41,11 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
   const featureOverrides = overrides.filter((o) => o.featureKey === key);
 
   // Negacao explicita sempre vence.
-  const denied = featureOverrides.find((o) => o.enabled === 0);
-  if (denied) {
-    return { enabled: false, reason: denied.reason ?? 'desabilitado_por_contrato', source: 'override' };
-  }
-
-  // Liberacao explicita com expiracao.
   const now = new Date();
-  const granted = featureOverrides.find((o) => o.enabled === 1 && (!o.expiresAt || new Date(o.expiresAt) > now));
-  if (granted) {
-    return { enabled: true, reason: granted.reason ?? 'liberado_por_override', source: 'override' };
-  }
+  // Um bloqueio vencido não pode continuar negando acesso.
+  const vigente = (o: typeof featureOverrides[number]) =>
+    !o.expiresAt || new Date(o.expiresAt).getTime() > now.getTime();
+  const denied = featureOverrides.find((o) => o.enabled === 0 && vigente(o));
 
   // Estado financeiro dirige o contrato (ADR-07 + dunning H3).
   // Nunca confiamos no frontend: o gateway so muda `status`, e o entitlement
@@ -80,9 +74,19 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
     return { enabled: false, reason: 'vigencia_expirada', source: 'billing' };
   }
 
-  // Feature inclusa no plano?
-  const planFeaturesList = PLAN_FEATURES[sub.planKey] ?? [];
-  if (planFeaturesList.includes(key)) {
+  // Negação explícita e vigente prevalece após confirmar assinatura.
+  if (denied) {
+    return { enabled: false, reason: denied.reason ?? 'desabilitado_por_contrato', source: 'override' };
+  }
+  const granted = featureOverrides.find((o) => o.enabled === 1 && vigente(o));
+  if (granted) {
+    return { enabled: true, reason: granted.reason ?? 'liberado_por_override', source: 'override', plan: sub.planKey };
+  }
+
+  // Única fonte da matriz de direitos: plan_features persistida, não constantes TS.
+  const planRows = await db.select({ featureKey: planFeatures.featureKey }).from(planFeatures)
+    .where(eq(planFeatures.planKey, sub.planKey));
+  if (planRows.some((row) => row.featureKey === key)) {
     return {
       enabled: true,
       reason: inGrace && !active ? 'incluso_no_plano_em_carencia' : 'incluso_no_plano',
@@ -119,12 +123,19 @@ export async function setTenantFeature(
 ): Promise<void> {
   if (ctx.role !== 'owner') throw AppError.forbidden('Operacao reservada ao dono');
   if (!FEATURE_KEYS.has(input.feature_key)) throw AppError.badRequest('Feature desconhecida');
-  if (!input.reason || !input.reason.trim()) throw AppError.badRequest('Override exige motivo');
+  if (!Number.isSafeInteger(tenantId) || tenantId <= 0) throw AppError.badRequest('Cliente inválido');
+  if (typeof input.enabled !== 'boolean') throw AppError.badRequest('Estado do recurso inválido');
+  if (typeof input.reason !== 'string' || !input.reason.trim() || input.reason.length > 300)
+    throw AppError.badRequest('Override exige motivo de até 300 caracteres');
+  const expiresAt: Date | null = input.expires_at ? new Date(input.expires_at) : null;
+  if (expiresAt && (!Number.isFinite(expiresAt.getTime()) || expiresAt <= new Date())) {
+    throw AppError.badRequest('A expiração deve ser uma data futura');
+  }
 
   const db = await getDb();
+  const [tenant] = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.id, tenantId)).limit(1);
+  if (!tenant) throw AppError.notFound('Cliente inexistente');
   const target: TenantContext = { ...ctx, tenantId, system: false };
-  const expiresAt: Date | null = input.expires_at ? new Date(input.expires_at) : null;
-
   // Upsert: se ja existe, atualiza; senao, insere.
   const existing = await db.select().from(tenantFeatures)
     .where(and(eq(tenantFeatures.tenantId, tenantId), eq(tenantFeatures.featureKey, input.feature_key)));
@@ -136,7 +147,7 @@ export async function setTenantFeature(
       expiresAt,
       updatedBy: ctx.userId,
       updatedAt: new Date(),
-    }).where(eq(tenantFeatures.id, existing[0].id));
+    }).where(and(eq(tenantFeatures.tenantId, tenantId), eq(tenantFeatures.featureKey, input.feature_key)));
   } else {
     await db.insert(tenantFeatures).values({
       tenantId,
