@@ -23,6 +23,12 @@ export function normSentimentValue(s: string | null): 'positive' | 'neutral' | '
 export async function getProjects() {
   const db = await getDb();
   const user = await getCurrentUser();
+  // Cliente só usa as APIs /api/app/* com membership + direitos do contrato.
+  // As rotas legadas de Radar/export não têm a mesma verificação de feature;
+  // falhar fechado em vez de usar ownerId ou visibility='shared' de outro tenant.
+  if (!user || (user.globalRole !== 'owner' && user.globalRole !== 'analyst')) {
+    return visibleProjectsFor(db, null);
+  }
   return visibleProjectsFor(db, user);
 }
 
