@@ -138,7 +138,7 @@ export function OwnerAdminWorkspace() {
     if(!selectedTenant){setFeatures(null);return;}
     setFeatures(null);
     void api<{catalog:Feature[]}>('/api/console/tenants/'+selectedTenant+'/features')
-      .then(d=>setFeatures(d.catalog)).catch(err=>setError(String(err)));
+      .then(d=>setFeatures(d.catalog)).catch(err=>{setFeatures([]);setError(String(err));});
   },[selectedTenant]);
 
   function choose(next:Section) {
@@ -164,8 +164,9 @@ export function OwnerAdminWorkspace() {
       await api('/api/console/plans',{
         method:editing?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(draft),
       });
-      setMessage(editing?'Plano atualizado.':'Plano cadastrado. Para ativar em um cliente, configure o contrato manual.');
+      const wasEditing = !!editing;
       editPlan(null);await reload();
+      setMessage(wasEditing?'Plano atualizado.':'Plano cadastrado. Para ativar em um cliente, configure o contrato manual.');
     } catch(e){setError(String(e));}finally{setBusy(false);}
   }
   async function createClient() {
