@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { ArrowUpRight, BrainCircuit, CreditCard, RefreshCw, ShieldCheck, Users } from 'lucide-react';
 import { ViewModeToggle } from '@/components/view-mode-toggle';
 import { CONSOLE_GROUPS } from '@/lib/admin-navigation';
+import { OwnerOperationalOverview, type OperationalOverview } from '@/components/owner-operational-overview';
 
 type Tenant = {
   id: number; name: string; plan: string; status: string; domain: string | null;
@@ -58,17 +59,19 @@ export function ConsoleOwnerDashboard() {
   const [providers, setProviders] = useState<Provider[] | null>(null);
   const [billing, setBilling] = useState<Billing | null>(null);
   const [ai, setAi] = useState<AiStatus | null>(null);
+  const [operation, setOperation] = useState<OperationalOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState<string[]>([]);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [tenantResult, providerResult, billingResult, aiResult] = await Promise.allSettled([
+    const [tenantResult, providerResult, billingResult, aiResult, operationResult] = await Promise.allSettled([
       apiJson<{ tenants: Tenant[] }>('/api/console/tenants'),
       apiJson<{ providers: Provider[] }>('/api/console/llm-providers'),
       apiJson<Billing>('/api/console/billing'),
       apiJson<AiStatus>('/api/console/llm-status'),
+      apiJson<OperationalOverview>('/api/console/operations'),
     ]);
     const failures: string[] = [];
     if (tenantResult.status === 'fulfilled') setTenants(tenantResult.value.tenants ?? []);
@@ -79,6 +82,8 @@ export function ConsoleOwnerDashboard() {
     else { setBilling(null); failures.push('faturamento'); }
     if (aiResult.status === 'fulfilled') setAi(aiResult.value);
     else { setAi(null); failures.push('disponibilidade de IA'); }
+    if(operationResult.status==='fulfilled')setOperation(operationResult.value);
+    else {setOperation(null);failures.push('prioridades operacionais');}
     setErrors(failures);
     setUpdatedAt(new Date());
     setLoading(false);
@@ -124,7 +129,9 @@ export function ConsoleOwnerDashboard() {
         </p>
       )}
 
-      <section aria-label="Indicadores operacionais" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <OwnerOperationalOverview overview={operation} loading={loading}/>
+
+      <section aria-label="Indicadores contratuais e de IA" className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Kpi icon={Users} label="Clientes ativos cadastrados"
           value={tenants ? tenants.filter((t) => t.status === 'active').length : '—'}
           note="Clientes com cadastro ativo, não assinaturas pagas." />
@@ -139,12 +146,9 @@ export function ConsoleOwnerDashboard() {
           note="Inclui faturas pendentes de processamento." />
       </section>
 
-      <section aria-labelledby="acessos-heading" className="space-y-4">
-        <div>
-          <h2 id="acessos-heading" className="text-lg font-semibold text-slate-100">Acesso rápido</h2>
-          <p className="mt-1 text-sm text-slate-400">Funções organizadas pelo trabalho a realizar, sem uma segunda barra lateral.</p>
-        </div>
-        <div className="grid gap-4 xl:grid-cols-3">
+      <details className="group rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-200 focus-visible:outline-2 focus-visible:outline-sky-400">Ferramentas e configurações <span className="text-xs font-normal text-slate-400">(expandir)</span></summary>
+        <div className="mt-4 grid gap-4 xl:grid-cols-3">
           {CONSOLE_GROUPS.map((group) => (
             <div key={group.label} className="min-w-0 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
               <h3 className="mb-3 px-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
@@ -165,7 +169,7 @@ export function ConsoleOwnerDashboard() {
             </div>
           ))}
         </div>
-      </section>
+      </details>
 
       <section id="clientes" aria-labelledby="clientes-heading" className="scroll-mt-6 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4 sm:p-5">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
@@ -233,7 +237,7 @@ export function ConsoleOwnerDashboard() {
           <span className={ai?.available
             ? 'rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300'
             : 'rounded-full border border-[var(--border)] bg-[var(--panel-2)] px-3 py-1 text-xs text-slate-400'}>
-            {ai === null ? 'Não verificado' : ai.available ? 'Chave de IA disponível' : 'Chave de IA indisponível'}
+            {ai === null ? 'Não verificado' : ai.available ? 'Chave de IA configurada' : 'Chave de IA indisponível'}
           </span>
         </div>
         {ai?.active && <p className="mb-4 text-xs text-slate-400">

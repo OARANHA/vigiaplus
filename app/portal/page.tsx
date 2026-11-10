@@ -9,6 +9,7 @@ import {
   Siren, UsersRound,
 } from 'lucide-react';
 import { ViewModeToggle } from '@/components/view-mode-toggle';
+import { ClientDecisionBrief } from '@/components/client-decision-brief';
 
 type Tenant = { id: number; name: string; plan?: string };
 type Reputation = {
@@ -21,10 +22,12 @@ type Incident = { id: number; title: string; status: string; severity: string; o
 type Summary = {
   greeting?: string; error?: string;
   work_evidence?: {
-    sources_monitored?: number; comments_analyzed?: number; subjects_tracked?: number;
+    sources_monitored?: number; comments_analyzed?: number; mentions_collected?: number; subjects_tracked?: number;
+    window_days?: number;
     detection_minutes?: number | null; updated_at?: string | null;
   };
   reputations?: Reputation[]; incidents?: Incident[]; open_incidents?: number;
+  collection?: { status: string; lastAttemptAt: string; finishedAt: string | null; newCount: number } | null;
 };
 type Evidence = {
   id: number; title: string | null; url: string | null; source: string;
@@ -41,7 +44,11 @@ type Tab = 'panorama' | 'crises' | 'relatorios' | 'conta';
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, { cache: 'no-store' });
   const data = await response.json();
-  if (!response.ok || data.error) throw new Error(data.error || 'Não foi possível consultar os dados.');
+  if (!response.ok || data.error) {
+    if(response.status===401)throw new Error('Sua sessão expirou. Entre novamente.');
+    if(response.status===403)throw new Error('Seu perfil não tem acesso a estas informações.');
+    throw new Error('A consulta não foi concluída. Atualize os dados.');
+  }
   return data as T;
 }
 function numberOrDash(value: number | undefined): string {
@@ -58,6 +65,7 @@ function statusPT(status: string): string {
     active: 'Ativo', paid: 'Pago', open: 'Em aberto', trial: 'Em avaliação',
     monitoring: 'Em acompanhamento', resolved: 'Resolvido', closed: 'Encerrado',
     past_due: 'Em atraso', canceled: 'Cancelado', none: 'Sem assinatura',
+    high:'Alta', critical:'Crítica', medium:'Média', low:'Baixa',
   };
   return statuses[status] ?? status;
 }
@@ -79,20 +87,29 @@ export default function ClientPortal() {
   const [evidence, setEvidence] = useState<Evidence[] | null>(null);
   const [plan, setPlan] = useState<Plan | null>(null);
   const [error, setError] = useState('');
+  const [evidenceError, setEvidenceError] = useState('');
+  const [planError, setPlanError] = useState('');
+  const [refreshToken, setRefreshToken] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       try {
-        const permissions = await getJson<{ permissions?: { system?: boolean } }>('/api/me/permissions');
+        const permissions = await getJson<{ permissions?: { role?: string; system?: boolean } }>('/api/me/permissions');
         if (!mounted) return;
-        if (permissions.permissions?.system) {
+        if (permissions.permissions?.role === 'analyst') {
+          window.location.replace('/');
+          return;
+        }
+        if (permissions.permissions?.role === 'owner') {
           const result = await getJson<{ tenants: Tenant[] }>('/api/console/tenants');
           if (!mounted) return;
           setOwner(true);
           setTenants(result.tenants ?? []);
-          setTenantId(result.tenants?.[0]?.id ?? null);
+          const requested = Number(new URLSearchParams(window.location.search).get('tenant_id'));
+          const allowed = result.tenants.find((t) => t.id === requested);
+          setTenantId(allowed?.id ?? result.tenants?.[0]?.id ?? null);
         }
         setInitialized(true);
       } catch (err) {
@@ -105,29 +122,32 @@ export default function ClientPortal() {
   useEffect(() => {
     if (!initialized || (owner && !tenantId)) { setLoading(false); return; }
     let mounted = true;
-    setLoading(true); setError(''); setPlan(null);
+    setLoading(true); setError(''); setEvidenceError(''); setPlanError('');
+    setSummary(null); setEvidence(null); setPlan(null);
     const query = owner && tenantId ? '?tenant_id=' + tenantId : '';
-    Promise.all([getJson<Summary>('/api/app/summary' + query),
-      getJson<{ items: Evidence[] }>('/api/app/evidence' + query)])
-      .then(([s, e]) => {
-        if (mounted) { setSummary(s); setEvidence(e.items); }
-      })
-      .catch((err) => {
-        if (mounted) { setSummary(null); setEvidence(null); setError(err instanceof Error ? err.message : 'Falha de consulta'); }
-      })
-      .finally(() => { if (mounted) setLoading(false); });
+    Promise.allSettled([
+      getJson<Summary>('/api/app/summary' + query),
+      getJson<{ items: Evidence[] }>('/api/app/evidence' + query),
+    ]).then(([overview, publications]) => {
+      if (!mounted) return;
+      if (overview.status === 'fulfilled') setSummary(overview.value);
+      else setError('Não foi possível carregar o panorama. Confira sua conexão e atualize.');
+      if (publications.status === 'fulfilled') setEvidence(publications.value.items);
+      else setEvidenceError('As publicações estão temporariamente indisponíveis.');
+    }).finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [initialized, owner, tenantId]);
+  }, [initialized, owner, tenantId, refreshToken]);
 
   useEffect(() => {
     if (tab !== 'conta' || !initialized || (owner && !tenantId)) return;
     let active = true;
     const query = owner && tenantId ? '?tenant_id=' + tenantId : '';
+    setPlan(null); setPlanError('');
     getJson<Plan>('/api/app/plan' + query)
       .then((result) => { if (active) setPlan(result); })
-      .catch((err) => { if (active) setError(err instanceof Error ? err.message : 'Falha de consulta'); });
+      .catch(() => { if (active) setPlanError('Não foi possível carregar o plano. Tente atualizar a página.'); });
     return () => { active = false; };
-  }, [tab, initialized, owner, tenantId]);
+  }, [tab, initialized, owner, tenantId, refreshToken]);
 
   async function logout() {
     await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -137,10 +157,10 @@ export default function ClientPortal() {
 
   const selected = tenants.find((t) => t.id === tenantId);
   const metrics = [
-    { name: 'Fontes observadas', value: numberOrDash(summary?.work_evidence?.sources_monitored), icon: Radio, className: 'cp-metric-violet' },
-    { name: 'Menções analisadas', value: numberOrDash(summary?.work_evidence?.comments_analyzed), icon: Activity, className: 'cp-metric-cyan' },
-    { name: 'Assuntos monitorados', value: numberOrDash(summary?.work_evidence?.subjects_tracked), icon: ShieldCheck, className: 'cp-metric-mint' },
-    { name: 'Incidentes abertos', value: numberOrDash(summary?.open_incidents), icon: Siren, className: 'cp-metric-rose' },
+    { name: 'Menções coletadas', value: numberOrDash(summary?.work_evidence?.mentions_collected), note: 'Janela de ' + (summary?.work_evidence?.window_days ?? 14) + ' dias' },
+    { name: 'Menções analisadas', value: numberOrDash(summary?.work_evidence?.comments_analyzed), note: 'Janela de ' + (summary?.work_evidence?.window_days ?? 14) + ' dias' },
+    { name: 'Fontes com publicações', value: numberOrDash(summary?.work_evidence?.sources_monitored), note: 'Fontes distintas na janela' },
+    { name: 'Ocorrências abertas', value: numberOrDash(summary?.open_incidents), note: 'Registros em acompanhamento' },
   ];
   const reputations = summary?.reputations ?? [];
   const incidents = summary?.incidents ?? [];
@@ -172,6 +192,7 @@ export default function ClientPortal() {
           <span><span className="cp-state"><i/></span> Monitoramento e inteligência</span>
           <div>
             <Link className="cp-toplink" href="/impostazioni/account">Minha conta</Link>
+            <button type="button" onClick={() => setRefreshToken((v) => v + 1)} aria-label="Atualizar informações"><RefreshCw size={14}/> Atualizar</button>
             <button type="button" onClick={logout}><LogOut size={14}/> Sair</button>
           </div>
         </header>
@@ -202,14 +223,15 @@ export default function ClientPortal() {
                 <h2>Dados indisponíveis</h2><p>Verifique a conexão e os vínculos de acesso deste cliente.</p>
               </div> : (
                 <>
-                  <div className="cp-metrics" aria-label="Indicadores observados">
-                    {metrics.map(({ name, value, icon: Icon, className }) => (
-                      <div key={name} className={'cp-metric ' + className}>
-                        <Icon size={19}/><span>{name}</span><strong>{value}</strong>
-                        <small>Dados do período informado pelas fontes</small>
-                      </div>
-                    ))}
-                  </div>
+                  {tab === 'panorama' && <>
+                    <ClientDecisionBrief data={summary} evidence={evidence} evidenceError={evidenceError}
+                      onCrises={() => setTab('crises')} onEvidence={() => setTab('relatorios')}/>
+                    <div className="cp-facts-strip" aria-label="Indicadores verificados">
+                      {metrics.map(({name,value,note}) => (
+                        <div key={name}><span>{name}</span><strong>{value}</strong><small>{note}</small></div>
+                      ))}
+                    </div>
+                  </>}
 
                   {tab === 'panorama' && <>
                     <div className="cp-panels">
@@ -218,7 +240,7 @@ export default function ClientPortal() {
                           <button type="button" onClick={() => setTab('relatorios')} className="cp-small-link">
                             Todas as evidências <ChevronRight size={14}/></button>
                         </div>
-                        <EvidenceList data={evidence}/>
+                        <EvidenceList data={evidence} error={evidenceError}/>
                       </section>
                       <section className="cp-panel">
                         <div className="cp-panel-title"><div><ShieldCheck size={19}/><h2>Visão de reputação</h2></div></div>
@@ -231,10 +253,10 @@ export default function ClientPortal() {
                         <button type="button" className="cp-small-link" onClick={() => setTab('crises')}>Ver ocorrências <ArrowRight size={14}/></button>
                       </div>
                       {incidents.length ? <IncidentList data={incidents}/> :
-                        <p className="cp-placeholder">Nenhum incidente ativo registrado neste período.</p>}
+                        <p className="cp-placeholder">Nenhuma ocorrência em aberto cadastrada para este cliente.</p>}
                     </section>
                     <div className="cp-footer-note"><CalendarClock size={15}/>
-                      Última coleta conhecida: {dateBR(summary.work_evidence?.updated_at)}. Indicadores sem medição não recebem valores estimados.
+                      Última evidência recebida: {dateBR(summary.work_evidence?.updated_at)}. Os indicadores usam dados registrados; comparativos dependem de histórico.
                     </div>
                   </>}
 
@@ -248,12 +270,12 @@ export default function ClientPortal() {
                   {tab === 'relatorios' && <section className="cp-panel">
                     <div className="cp-panel-title"><div><FileText size={19}/><h2>Publicações e evidências</h2></div></div>
                     <p className="cp-note">Links e datas originais, filtrados pelos projetos do seu cliente. Relatórios adicionais dependem de processamento e autorização.</p>
-                    <EvidenceList data={evidence}/>
+                    <EvidenceList data={evidence} error={evidenceError}/>
                   </section>}
 
                   {tab === 'conta' && <section className="cp-panel">
                     <div className="cp-panel-title"><div><CreditCard size={19}/><h2>Meu plano e notificações</h2></div></div>
-                    {!plan ? <p className="cp-placeholder">Consultando informações do plano…</p> : (
+                    {!plan ? <p role={planError?'alert':'status'} className="cp-placeholder">{planError||'Consultando informações do plano…'}</p> : (
                       <div className="cp-plan-grid">
                         <div><h3>Plano contratado</h3><strong>{plan.plan?.label ?? 'Não informado'}</strong>
                           <p>Situação: {statusPT(plan.subscription_status ?? 'none')}</p>
@@ -283,7 +305,8 @@ export default function ClientPortal() {
   );
 }
 
-function EvidenceList({ data }: { data: Evidence[] | null }) {
+function EvidenceList({ data, error }: { data: Evidence[] | null; error?: string }) {
+  if (error) return <p className="cp-placeholder" role="alert">{error} Use Atualizar para tentar novamente.</p>;
   if (!data?.length) return <p className="cp-placeholder">Nenhuma publicação coletada para este cliente. As evidências aparecerão após a coleta autorizada.</p>;
   return <div className="cp-articles">{data.map((m) => <article key={m.id}>
     <div><h3>{m.title || 'Publicação sem título'}</h3>
@@ -306,7 +329,7 @@ function ReputationPanel({ reputation: r }: { reputation: Reputation }) {
 function IncidentList({ data }: { data: Incident[] }) {
   return <div className="cp-incident-list">{data.map((i) =>
     <article key={i.id}><div><strong>{i.title}</strong>
-      <p>{statusPT(i.status)} · Prioridade: {i.severity}</p></div>
+      <p>{statusPT(i.status)} · Prioridade: {statusPT(i.severity)}</p></div>
       <span className="cp-pill">{i.owner || 'Sem responsável definido'}</span>
     </article>)}</div>;
 }
