@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { eq, desc, inArray } from 'drizzle-orm';
+import { desc, inArray } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import {
   tenants, subscriptions, plans, invoices, paymentEvents, llmUsage,
@@ -7,6 +7,7 @@ import {
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireOwner } from '@/lib/tenant/rbac';
 import { gatewayStatus } from '@/lib/billing/gateways';
+import { brazilCivilDate, isInvoiceOverdue } from '@/lib/billing/overdue';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -29,13 +30,21 @@ export async function GET() {
   ]);
 
   const planByKey = new Map(allPlans.map((p) => [p.key, p]));
-  const subByTenant = new Map(subs.map((s) => [s.tenantId, s]));
+  const dueToday = brazilCivilDate(new Date());
+  const subsByTenant = new Map<number, typeof subs>();
+  for (const subscription of subs) {
+    const existing = subsByTenant.get(subscription.tenantId) ?? [];
+    existing.push(subscription);
+    subsByTenant.set(subscription.tenantId, existing);
+  }
 
   const carteira = allTenants.map((t) => {
-    const sub = subByTenant.get(t.id);
+    const activeSubs = (subsByTenant.get(t.id) ?? []).filter(s => s.status === 'active');
+    // Havendo contratos simultâneos, nunca selecionar silenciosamente o último.
+    const sub = activeSubs.length === 1 ? activeSubs[0] : undefined;
     const plan = sub ? planByKey.get(sub.planKey) : undefined;
     const inadimplente = openInvoices
-      .filter((i) => i.tenantId === t.id && (i.status === 'overdue' || i.dueAt != null))
+      .filter(i => i.tenantId === t.id && isInvoiceOverdue(i, dueToday))
       .reduce((sum, i) => sum + i.amountBrl, 0);
     const custoIa = usage
       .filter((u) => u.tenantId === t.id)
@@ -45,8 +54,9 @@ export async function GET() {
       nome: t.name,
       plano: sub?.planKey ?? t.planKey,
       preco: brl(plan?.priceBrl ?? 0),
-      status: sub?.status ?? 'none',
+      status: activeSubs.length > 1 ? 'conflito' : sub?.status ?? 'none',
       gateway: sub?.gateway ?? 'manual',
+      contratoConflitante: activeSubs.length > 1,
       vigenciaAte: sub?.vigenciaAte ?? null,
       inadimplencia: brl(inadimplente),
       custoIa: brl(custoIa),

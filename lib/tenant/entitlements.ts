@@ -34,6 +34,13 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
 
   const db = await getDb();
 
+  // Cliente pendente, suspenso ou inativo não deve ter acesso por contrato ou exceção.
+  const [organization] = await db.select({ status: tenants.status })
+    .from(tenants).where(eq(tenants.id, ctx.tenantId)).limit(1);
+  if (!organization || organization.status !== 'active') {
+    return { enabled: false, reason: 'cliente_inativo_ou_pendente', source: 'billing' };
+  }
+
   // Overrides do tenant
   const overrides = await db.select().from(tenantFeatures)
     .where(eq(tenantFeatures.tenantId, ctx.tenantId));
@@ -45,7 +52,12 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
   // Um bloqueio vencido não pode continuar negando acesso.
   const vigente = (o: typeof featureOverrides[number]) =>
     !o.expiresAt || new Date(o.expiresAt).getTime() > now.getTime();
-  const denied = featureOverrides.find((o) => o.enabled === 0 && vigente(o));
+  const currentOverrides = featureOverrides.filter(vigente);
+  // Dados duplicados são ambíguos: falhar fechado até saneamento/migração UNIQUE.
+  if (currentOverrides.length > 1) {
+    return { enabled: false, reason: 'permissoes_duplicadas', source: 'override' };
+  }
+  const denied = currentOverrides.find((o) => o.enabled === 0);
 
   // Estado financeiro dirige o contrato (ADR-07 + dunning H3).
   // Nunca confiamos no frontend: o gateway so muda `status`, e o entitlement
@@ -54,11 +66,17 @@ export async function featureState(ctx: TenantContext, key: string): Promise<Fea
   const subs = await db.select().from(subscriptions)
     .where(eq(subscriptions.tenantId, ctx.tenantId));
   // `now` ja foi declarado acima para validar a expiracao dos overrides.
-  const active = subs.find((s) => s.status === 'active');
-  const inGrace = subs.find(
-    (s) => s.status === 'past_due' && s.graceUntil && new Date(s.graceUntil) > now,
+  const validSubscriptions = subs.filter((s) =>
+    (s.status === 'active' || (s.status === 'past_due' && s.graceUntil && new Date(s.graceUntil) > now)) &&
+    (!s.vigenciaAte || new Date(s.vigenciaAte) >= now),
   );
-  const sub = active ?? inGrace;
+  // Mais de uma assinatura válida é um estado ambíguo: negar até conciliação.
+  if (validSubscriptions.length > 1) {
+    return { enabled: false, reason: 'contratos_conflitantes', source: 'billing' };
+  }
+  const sub = validSubscriptions[0];
+  const inGrace = sub?.status === 'past_due' ? sub : undefined;
+  const active = sub?.status === 'active' ? sub : undefined;
 
   if (!sub) {
     const hasVencida = subs.some((s) => s.status === 'past_due');
@@ -127,7 +145,12 @@ export async function setTenantFeature(
   if (typeof input.enabled !== 'boolean') throw AppError.badRequest('Estado do recurso inválido');
   if (typeof input.reason !== 'string' || !input.reason.trim() || input.reason.length > 300)
     throw AppError.badRequest('Override exige motivo de até 300 caracteres');
-  const expiresAt: Date | null = input.expires_at ? new Date(input.expires_at) : null;
+  // Input da UI é uma data civil; a exceção vence ao final desse dia (Brasília).
+  const expirationInput = typeof input.expires_at === 'string' ? input.expires_at : null;
+  const expiresAt: Date | null = expirationInput
+    ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(expirationInput)
+      ? expirationInput + 'T23:59:59.999-03:00' : expirationInput)
+    : null;
   if (expiresAt && (!Number.isFinite(expiresAt.getTime()) || expiresAt <= new Date())) {
     throw AppError.badRequest('A expiração deve ser uma data futura');
   }
@@ -140,6 +163,7 @@ export async function setTenantFeature(
   const existing = await db.select().from(tenantFeatures)
     .where(and(eq(tenantFeatures.tenantId, tenantId), eq(tenantFeatures.featureKey, input.feature_key)));
 
+  if (existing.length > 1) throw AppError.badRequest('Permissões duplicadas: concilie os registros antes de alterar');
   if (existing.length > 0) {
     await db.update(tenantFeatures).set({
       enabled: input.enabled ? 1 : 0,

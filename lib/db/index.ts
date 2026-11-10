@@ -49,6 +49,9 @@ async function init(): Promise<DB> {
   // Catálogo de planos sempre; tenants/usuários exemplificativos apenas no modo DEMO/opt-in local.
   const { seedVigiaPlus } = await import('./vigia-seed');
   await seedVigiaPlus(db);
+  // Instalações antigas podem ter tenants, mas não um catálogo inicial.
+  const { ensureInitialPlanCatalog } = await import('./ensure-plan-catalog');
+  await ensureInitialPlanCatalog(db);
   return db;
 }
 
