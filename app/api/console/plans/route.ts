@@ -112,8 +112,9 @@ export async function PUT(request: Request) {
       error: 'PLAN_IN_USE', message: 'Plano vinculado a contrato. Crie um novo plano para preservar o histórico.',
     }, { status: 409 });
     const features = sql`ARRAY[${sql.join(p.features.map(key => sql`${key}`), sql`, `)}]::text[]`;
-    // Atualização e substituição de recursos em uma única instrução, recusando uso concorrente.
-    await db.execute(sql`
+    // Atualiza apenas as diferenças: evita conflito de unicidade entre DELETE/INSERT
+    // de uma mesma chave num único comando PostgreSQL.
+    const result = await db.execute(sql`
       WITH updated AS (
         UPDATE plans SET label=${p.label}, price_brl=${p.priceBrl},
         ai_quota_brl=${p.aiQuotaBrl}, mentions_limit=${p.mentionsLimit},
@@ -123,11 +124,27 @@ export async function PUT(request: Request) {
       ),
       removed AS (
         DELETE FROM plan_features
-        WHERE plan_key IN (SELECT key FROM updated) RETURNING feature_key
+        WHERE plan_key IN (SELECT key FROM updated)
+          AND NOT (feature_key = ANY(${features}))
+        RETURNING feature_key
+      ),
+      added AS (
+        INSERT INTO plan_features (plan_key, feature_key)
+        SELECT updated.key, desired.feature_key
+        FROM updated CROSS JOIN unnest(${features}) AS desired(feature_key)
+        WHERE NOT EXISTS (
+          SELECT 1 FROM plan_features existing
+          WHERE existing.plan_key = updated.key AND existing.feature_key = desired.feature_key
+        )
+        ON CONFLICT DO NOTHING
+        RETURNING feature_key
       )
-      INSERT INTO plan_features (plan_key, feature_key)
-      SELECT updated.key, unnest(${features}) FROM updated
+      SELECT EXISTS (SELECT 1 FROM updated) AS changed
     `);
+    if (result.rows?.[0]?.changed !== true) {
+      return NextResponse.json({ error: 'PLAN_IN_USE',
+        message: 'Plano indisponível para edição ou vinculado a um contrato.' }, { status: 409 });
+    }
     await appendAudit(ctx, { action: 'PLAN_UPDATED', target: 'plan:' + p.key, reason: p.reason });
     return NextResponse.json({ ok: true, key: p.key });
   } catch (err) { return failure(err); }
