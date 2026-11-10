@@ -9,7 +9,7 @@ import {
 import { VigiaDashboardShell } from '@/components/vpx-dashboard-shell';
 
 type Section = 'clientes'|'planos'|'recursos'|'contratos'|'financeiro'|'fontes'|
-  'coleta'|'crises'|'relatorios'|'ia'|'acessos'|'privacidade'|'auditoria'|'consumo'|'marca'|'sistema';
+  'coleta'|'crises'|'relatorios'|'ia'|'acessos'|'privacidade'|'auditoria'|'consumo'|'integridade'|'marca'|'sistema';
 const GROUPS = [
   { label: 'GESTÃO COMERCIAL', items: [
     { id: 'clientes', label: 'Clientes', icon: Building2 },
@@ -32,6 +32,7 @@ const GROUPS = [
     { id: 'acessos', label: 'Usuários e segurança', icon: Users },
     { id: 'privacidade', label: 'LGPD e retenção', icon: Shield },
     { id: 'auditoria', label: 'Trilha de auditoria', icon: BookOpen },
+    { id: 'integridade', label: 'Integridade comercial', icon: Shield },
     { id: 'marca', label: 'Marca e comunicação', icon: Palette },
     { id: 'sistema', label: 'Sistema e integrações', icon: Settings },
   ] },
@@ -51,6 +52,7 @@ const HEADINGS: Record<Section, { title: string; detail: string }> = {
   acessos: {title: 'Usuários e segurança',detail: 'Equipe, permissões e controles de acesso.'},
   privacidade: {title: 'Privacidade e retenção',detail: 'Políticas de dados, retenção e solicitações de titulares.'},
   auditoria: {title: 'Trilha de auditoria',detail: 'Registros recentes de mudanças, com data, operador, organização e justificativa. Dados sensíveis são omitidos.'},
+  integridade: {title: 'Integridade dos contratos',detail: 'Diagnóstico de índices e duplicidades que podem impedir alterações seguras de planos e permissões.'},
   marca: {title: 'Marca e comunicação',detail: 'Identidade visual e canais de avisos, separados por cliente.'},
   sistema: {title: 'Sistema e integrações',detail: 'Conectividade, monitoramento e configuração da plataforma.'},
 };
@@ -69,6 +71,9 @@ type Usage = { window:{start:string;end:string;days:number};quotasEnforced:boole
   mentions:{used:number;limit:number|null};ai:{usedBrl:number;limitBrl:number|null;calls:number};
   retentionMonths:number|null;
 }[] };
+type Integrity = {ready:boolean;featureIndex:boolean;subscriptionIndex:boolean;
+  duplicateFeatures:{tenant_id:number;feature_key:string;total:number}[];
+  duplicateSubscriptions:{tenant_id:number;total:number}[];action:string};
 type Audit = {events:{id:number;actor:string|null;tenantId:number|null;action:string;
   target:string|null;reason:string|null;createdAt:string}[]};
 type PlanDraft = {key:string;label:string;priceBrl:number|null;aiQuotaBrl:number;
@@ -108,6 +113,7 @@ export function OwnerAdminWorkspace() {
   const [providers,setProviders]=useState<Provider[]>([]);
   const [usage,setUsage]=useState<Usage|null>(null);
   const [audit,setAudit]=useState<Audit|null>(null);
+  const [integrity,setIntegrity]=useState<Integrity|null>(null);
   const [auditTenant,setAuditTenant]=useState(0);
   const [selectedTenant,setSelectedTenant]=useState<number|null>(null);
   const [features,setFeatures]=useState<Feature[]|null>(null);
@@ -148,6 +154,13 @@ export function OwnerAdminWorkspace() {
     const value=new URLSearchParams(window.location.search).get('section');
     if(value && valid.some(x=>x===value))setSection(value as Section);
   },[]);
+  useEffect(()=>{
+    if(section!=='integridade')return;
+    setIntegrity(null);
+    void api<Integrity>('/api/console/commercial-integrity').then(setIntegrity)
+      .catch(e=>setError('Integridade indisponível: '+String(e)));
+  },[section]);
+
   useEffect(()=>{
     if(section!=='consumo'&&section!=='auditoria')return;
     if(section==='consumo') {
@@ -487,6 +500,33 @@ export function OwnerAdminWorkspace() {
                 </tbody></table></div>}
           </SubPanel>
         </>}
+        {section==='integridade'&&<SubPanel title="Conferência da base comercial">
+          {integrity===null?<p className="vpx-owner-muted">Consultando índices e duplicidades…</p>:<>
+            <div className="vpx-owner-metrics">
+              <div><small>Proteção de permissões</small><strong>{integrity.featureIndex?'Ativa':'Pendente'}</strong></div>
+              <div><small>Proteção de contratos</small><strong>{integrity.subscriptionIndex?'Ativa':'Pendente'}</strong></div>
+              <div><small>Condição geral</small><strong>{integrity.ready?'Íntegra':'Revisar'}</strong></div>
+            </div>
+            <p className="vpx-owner-muted">Duplicidades em recursos: {integrity.duplicateFeatures.length}. 
+              Contratos simultâneos: {integrity.duplicateSubscriptions.length}.</p>
+            {(integrity.duplicateFeatures.length>0||integrity.duplicateSubscriptions.length>0)&&
+              <div className="vpx-alert">Escritas comerciais protegidas. Nenhum dado será removido automaticamente.</div>}
+            <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
+              <thead><tr><th>Organização</th><th>Recurso</th><th>Ocorrências</th></tr></thead><tbody>
+                {integrity.duplicateFeatures.map(f=><tr key={f.tenant_id+':'+f.feature_key}>
+                  <td>{clients.find(c=>c.id===f.tenant_id)?.name??'#'+f.tenant_id}</td>
+                  <td>{f.feature_key}</td><td>{f.total}</td>
+                </tr>)}
+                {integrity.duplicateSubscriptions.map(f=><tr key={'subscription:'+f.tenant_id}>
+                  <td>{clients.find(c=>c.id===f.tenant_id)?.name??'#'+f.tenant_id}</td>
+                  <td>Assinaturas em conflito</td><td>{f.total}</td>
+                </tr>)}
+                {integrity.ready&&<tr><td colSpan={3}>Não foram detectadas duplicidades nos critérios verificados.</td></tr>}
+              </tbody>
+            </table></div>
+          </>}
+          <p className="vpx-owner-muted">Reconciliação de registros exige aprovação explícita. Esta tela é somente leitura.</p>
+        </SubPanel>}
         {section==='marca'&&<SubPanel title="Identidade e comunicação"><Destinations items={[
           {label:'Marca por cliente',description:'Configuração de white-label com domínio e logotipo ainda pendente.',pending:true},
           {label:'Canais e modelos de aviso',description:'Preferências de WhatsApp/e-mail por cliente requerem interface de configuração.',pending:true},

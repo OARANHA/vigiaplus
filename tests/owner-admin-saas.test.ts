@@ -53,10 +53,13 @@ test('planos: fluxo owner e proteção contra edição retroativa',()=>{
 
 test('contrato manual nunca é emitido como pagamento e exige aprovação',()=>{
   const code=source('app/api/console/subscriptions/route.ts');
+  const atomic=source('lib/db/commercial-writes.ts');
   assert.match(code,/manualApproval !== true/);
-  assert.match(code,/s\.gateway !== 'manual'/);
+  assert.match(code,/activateManualContractAtomic/);
   assert.match(code,/charged: false/);
-  assert.match(code,/CONTRACT_MANUAL_ACTIVATION/);
+  assert.match(atomic,/previous.gateway <> 'manual'/);
+  assert.match(atomic,/CONTRACT_MANUAL_ACTIVATION/);
+  assert.match(atomic,/INSERT INTO audit_events/);
   assert.doesNotMatch(code,/createStripeCheckout|createPixCharge/);
 });
 

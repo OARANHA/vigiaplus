@@ -6,7 +6,7 @@ import { tenantFeatures, subscriptions, planFeatures, tenants } from '@/lib/db/s
 import { FEATURE_KEYS } from './catalog';
 import { AppError } from './errors';
 import type { TenantContext } from './context';
-import { appendAudit } from './context';
+import { setFeatureOverrideAtomic } from '@/lib/db/commercial-writes';
 
 export type FeatureState = {
   enabled: boolean;
@@ -158,35 +158,16 @@ export async function setTenantFeature(
   const db = await getDb();
   const [tenant] = await db.select({ id: tenants.id }).from(tenants).where(eq(tenants.id, tenantId)).limit(1);
   if (!tenant) throw AppError.notFound('Cliente inexistente');
-  const target: TenantContext = { ...ctx, tenantId, system: false };
-  // Upsert: se ja existe, atualiza; senao, insere.
+  // Diagnóstico explícito para bases legadas: não reconciliar nem apagar sem autorização.
   const existing = await db.select().from(tenantFeatures)
     .where(and(eq(tenantFeatures.tenantId, tenantId), eq(tenantFeatures.featureKey, input.feature_key)));
-
   if (existing.length > 1) throw AppError.badRequest('Permissões duplicadas: concilie os registros antes de alterar');
-  if (existing.length > 0) {
-    await db.update(tenantFeatures).set({
-      enabled: input.enabled ? 1 : 0,
-      reason: input.reason.trim(),
-      expiresAt,
-      updatedBy: ctx.userId,
-      updatedAt: new Date(),
-    }).where(and(eq(tenantFeatures.tenantId, tenantId), eq(tenantFeatures.featureKey, input.feature_key)));
-  } else {
-    await db.insert(tenantFeatures).values({
-      tenantId,
-      featureKey: input.feature_key,
-      enabled: input.enabled ? 1 : 0,
-      reason: input.reason.trim(),
-      expiresAt,
-      updatedBy: ctx.userId,
-      updatedAt: new Date(),
-    });
-  }
 
-  await appendAudit(target, {
-    action: input.enabled ? 'FEATURE_ENABLED' : 'FEATURE_DISABLED',
-    target: `tenant:${tenantId}:${input.feature_key}`,
-    reason: input.reason.trim(),
+  // Upsert + evento de auditoria são um único comando atômico no PostgreSQL.
+  await setFeatureOverrideAtomic(db, {
+    userId: ctx.userId, name: ctx.userName, ip: ctx.ip,
+  }, {
+    tenantId, featureKey: input.feature_key, enabled: input.enabled,
+    reason: input.reason.trim(), expiresAt,
   });
 }

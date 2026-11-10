@@ -1,9 +1,10 @@
 // Contratos manuais exclusivamente pelo proprietário. Não cria fatura, pagamento ou assinatura no gateway.
 import { NextResponse } from 'next/server';
-import { eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import { plans, subscriptions, tenants } from '@/lib/db/schema';
-import { resolveTenantContext, appendAudit } from '@/lib/tenant/context';
+import { subscriptions, tenants } from '@/lib/db/schema';
+import { activateManualContractAtomic } from '@/lib/db/commercial-writes';
+import { AppError } from '@/lib/tenant/errors';
+import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireOwner } from '@/lib/tenant/rbac';
 
 export const runtime = 'nodejs';
@@ -43,31 +44,18 @@ export async function POST(request: Request) {
       reason.length < 5 || reason.length > 300 || body.manualApproval !== true) {
     return NextResponse.json({ error: 'INVALID_CONTRACT', message: 'Identifique cliente, plano, motivo e aprovação manual explícita' }, { status: 400 });
   }
-  const id = Number(tenantId);
-  const db = await getDb();
-  const [client, plan, existing] = await Promise.all([
-    db.select({ id: tenants.id }).from(tenants).where(eq(tenants.id, id)).limit(1),
-    db.select({ key: plans.key }).from(plans).where(eq(plans.key, planKey)).limit(1),
-    db.select().from(subscriptions).where(eq(subscriptions.tenantId, id)),
-  ]);
-  if (!client.length || !plan.length) return NextResponse.json({ error: 'NOT_FOUND' }, { status: 404 });
-  // Nenhum contrato de gateway pode ser convertido automaticamente em manual.
-  if (existing.some(s => s.gateway !== 'manual' || s.gatewayId) || existing.length > 1) {
-    return NextResponse.json({ error: 'MANAGED_CONTRACT', message: 'Contrato gerenciado por gateway ou com histórico ambíguo; revisão manual necessária' }, { status: 409 });
-  }
-  // Ativação manual explícita; NÃO é confirmação de pagamento.
-  if (existing[0]) {
-    await db.update(subscriptions).set({
-      planKey, status: 'active', gateway: 'manual',
-      vigenciaAte: null, graceUntil: null, updatedAt: new Date(),
-    }).where(eq(subscriptions.id, existing[0].id));
-  } else {
-    await db.insert(subscriptions).values({
-      tenantId: id, planKey, status: 'active', gateway: 'manual',
+  try {
+    const db = await getDb();
+    const result = await activateManualContractAtomic(db, {
+      userId: ctx.userId, name: ctx.userName, ip: ctx.ip,
+    }, Number(tenantId), planKey, reason);
+    return NextResponse.json({
+      ok: true, tenantId: result.tenantId, subscriptionId: result.subscriptionId,
+      planKey, gateway: 'manual', charged: false,
     });
+  } catch (err) {
+    const error = err instanceof AppError ? err
+      : new AppError('CONTRACT_WRITE_FAILED', 409, 'Não foi possível ativar contrato. Confira a integridade comercial.');
+    return NextResponse.json({ error: error.code, message: error.message }, { status: error.status });
   }
-  await db.update(tenants).set({ planKey, status: 'active' }).where(eq(tenants.id, id));
-  await appendAudit(ctx, { action: 'CONTRACT_MANUAL_ACTIVATION',
-    target: 'tenant:' + id + ':plan:' + planKey, reason });
-  return NextResponse.json({ ok: true, tenantId: id, planKey, gateway: 'manual', charged: false });
 }
