@@ -15,7 +15,7 @@ type Tab='inicio'|'clientes'|'operacao'|'financeiro'|'config';
 const TABS:DashboardTab[]=[
  {id:'inicio',label:'Visão geral'},{id:'clientes',label:'Clientes'},
  {id:'operacao',label:'Operação'},{id:'financeiro',label:'Faturamento'},
- {id:'config',label:'Configurações'},
+ {id:'config',label:'Configurações'},{id:'administracao',label:'Administração'},
 ];
 async function apiJson<T>(url:string):Promise<T>{
  const response=await fetch(url,{cache:'no-store'});
@@ -71,7 +71,8 @@ export function ConsoleOwnerDashboard(){
  useEffect(()=>{void refresh();},[refresh]);
  useEffect(()=>{
    const selected=new URLSearchParams(window.location.search).get('tab');
-   if(selected&&TABS.some(t=>t.id===selected))setTab(selected as Tab);
+   if(selected==='administracao')window.location.replace('/console/admin');
+   else if(selected&&TABS.some(t=>t.id===selected))setTab(selected as Tab);
  },[]);
  async function logout(){
   await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({logout:true})}).catch(()=>{});
@@ -96,8 +97,10 @@ export function ConsoleOwnerDashboard(){
    else window.location.assign(href);
  }
  return <VigiaDashboardShell role="proprietario" tabs={TABS} activeTab={tab}
-  onTab={v=>setTab(v as Tab)} onLogout={logout} onRefresh={()=>{void refresh();}}
-  extra={<span>Proprietário · {updatedAt?'Consulta '+date(updatedAt):'Consultando…'}</span>}>
+  onTab={v=>{if(v==='administracao')window.location.assign('/console/admin');else setTab(v as Tab);}}
+  onLogout={logout} onRefresh={()=>{void refresh();}}
+  extra={<><span>Proprietário · {updatedAt?'Consulta '+date(updatedAt):'Consultando…'}</span>
+   <Link href="/console/admin" className="vpx-inline-link">Gerenciar plataforma ↗</Link></>}>
   {errors.length>0&&<div role="alert" className="vpx-alert">
    Dados temporariamente indisponíveis: {errors.join(', ')}. Não foram substituídos por zero.
   </div>}
