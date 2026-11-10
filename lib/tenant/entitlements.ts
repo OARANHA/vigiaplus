@@ -140,7 +140,12 @@ export async function setTenantFeature(
   if (typeof input.enabled !== 'boolean') throw AppError.badRequest('Estado do recurso inválido');
   if (typeof input.reason !== 'string' || !input.reason.trim() || input.reason.length > 300)
     throw AppError.badRequest('Override exige motivo de até 300 caracteres');
-  const expiresAt: Date | null = input.expires_at ? new Date(input.expires_at) : null;
+  // Input da UI é uma data civil; a exceção vence ao final desse dia (Brasília).
+  const expirationInput = typeof input.expires_at === 'string' ? input.expires_at : null;
+  const expiresAt: Date | null = expirationInput
+    ? new Date(/^\\d{4}-\\d{2}-\\d{2}$/.test(expirationInput)
+      ? expirationInput + 'T23:59:59.999-03:00' : expirationInput)
+    : null;
   if (expiresAt && (!Number.isFinite(expiresAt.getTime()) || expiresAt <= new Date())) {
     throw AppError.badRequest('A expiração deve ser uma data futura');
   }
