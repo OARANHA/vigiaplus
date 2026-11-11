@@ -11,7 +11,7 @@ delete process.env.DEMO_MODE;
 
 test('ALT-07: limite por cliente e prioridade crítica são aplicados no claim SQL, sem descartar fila',async()=>{
   const {getDb}=await import('../lib/db');
-  const {tenants,notificationChannels,notificationDeliveries}=await import('../lib/db/schema');
+  const {tenants,notificationChannels,notificationDeliveries,notificationDispatchAttempts}=await import('../lib/db/schema');
   const {dispatchPending}=await import('../lib/notifications/queue');
   const db=await getDb();
   const [alpha,beta]=await db.insert(tenants).values([
@@ -56,10 +56,11 @@ test('ALT-07: limite por cliente e prioridade crítica são aplicados no claim S
   assert.equal(left.status,'queued');
   assert.equal(left.attemptCount,0,'quota não consome tentativas nem apaga aviso');
   assert.equal((await dispatchPending(5,{db,workerId:'worker_alt07_c1',sendImpl:fakeSend})).claimed,0);
-  // Simular passagem da janela de quota, sem mudar relógio global.
-  await db.update(notificationDeliveries)
-    .set({lastAttemptAt:new Date('2020-01-01T00:00:00Z')})
-    .where(eq(notificationDeliveries.id,urgent.id));
+  // Simula avanço do bucket UTC sem modificar relógio global.
+  // ALT-07 contabiliza TODAS as tentativas, inclusive retries, por ledger.
+  await db.update(notificationDispatchAttempts)
+    .set({claimedAt:new Date('2020-01-01T00:00:00Z')})
+    .where(eq(notificationDispatchAttempts.deliveryId,urgent.id));
   const next=await dispatchPending(3,{db,workerId:'worker_alt07_d1',sendImpl:fakeSend});
   assert.equal(next.sent,1);
   assert.ok(sent.includes('Baixa'));
