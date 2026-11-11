@@ -3,7 +3,9 @@
  * o mesmo fato/regra/canal/destino nunca dispara duas vezes no dia.
  * O banco arbitra concorrência com UNIQUE + ON CONFLICT DO NOTHING.
  */
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
+import { randomUUID } from 'node:crypto';
+import type { DB } from '@/lib/db';
 import { getDb } from '@/lib/db';
 import { notificationDeliveries } from '@/lib/db/schema';
 import { send } from './transport';
@@ -62,27 +64,192 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
   return inserted.length === 1;
 }
 
-/** Envia o que esta na fila. Pode rodar em qualquer worker ou no cron. */
-export async function dispatchPending(limit = 100): Promise<{ sent: number; failed: number }> {
-  const db = await getDb();
-  const pending = await db.select().from(notificationDeliveries)
-    .where(eq(notificationDeliveries.status, 'queued')).limit(limit);
+/**
+ * ALT-02: um worker reivindica registros numa única instrução SQL. O lock
+ * SKIP LOCKED dura só durante a reserva; o lease persiste entre requisições.
+ * Não segurar transação aberta durante chamadas externas (Resend, Telegram).
+ *
+ * LIMITAÇÃO: entregas externas são pelo menos uma vez após crashes entre o
+ * aceite do provedor e a gravação local. Confirmação e idempotência por provedor
+ * ainda são escopo de ALT-06; não prometer exactly-once externo.
+ */
+export const DELIVERY_MAX_ATTEMPTS = 5;
+export const DELIVERY_LEASE_SECONDS = 60;
 
-  let sent = 0;
-  let failed = 0;
+export function retryDelaySeconds(attemptCount: number): number {
+  if (!Number.isFinite(attemptCount) || attemptCount < 1) return 60;
+  return Math.min(3600, 60 * 2 ** Math.min(6, Math.floor(attemptCount) - 1));
+}
+
+export type ClaimedDelivery = {
+  id: number;
+  tenant_id: number;
+  channel: string;
+  destination: string;
+  title: string;
+  message: string;
+  attempt_count: number;
+};
+
+/** Retira da fila registros sem tentativas restantes, sem invocar o provedor. */
+export async function sweepExhaustedDeliveries(db: DB): Promise<number> {
+  const result = await db.execute(sql`
+    UPDATE notification_deliveries
+       SET status='dead_letter', lease_owner=NULL, lease_expires_at=NULL,
+           next_attempt_at=NULL,
+           error=COALESCE(error, 'Limite de tentativas esgotado')
+     WHERE attempt_count >= ${DELIVERY_MAX_ATTEMPTS}
+       AND (
+         status IN ('queued','retry')
+         OR (status='processing' AND (lease_expires_at IS NULL OR lease_expires_at<=now()))
+       )
+     RETURNING id
+  `);
+  return result.rows.length;
+}
+
+/**
+ * Reservar mensagens prontas ou com lease expirado. SKIP LOCKED evita que
+ * dois workers concorrentes recebam a mesma entrega.
+ */
+export async function claimPendingDeliveries(
+  db: DB, limit: number, workerId: string,
+): Promise<ClaimedDelivery[]> {
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 500)
+    throw new Error('Limite do lote inválido (1 a 500)');
+  if (!/^[a-zA-Z0-9_-]{8,128}$/.test(workerId))
+    throw new Error('Identificador do worker inválido');
+  const result = await db.execute(sql`
+    WITH candidates AS (
+      SELECT id FROM notification_deliveries
+       WHERE attempt_count < ${DELIVERY_MAX_ATTEMPTS}
+         AND (
+           (status IN ('queued','retry')
+             AND (next_attempt_at IS NULL OR next_attempt_at<=now()))
+           OR (status='processing' AND lease_expires_at<=now())
+         )
+       ORDER BY created_at ASC, id ASC
+       FOR UPDATE SKIP LOCKED
+       LIMIT ${limit}
+    )
+    UPDATE notification_deliveries AS d
+       SET status='processing',
+           lease_owner=${workerId},
+           lease_expires_at=now() + ${DELIVERY_LEASE_SECONDS} * interval '1 second',
+           attempt_count=d.attempt_count+1,
+           last_attempt_at=now(),
+           next_attempt_at=NULL,
+           error=NULL
+      FROM candidates
+     WHERE d.id=candidates.id
+     RETURNING d.id,d.tenant_id,d.channel,d.destination,d.title,d.message,d.attempt_count
+  `);
+  return result.rows.map((row) => ({
+    id: Number(row.id), tenant_id: Number(row.tenant_id),
+    channel: String(row.channel), destination: String(row.destination),
+    title: String(row.title), message: String(row.message),
+    attempt_count: Number(row.attempt_count),
+  }));
+}
+
+export type DeliveryCompletion = 'accepted' | 'retry' | 'dead_letter' | 'lost_lease';
+
+/**
+ * Um processo atrasado não tem permissão de finalizar a entrega cujo lease
+ * já foi assumido por outro worker. status=sent significa HTTP aceito, não
+ * confirmação final de entrega na caixa de entrada (ALT-06 pendente).
+ */
+export async function finishClaimedDelivery(
+  db: DB,
+  delivery: Pick<ClaimedDelivery, 'id' | 'attempt_count'>,
+  workerId: string,
+  result: { ok: boolean; detail: string },
+): Promise<DeliveryCompletion> {
+  const exhausted = !result.ok && delivery.attempt_count >= DELIVERY_MAX_ATTEMPTS;
+  const status = result.ok ? 'sent' : exhausted ? 'dead_letter' : 'retry';
+  const delay = result.ok ? 0 : retryDelaySeconds(delivery.attempt_count);
+  // O erro de transporte fica limitado e sanitizado: não salvar exceções brutas
+  // que possam conter URLs com tokens ou headers de autenticação.
+  const error = result.ok ? null : (
+    /^HTTP \d{3}$/.test(result.detail) ? result.detail : 'Falha de transporte'
+  );
+  const finished = await db.execute(sql`
+    UPDATE notification_deliveries
+       SET status=${status},
+           lease_owner=NULL,
+           lease_expires_at=NULL,
+           next_attempt_at=CASE WHEN ${status}='retry'
+             THEN now() + ${delay} * interval '1 second' ELSE NULL END,
+           sent_at=CASE WHEN ${status}='sent' THEN now() ELSE sent_at END,
+           error=${error}
+     WHERE id=${delivery.id} AND status='processing'
+       AND lease_owner=${workerId}
+       AND attempt_count=${delivery.attempt_count}
+       AND lease_expires_at>now()
+     RETURNING id
+  `);
+  if (finished.rows.length !== 1) return 'lost_lease';
+  return result.ok ? 'accepted' : exhausted ? 'dead_letter' : 'retry';
+}
+
+export type DispatchReport = {
+  sent: number; failed: number;
+  claimed: number; retried: number; deadLetter: number; lostLease: number; exhausted: number;
+};
+
+export type SendDelivery = typeof send;
+
+/** Entrypoint do worker. Injeção opcional exclusivamente para testes isolados. */
+export async function dispatchPending(
+  limit = 100,
+  options: { db?: DB; sendImpl?: SendDelivery; workerId?: string } = {},
+): Promise<DispatchReport> {
+  const db = options.db ?? await getDb();
+  const workerId = options.workerId ?? randomUUID();
+  const sendImpl = options.sendImpl ?? send;
+  const exhausted = await sweepExhaustedDeliveries(db);
+  const pending = await claimPendingDeliveries(db, limit, workerId);
+  const report: DispatchReport = {
+    sent: 0, failed: 0, claimed: pending.length, retried: 0,
+    deadLetter: 0, lostLease: 0, exhausted,
+  };
+
   for (const item of pending) {
-    const result = await send({
-      channel: item.channel,
-      destination: item.destination,
-      title: item.title,
-      message: item.message,
-    });
-    await db.update(notificationDeliveries).set({
-      status: result.ok ? 'sent' : 'failed',
-      sentAt: result.ok ? new Date() : null,
-      error: result.ok ? null : result.detail.slice(0, 500),
-    }).where(eq(notificationDeliveries.id, item.id));
-    if (result.ok) sent++; else failed++;
+    let result: {ok:boolean;detail:string};
+    try {
+      result = await sendImpl({
+        channel: item.channel, destination: item.destination,
+        title: item.title, message: item.message,
+      });
+    } catch {
+      // Erros brutos de SDK/transporte não devem entrar no banco nem em logs.
+      result = {ok:false, detail:'Falha de transporte'};
+    }
+    const outcome = await finishClaimedDelivery(db,item,workerId,result);
+    if (outcome === 'accepted') report.sent++;
+    else if (outcome === 'lost_lease') report.lostLease++;
+    else {
+      report.failed++;
+      if (outcome === 'retry') report.retried++;
+      if (outcome === 'dead_letter') report.deadLetter++;
+    }
   }
-  return { sent, failed };
+  return report;
+}
+
+/** Serviço privilegiado: somente chamar após RBAC owner + auditoria. */
+export async function requeueDeadLetter(
+  db: DB, tenantId: number, deliveryId: number,
+): Promise<boolean> {
+  if (![tenantId, deliveryId].every(x => Number.isSafeInteger(x) && x > 0))
+    throw new Error('Identificadores inválidos');
+  const result = await db.execute(sql`
+    UPDATE notification_deliveries
+       SET status='queued', attempt_count=0,
+           lease_owner=NULL, lease_expires_at=NULL, next_attempt_at=NULL,
+           error=NULL, sent_at=NULL
+     WHERE id=${deliveryId} AND tenant_id=${tenantId} AND status='dead_letter'
+     RETURNING id
+  `);
+  return result.rows.length === 1;
 }
