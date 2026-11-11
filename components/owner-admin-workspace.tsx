@@ -65,8 +65,15 @@ type OwnerChannel = {id:number;channel:string;destination:string;verified:boolea
   active:boolean;verifiedAt:string|null};
 type OwnerDelivery = {id:number;eventRef:string|null;sourceProjectId:number|null;
   channel:string;destination:string;status:string;providerMessageId:string|null;
-  attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
+  deliveryState:string;deliveryStateAt:string|null;deliveredAt:string|null;
+  deliveryFailureCode:string|null;attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
   error:string|null;createdAt:string;sentAt:string|null};
+const DELIVERY_PROVIDER_LABELS:Record<string,string>={
+  unconfirmed:'Ainda não confirmada',accepted:'Aceita pelo provedor',
+  delayed:'Entrega atrasada',delivered:'Entregue pelo provedor',
+  bounced:'Devolvida',complained:'Reclamação de spam',
+  failed:'Falha no provedor',suppressed:'Bloqueada pelo provedor',
+};
 const DELIVERY_LABELS:Record<string,string>={
   queued:'Na fila',processing:'Em processamento',retry:'Aguardando tentativa',
   dead_letter:'Falha definitiva',sent:'Aceito pelo transporte',
@@ -644,7 +651,7 @@ export function OwnerAdminWorkspace() {
               </tbody></table></div>
           </SubPanel>
           <SubPanel title="Fila de notificações por cliente">
-            <p className="vpx-owner-muted">Envios com HTTP 2xx aparecem como aceitos pelo transporte, não entregues. Retries dependem da próxima execução do worker. Nenhuma atualização automática é feita nesta tela.</p>
+            <p className="vpx-owner-muted">A coluna Fila indica o aceite HTTP ou a pendência interna. A coluna Entrega exibe a confirmação assinada do provedor quando disponível. Retries dependem do worker; esta tela não faz polling.</p>
             <div className="vpx-owner-formgrid">
               <label>Organização
                 <select value={selectedTenant??''} onChange={e=>setSelectedTenant(Number(e.target.value))}>
@@ -662,7 +669,7 @@ export function OwnerAdminWorkspace() {
               {deliveriesLoading?'Consultando…':'Atualizar fila'}
             </button>
             <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
-              <thead><tr><th>Origem</th><th>Destino</th><th>Estado</th><th>Tentativas</th><th>Próximo evento</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Origem</th><th>Destino</th><th>Fila</th><th>Entrega pelo provedor</th><th>Tentativas</th><th>Próximo evento</th><th>Ação</th></tr></thead>
               <tbody>
                 {deliveries.map(d=><tr key={d.id}>
                   <td>{d.eventRef??'Registro anterior'}
@@ -671,6 +678,14 @@ export function OwnerAdminWorkspace() {
                   <td>{DELIVERY_LABELS[d.status]??d.status}
                     {d.providerMessageId&&<p className="vpx-owner-muted">ID provedor: {d.providerMessageId}</p>}
                     {d.error&&<p className="vpx-owner-muted">{d.error}</p>}</td>
+                  <td>{d.channel==='email'
+                      ? (DELIVERY_PROVIDER_LABELS[d.deliveryState]??'Não comprovada')
+                      : 'Sem confirmação externa'}
+                    {d.deliveryStateAt&&<p className="vpx-owner-muted">{showDate(d.deliveryStateAt)}</p>}
+                    {d.deliveredAt&&d.deliveryState!=='delivered'&&
+                      <p className="vpx-owner-muted">Entrega anterior: {showDate(d.deliveredAt)}</p>}
+                    {d.deliveryFailureCode&&<p className="vpx-owner-muted">{d.deliveryFailureCode}</p>}
+                  </td>
                   <td>{d.attemptCount}/5</td>
                   <td>{d.status==='retry'?showDate(d.nextAttemptAt):
                     d.status==='processing'?showDate(d.leaseExpiresAt):
@@ -679,7 +694,7 @@ export function OwnerAdminWorkspace() {
                     ?<button type="button" disabled={busy||deliveryReason.trim().length<5}
                       onClick={()=>{void requeueDelivery(d.id);}}>Reprocessar</button>:'—'}</td>
                 </tr>)}
-                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={6}>Sem entregas registradas para a organização.</td></tr>}
+                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={7}>Sem entregas registradas para a organização.</td></tr>}
               </tbody>
             </table></div>
           </SubPanel>
