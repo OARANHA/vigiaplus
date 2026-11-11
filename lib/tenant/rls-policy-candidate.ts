@@ -4,7 +4,7 @@ export const RLS_CANDIDATE_SPECS: readonly RlsSpec[] = [
   { table: 'tenants', kind: 'tenant-row' },
   ...['memberships','tenant_features','reputation_targets','incidents','projects',
     'subscriptions','invoices','payment_events','notification_channels','alert_rules',
-    'notification_deliveries','llm_usage','mcp_tokens','invitations','audit_events']
+    'notification_deliveries','llm_providers','llm_routes','llm_usage','mcp_tokens','invitations','audit_events']
     .map((table): RlsSpec => ({ table, kind: 'tenant' })),
   { table: 'incident_actions', kind: 'incident-child' },
   ...['benchmark_entities','mentions','collection_runs','collection_run_sources',
