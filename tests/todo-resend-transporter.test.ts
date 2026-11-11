@@ -27,10 +27,10 @@ test('ALT-04: mock de Resend recebe idempotency key e devolve provider ID saniti
  const oldFetch=globalThis.fetch;
  const oldKey=process.env.RESEND_API_KEY,oldFrom=process.env.ALERT_EMAIL_FROM;
  let calls=0;
- let captured: {url:string;headers:Headers;payload:Record<string,unknown>}|null=null;
+ const captured: {value:{url:string;headers:Headers;payload:Record<string,unknown>}|null}={value:null};
  globalThis.fetch=(async(input, init)=>{
   calls++;
-  captured={url:String(input),headers:new Headers(init?.headers),
+  captured.value={url:String(input),headers:new Headers(init?.headers),
     payload:JSON.parse(String(init?.body)) as Record<string,unknown>};
   return new Response(JSON.stringify({id:'123e4567-e89b-12d3-a456-426614174000'}),{
     status:200,headers:{'Content-Type':'application/json'},
@@ -46,11 +46,11 @@ test('ALT-04: mock de Resend recebe idempotency key e devolve provider ID saniti
   assert.equal(result.detail,'HTTP 200');
   assert.equal(result.providerId,'123e4567-e89b-12d3-a456-426614174000');
   assert.equal(calls,1);
-  assert.equal(captured?.url,'https://api.resend.com/emails');
-  assert.equal(captured?.headers.get('Idempotency-Key'),'vpx-delivery/123');
-  assert.equal(captured?.headers.get('Authorization'),'Bearer re_dummy_secret_not_logged');
-  assert.deepEqual(captured?.payload.to,['own@example.test']);
-  assert.equal(captured?.payload.from,'VigiaPlus <avisos@example.test>');
+  assert.equal(captured.value?.url,'https://api.resend.com/emails');
+  assert.equal(captured.value?.headers.get('Idempotency-Key'),'vpx-delivery/123');
+  assert.equal(captured.value?.headers.get('Authorization'),'Bearer re_dummy_secret_not_logged');
+  assert.deepEqual(captured.value?.payload.to,['own@example.test']);
+  assert.equal(captured.value?.payload.from,'VigiaPlus <avisos@example.test>');
   assert.ok(!JSON.stringify(result).includes('dummy_secret'));
  }finally{
   globalThis.fetch=oldFetch;
