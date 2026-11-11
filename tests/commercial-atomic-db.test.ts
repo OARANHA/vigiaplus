@@ -23,6 +23,9 @@ async function fixture() {
       cnpj TEXT,
       domain TEXT,
       locale TEXT NOT NULL DEFAULT 'pt-BR',
+      time_zone TEXT NOT NULL DEFAULT 'America/Sao_Paulo',
+      alert_rate_limit_per_hour INTEGER NOT NULL DEFAULT 100,
+      critical_bypass_silence INTEGER NOT NULL DEFAULT 1,
       retention_days INTEGER NOT NULL DEFAULT 180,
       brand_config JSONB,
       created_at TIMESTAMPTZ NOT NULL DEFAULT now()
