@@ -224,3 +224,34 @@ test('ALT-06: rota pública exige assinatura; demo nega, sem segredo falha fecha
     else process.env.DEMO_MODE=priorDemo;
   }
 });
+
+test('ALT-06: novo ciclo reconcilia evento órfão após crash entre o aceite e a atualização',async()=>{
+  const {getDb}=await import('../lib/db');
+  const {tenants,notificationDeliveries,notificationProviderEvents}=await import('../lib/db/schema');
+  const {reconcileUnmatchedResendEvents}=await import('../lib/notifications/resend-events');
+  const db=await getDb();
+  const [t]=await db.insert(tenants).values({
+    name:'ALT06 Recovery',slug:'alt06-recovery',status:'active',
+  }).returning();
+  const [row]=await db.insert(notificationDeliveries).values({
+    tenantId:t.id,channel:'email',destination:'recovery@example.test',
+    kind:'incident',title:'Fato de teste',message:'Teste',status:'sent',
+    dedupeKey:'v2:alt06-recovery',deliveryState:'accepted',
+  }).returning();
+  const outcome=await recordResendEvent(db,parsed('email.delivered',
+    'msg_recovery_orphan_001','resend-recovery-1','recovery@example.test'));
+  assert.equal(outcome.matching,'unmatched');
+  // Simula parada abrupta após commit da resposta HTTP, antes de reconciliar.
+  await db.update(notificationDeliveries)
+    .set({providerMessageId:'resend-recovery-1'})
+    .where(eq(notificationDeliveries.id,row.id));
+  assert.equal(await reconcileUnmatchedResendEvents(db,25),1);
+  assert.equal(await reconcileUnmatchedResendEvents(db,25),0);
+  const [recovered]=await db.select().from(notificationDeliveries)
+    .where(eq(notificationDeliveries.id,row.id));
+  assert.equal(recovered.deliveryState,'delivered');
+  const [saved]=await db.select().from(notificationProviderEvents)
+    .where(eq(notificationProviderEvents.webhookId,'msg_recovery_orphan_001'));
+  assert.equal(saved.deliveryId,row.id);
+  await assert.rejects(()=>reconcileUnmatchedResendEvents(db,0),/Limite inválido/);
+});
