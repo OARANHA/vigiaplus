@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm';
 import { getDb } from '../lib/db';
 import { alerts, projects, tenants, notificationDeliveries } from '../lib/db/schema';
 import { loadAnalyticAlertFacts } from '../lib/notifications/analytics-facts';
+import { invoiceIsPastDue } from '../lib/notifications/billing';
 import { planDeliveries, ruleMatches, buildMessage, type RuleInput, type ChannelInput, type FactInput } from '../lib/notifications/evaluate';
 import { enqueue } from '../lib/notifications/queue';
 
@@ -131,4 +132,16 @@ test('ALT-03: regras de análises não transformam incidentes ou faturas em anom
   assert.ok(message.message.includes('alerta #8'));
   assert.ok(message.message.includes('projeto #14'));
   assert.ok(!message.message.includes('ontem'));
+});
+
+test('ALT-03: fatura aberta ainda não vencida não produz falso fato de inadimplência',()=>{
+  const at=new Date('2026-11-10T12:00:00Z');
+  assert.equal(invoiceIsPastDue('open','2026-11-10',at),false);
+  assert.equal(invoiceIsPastDue('open','2026-11-12',at),false);
+  assert.equal(invoiceIsPastDue('overdue','2026-11-12',at),false);
+  assert.equal(invoiceIsPastDue('open',null,at),false);
+  assert.equal(invoiceIsPastDue('paid','2026-11-01',at),false);
+  assert.equal(invoiceIsPastDue('open','2026-02-30',at),false);
+  assert.equal(invoiceIsPastDue('open','2026-11-09',at),true);
+  assert.equal(invoiceIsPastDue('overdue','2026-11-09',at),true);
 });
