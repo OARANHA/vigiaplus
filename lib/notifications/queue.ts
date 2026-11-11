@@ -10,6 +10,7 @@ import { getDb } from '@/lib/db';
 import { notificationDeliveries } from '@/lib/db/schema';
 import { send } from './transport';
 import { sameDestination } from './dedupe';
+import { reconcileAcceptedResendDelivery } from './resend-events';
 
 export type EnqueueInput = {
   tenantId: number;
@@ -197,7 +198,13 @@ export async function finishClaimedDelivery(
            sent_at=CASE WHEN ${status}='sent' THEN now() ELSE sent_at END,
            error=${error},
            provider_message_id=CASE WHEN ${status}='sent'
-             THEN ${result.providerId ?? null} ELSE provider_message_id END
+             THEN ${result.providerId ?? null} ELSE provider_message_id END,
+           delivery_state=CASE WHEN ${status}='sent'
+             AND delivery_state NOT IN ('delivered','bounced','complained','failed','suppressed')
+             THEN 'accepted' ELSE delivery_state END,
+           delivery_state_at=CASE WHEN ${status}='sent'
+             AND delivery_state NOT IN ('delivered','bounced','complained','failed','suppressed')
+             THEN now() ELSE delivery_state_at END
      WHERE id=${delivery.id} AND status='processing'
        AND lease_owner=${workerId}
        AND attempt_count=${delivery.attempt_count}
@@ -205,6 +212,18 @@ export async function finishClaimedDelivery(
      RETURNING id
   `);
   if (finished.rows.length !== 1) return 'lost_lease';
+  // Webhook pode chegar antes de o providerMessageId ter sido persistido.
+  // A reconciliação encontra eventos órfãos. A repetição do webhook também
+  // reconcilia após quedas durante estas duas operações.
+  if (result.ok && result.providerId) {
+    const row = await db.execute(sql`
+      SELECT lower(btrim(destination)) AS recipient FROM notification_deliveries
+      WHERE id=${delivery.id} AND provider_message_id=${result.providerId}
+        AND channel='email'
+    `);
+    if (row.rows.length === 1)
+      await reconcileAcceptedResendDelivery(db,result.providerId,String(row.rows[0].recipient));
+  }
   return result.ok ? 'accepted' : exhausted ? 'dead_letter' : 'retry';
 }
 
@@ -238,7 +257,7 @@ export async function dispatchPending(
     const [item] = await claimPendingDeliveries(db, 1, workerId);
     if (!item) break;
     report.claimed++;
-    let result: {ok:boolean;detail:string};
+    let result: {ok:boolean;detail:string;providerId?:string};
     try {
       result = await sendImpl({
         channel: item.channel, destination: item.destination,
@@ -279,7 +298,9 @@ export async function requeueDeadLetter(
       UPDATE notification_deliveries
          SET status='queued', attempt_count=0,
              lease_owner=NULL, lease_expires_at=NULL, next_attempt_at=NULL,
-             error=NULL, sent_at=NULL
+             error=NULL, sent_at=NULL,
+             provider_message_id=NULL,delivery_state='unconfirmed',
+             delivery_state_at=NULL,delivered_at=NULL,delivery_failure_code=NULL
        WHERE id=${input.deliveryId} AND tenant_id=${input.tenantId}
          AND status='dead_letter'
        RETURNING id,tenant_id
