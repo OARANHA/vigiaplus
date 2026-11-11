@@ -54,8 +54,8 @@ test('ALT-07: janela noturna em São Paulo atravessa meia-noite e adia sem perde
   assert.equal(deferred.length,1,'não descartar alerta durante silêncio');
   assert.equal(deferred[0].nextAttemptAt?.toISOString(),'2026-11-11T09:01:00.000Z');
   assert.equal(deferred[0].slaDueAt?.toISOString(),'2026-11-11T01:20:00.000Z');
-  assert.equal(planDeliveries([quietRule],[email],incident,now,11).length,1,
-    'sem timezone explícito, mantém padrão UTC legado');
+  assert.equal(planDeliveries([quietRule],[email],incident,now,11).length,0,
+    'sem política explícita, mantém padrão legado de silêncio em UTC');
   const emergency=planDeliveries([quietRule],[email],{
     ...incident,id:74,severity:'critica'},now,11,{
       timeZone:'America/Sao_Paulo',deferDuringSilence:true,criticalBypassSilence:true,
