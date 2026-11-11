@@ -96,3 +96,11 @@ Os três ciclos são invocados por **processos Node independentes** no teste iso
 **Limite:** a checagem do arquivo não é uma operação atômica contra troca por terceiro processo; é aceitável apenas no diretório isolado de simulação, nunca deve ser habilitada para envio real sem projeto de lock distribuído. Teste de reinicialização = processo CLI reiniciado, **não** reinicialização de host Windows/Linux. Os três ciclos são acionados pelo harness de CI, **não demonstram que Task Scheduler/systemd estejam instalados**.
 
 **Próximos gates:** CI do SHA exato; instalar voluntariamente o agendador em ambiente descartável e comprovar execução sem sessão interativa durante três janelas reais (5 minutos), incluindo lock e checkpoint. Não instalar no host operacional sem autorização.
+
+### ALT-08.2 — homologação de timer systemd em runner efêmero
+
+O workflow ganhou job `systemd-scheduler-ephemeral`: no runner Ubuntu hospedado pelo GitHub, o script `scripts/tests/alt082-systemd-ci.sh` exige `CI=true`, `GITHUB_ACTIONS=true`, `systemd` como PID 1 e diretório `/home/runner/work/`. O teste instala um **timer transitório (não habilitado no boot)** via `systemd-run`, agendado após 2 segundos e repetido 4 segundos depois da conclusão anterior. Esse intervalo curto é **exclusivamente do CI**; templates do produto permanecem a cada 5 minutos.
+
+Cada disparo usa o supervisor com `VIGIA_NOTIFY_DRY_RUN=1` em PGlite isolado no `RUNNER_TEMP`, sem `DATABASE_URL`, chamadas de transporte ou envio. O harness observa pelo menos três `runId` distintos no checkpoint e, após parar o timer e serviço, consulta o banco para confirmar três ou mais registros `notify_dry_run` bem-sucedidos e zero `notification_deliveries`. O `trap` interrompe timer e serviço e elimina os arquivos de teste mesmo em falha. Logs de `systemctl`/journal são inspecionados em falhas.
+
+**Gates:** resultado do novo job no SHA exato ainda não verificado; GitHub runner é um host descartável, mas não demonstra reinicialização do SO nem serviço ativo no computador/VPS operacional. Nenhum agendador foi instalado na máquina do proprietário e nenhum deploy foi realizado.
