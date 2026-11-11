@@ -62,6 +62,8 @@ O cenário verifica crash de processo e isolamento SQL entre conexões/processos
 
 O supervisor reconhece `VIGIA_NOTIFY_DRY_RUN=1` **junto com** `VIGIA_NOTIFY_SCHEDULER=1`. Nesta configuração não executa `notify.ts`, não lê fila, não chama canais de transporte e registra `worker=notify_dry_run` separadamente de `worker=notify`. O endpoint owner apresenta o último dry-run sem declarar o worker real saudável. O teste `tests/todo-alt082-scheduler-dryrun.test.ts` executa duas passadas independentes num PGlite temporário, confere o livro-razão e ausência de entregas.
 
+**Isolamento padrão:** os runners Windows e Linux usam `.data/notify-dryrun-pglite` e `.data/notify-dryrun-state`, diferentes do banco e da fila operacionais. Portanto, a UI owner conectada ao banco operacional **não exibirá** esses ciclos simulados; consulte o checkpoint isolado ou um painel explicitamente conectado ao banco de teste. Essa separação evita alterar dados de clientes durante o ensaio.
+
 ### Windows Task Scheduler (instalação não executada)
 
 1. Fazer checkout da PR #36 em uma **cópia de teste**, preservando `.env.local`, `.data` e a instância da porta 3199; não instalar tarefa em máquina que esteja processando clientes.
