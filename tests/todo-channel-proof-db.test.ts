@@ -4,6 +4,8 @@ import { mkdtempSync,readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { and,eq } from 'drizzle-orm';
+import { NextRequest } from 'next/server';
+import { proxy } from '../proxy';
 import {
   issueChannelProof,consumeChannelProof,revokeChannelProof,channelHasProof,
   channelProofHash,emailForVerification,isChannelProofToken,
@@ -107,4 +109,23 @@ test('ALT-05: fluxo público não permite autoaprovação por PATCH e valida tok
   assert.equal(emailForVerification('sem-arroba'),null);
   assert.equal(isChannelProofToken('x'.repeat(43)),true);
   assert.equal(isChannelProofToken('x'.repeat(42)),false);
+});
+
+test('ALT-05: proxy permite somente página/POST de confirmação públicos, nunca autoaprovação de API',()=>{
+ const oldDemo=process.env.DEMO_MODE;
+ try{
+  delete process.env.DEMO_MODE;
+  assert.equal(proxy(new NextRequest('https://vigia.example/confirmar-destino?token=x')).status,200);
+  assert.equal(proxy(new NextRequest('https://vigia.example/api/notifications/channels/verify/confirm',
+    {method:'POST'})).status,200,'token será checado dentro da rota de confirmação');
+  assert.equal(proxy(new NextRequest('https://vigia.example/api/notifications/channels/verify/request',
+    {method:'POST'})).status,401,'solicitar envio exige sessão');
+  assert.equal(proxy(new NextRequest('https://vigia.example/api/notifications/channels',
+    {method:'PATCH'})).status,401,'alterar verificação exige sessão');
+  process.env.DEMO_MODE='1';
+  assert.equal(proxy(new NextRequest('https://vigia.example/api/notifications/channels/verify/confirm',
+    {method:'POST'})).status,403,'nenhuma confirmação em demo pública');
+ }finally{
+  if(oldDemo===undefined)delete process.env.DEMO_MODE;else process.env.DEMO_MODE=oldDemo;
+ }
 });
