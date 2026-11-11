@@ -248,7 +248,7 @@ export function OwnerAdminWorkspace() {
   },[section,selectedTenant]);
   useEffect(()=>{
     if(section!=='crises'||!selectedTenant)return;
-    void api<{channels:OwnerChannel[]>}('/api/notifications/channels?tenant_id='+selectedTenant)
+    void api<{channels:OwnerChannel[]}>('/api/notifications/channels?tenant_id='+selectedTenant)
       .then(x=>setChannels(x.channels))
       .catch(e=>{setChannels([]);setError('Destinatários indisponíveis: '+String(e));});
   },[section,selectedTenant]);
