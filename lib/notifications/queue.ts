@@ -129,7 +129,9 @@ export async function claimPendingDeliveries(
     throw new Error('Limite do lote inválido (1 a 500)');
   if (!/^[a-zA-Z0-9_-]{8,128}$/.test(workerId))
     throw new Error('Identificador do worker inválido');
-  const result = await db.execute(sql`
+  const claimed: ClaimedDelivery[] = [];
+  for(let index=0;index<limit;index++) {
+    const result = await db.execute(sql`
     -- Serializar claims por organização. O SELECT de tenants é bloqueante
     -- apenas durante esta instrução; não durante envio de e-mail.
     WITH tenant_locks AS MATERIALIZED (
@@ -180,9 +182,9 @@ export async function claimPendingDeliveries(
         -- Contagem de tentativas no intervalo UTC fixo, incluindo retries.
         -- Lock em tenants impede dois workers de consumir a última vaga.
         AND (
-          SELECT count(*) FROM notification_deliveries done
+          SELECT count(*) FROM notification_dispatch_attempts done
           WHERE done.tenant_id=d.tenant_id
-            AND done.last_attempt_at >= date_trunc('hour',now())
+            AND done.claimed_at >= date_trunc('hour',now())
         ) < t.alert_rate_limit_per_hour
       ORDER BY CASE WHEN lower(d.severity) IN
            ('critica','critico','critical') THEN 0
@@ -190,10 +192,11 @@ export async function claimPendingDeliveries(
          WHEN lower(d.severity) IN ('media','medio','medium') THEN 2
          ELSE 3 END,
         d.sla_due_at ASC NULLS LAST,d.created_at ASC,d.id ASC
-      LIMIT ${limit}
+      LIMIT 1
       FOR UPDATE OF d SKIP LOCKED
     )
-    UPDATE notification_deliveries AS d
+    , acquired AS (
+      UPDATE notification_deliveries AS d
        SET status='processing',
            lease_owner=${workerId},
            lease_expires_at=now() + ${DELIVERY_LEASE_SECONDS} * interval '1 second',
@@ -204,13 +207,24 @@ export async function claimPendingDeliveries(
       FROM candidates
      WHERE d.id=candidates.id
      RETURNING d.id,d.tenant_id,d.channel,d.destination,d.title,d.message,d.attempt_count
+    ), logged AS (
+      INSERT INTO notification_dispatch_attempts(tenant_id,delivery_id,attempt_count)
+      SELECT tenant_id,id,attempt_count FROM acquired
+      RETURNING delivery_id
+    )
+    SELECT acquired.* FROM acquired
+    JOIN logged ON logged.delivery_id=acquired.id
   `);
-  return result.rows.map((row) => ({
-    id: Number(row.id), tenant_id: Number(row.tenant_id),
-    channel: String(row.channel), destination: String(row.destination),
-    title: String(row.title), message: String(row.message),
-    attempt_count: Number(row.attempt_count),
-  }));
+    if(result.rows.length===0)break;
+    const row=result.rows[0];
+    claimed.push({
+      id: Number(row.id), tenant_id: Number(row.tenant_id),
+      channel: String(row.channel), destination: String(row.destination),
+      title: String(row.title), message: String(row.message),
+      attempt_count: Number(row.attempt_count),
+    });
+  }
+  return claimed;
 }
 
 export type DeliveryCompletion = 'accepted' | 'retry' | 'dead_letter' | 'lost_lease';
