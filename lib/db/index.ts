@@ -859,7 +859,7 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS invoices_tenant ON invoices (tenant_id, status, due_at)`,
 ];
 
-async function ensureSchema(db: DB) {
+export async function ensureSchema(db: DB) {
   for (const stmt of DDL) {
     await db.execute(sql.raw(stmt));
   }
