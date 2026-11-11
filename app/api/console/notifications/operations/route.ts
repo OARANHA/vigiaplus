@@ -44,7 +44,7 @@ export async function GET() {
         FROM notification_deliveries
       `),
     ]);
-    const row = queue.rows[0] ?? {};
+    const row: Record<string, unknown> = queue.rows[0] ?? {};
     const recent = runs.rows.map(r => ({
       runId: String(r.run_id),
       worker: String(r.worker),
