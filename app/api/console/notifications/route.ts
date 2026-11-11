@@ -53,6 +53,7 @@ export async function GET(request:Request) {
       deliveryFailureCode:notificationDeliveries.deliveryFailureCode,
       attemptCount:notificationDeliveries.attemptCount,
       nextAttemptAt:notificationDeliveries.nextAttemptAt,
+      slaDueAt:notificationDeliveries.slaDueAt,
       leaseExpiresAt:notificationDeliveries.leaseExpiresAt,
       error:notificationDeliveries.error,
       createdAt:notificationDeliveries.createdAt,
