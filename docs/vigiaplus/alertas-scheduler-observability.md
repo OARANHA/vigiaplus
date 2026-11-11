@@ -112,3 +112,11 @@ No run `43035281344` (HEAD `41be5c46198f`), três jobs passaram; o job `systemd-
 ### ALT-08.2 — segunda corretiva do gate systemd
 
 O run `43048978940` do HEAD `2df58cf366fe` terminou RED somente no job systemd (os outros três jobs GREEN). A falha deixou de ser permissão: o script `scripts/tests/alt082-verify-systemd.ts` foi executado via `tsx` em formato CommonJS, mas possuía três `top-level await`, produzindo erro de transformação. A corretiva encapsula a verificação em `async function main()` e a chama com tratamento de erro sanitizado. Novo HEAD `b3ca2af8bc3b9a0dfdee9a8a5d03f32d763c60bb`, CI ainda pendente na última verificação. Sem certificar GREEN até 4/4 jobs concluídos no HEAD exato.
+
+### ALT-08.3 — auditoria inicial da observabilidade e autorização (candidato CI)
+
+O endpoint `GET /api/console/notifications/operations` já exige contexto autenticado e `requireOwner(ctx)` **antes** de consultar dados, sem aceitar `tenant_id` do request. A ALT-08.3 extrai `lib/notifications/operations-health.ts` para que a saúde do worker real seja `not_observed` na ausência de execução, `degraded` em erro/atraso, datas inválidas, datas no futuro ou evidência de `notify_dry_run`, e `healthy` somente após uma execução real de `notify` bem-sucedida dentro de 10 minutos. O campo `summary` proveniente do banco passa por allowlist de contadores inteiros não negativos e nunca retorna campos arbitrários de destinatários, token ou mensagem.
+
+Os testes `tests/todo-alt083-operations-security.test.ts` cobrem a função de saúde (inclusive tolerância zero a clock futuro), a sanitização, os papéis owner/analyst/client_admin/client_viewer e um contrato estático que confirma `requireOwner` antes da primeira consulta. Esses testes de papel e contrato **não substituem** uma chamada HTTP autenticada ponta a ponta. A certificação da RLS entre tenants requer banco descartável e uma matriz de identidades com privilégios reais; não alegar conformidade sem esse teste.
+
+**Gates ALT-08.3 restantes:** CI GREEN no novo HEAD; E2E HTTP com sessões owner/client/analyst e matriz de responses 200/403; teste RLS PostgreSQL descartável com identidade mínima; reinicialização de host de teste (sem infraestrutura produtiva) e aferição do heartbeat. Não aprovar merge/deploy nem ativar transporte de alertas antes da autorização.
