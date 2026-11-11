@@ -131,3 +131,46 @@ test('ALT-07: PGlite preserva next_attempt_at e prazo SLA em um alerta silenciad
   assert.equal(saved.slaDueAt?.toISOString(),'2026-11-11T01:20:00.000Z');
   assert.equal(saved.status,'queued');
 });
+
+test('ALT-07: migração de dedupe UTC para dia local preserva envios antigos',async()=>{
+  const {getDb}=await import('../lib/db');
+  const {tenants,notificationDeliveries}=await import('../lib/db/schema');
+  const {enqueue}=await import('../lib/notifications/queue');
+  const db=await getDb();
+  const [tenant]=await db.insert(tenants).values({
+    name:'ALT07 Compat UTC',slug:'alt07-compat-utc',status:'active',
+    timeZone:'America/Sao_Paulo',
+  }).returning();
+  const at=new Date('2026-11-11T01:30:00Z'); // UTC dia 11, BRT dia 10
+  const rule:RuleInput={...quietRule,silencioDe:null,silencioAte:null};
+  const events=planDeliveries([rule],[email],incident,at,tenant.id,{
+    timeZone:'America/Sao_Paulo',deferDuringSilence:true,
+  });
+  assert.equal(events.length,1);
+  const item=events[0];
+  assert.equal(item.compatibilityDedupeKeys?.length,2);
+  assert.notEqual(item.compatibilityDedupeKeys?.[0],item.dedupeKey);
+  await db.insert(notificationDeliveries).values({
+    tenantId:tenant.id,channel:item.channel,destination:item.destination,
+    kind:'incident',title:'Evento anterior',message:'Já notificado na PR34',
+    status:'sent',dedupeKey:item.compatibilityDedupeKeys![0],
+  });
+  assert.equal(await enqueue(item),false,'não reenvia hash v2 criado no dia UTC anterior');
+  assert.equal((await db.select().from(notificationDeliveries)).filter(
+    d=>d.tenantId===tenant.id).length,1);
+  const another=planDeliveries([rule],
+    [{...email,destination:'novo@exemplo.test'}],incident,at,tenant.id,{
+      timeZone:'America/Sao_Paulo',deferDuringSilence:true,
+    })[0];
+  assert.equal(await enqueue(another),true,'um destinatário novo pode receber');
+  const legacy=planDeliveries([rule],[email],
+    {...incident,id:74},at,tenant.id,{
+      timeZone:'America/Sao_Paulo',deferDuringSilence:true,
+    })[0];
+  await db.insert(notificationDeliveries).values({
+    tenantId:tenant.id,channel:legacy.channel,destination:legacy.destination,
+    kind:'incident',title:'Pré-migração',message:'Já notificado com chave v1',
+    status:'sent',dedupeKey:legacy.compatibilityDedupeKeys![1],
+  });
+  assert.equal(await enqueue(legacy),false,'não reenvia chave v1 antiga em UTC');
+});
