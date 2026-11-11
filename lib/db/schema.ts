@@ -335,6 +335,19 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
 });
 
 /** Livro-razão imutável de CADA tentativa de claim, inclusive retries. */
+/** ALT-08: histórico global, operacional, sem destinatários ou payload de alertas. */
+export const notificationWorkerRuns = pgTable('notification_worker_runs', {
+  runId: text('run_id').primaryKey(),
+  worker: text('worker').notNull(),
+  startedAt: timestamp('started_at', { withTimezone:true }).notNull(),
+  finishedAt: timestamp('finished_at', { withTimezone:true }).notNull(),
+  durationMs: integer('duration_ms').notNull(),
+  status: text('status').notNull(),
+  exitCode: integer('exit_code'),
+  summary: jsonb('summary').$type<Record<string,unknown>>().notNull().default({}),
+  createdAt: timestamp('created_at',{withTimezone:true}).notNull().defaultNow(),
+});
+
 export const notificationDispatchAttempts = pgTable('notification_dispatch_attempts', {
   id: serial('id').primaryKey(),
   tenantId: integer('tenant_id').notNull().references(() => tenants.id, { onDelete:'cascade' }),
