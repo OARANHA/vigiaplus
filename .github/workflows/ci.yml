@@ -32,3 +32,41 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  postgres-disposable:
+    name: ALT-08.1 PostgreSQL descartável
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vigia_ci
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: vigia_alt081_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vigia_ci -d vigia_alt081_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: vigia_ci
+      PGPASSWORD: isolated_ci_only
+      PGDATABASE: vigia_alt081_ci
+      DATABASE_URL: ""
+      ALT081_EPHEMERAL_POSTGRES: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instalar driver somente para teste efêmero
+        run: npm install --no-save --package-lock=false pg
+      - name: Executar testes PostgreSQL com pools independentes
+        run: node --import tsx --test scripts/tests/alt081-postgres.test.ts
