@@ -35,7 +35,7 @@ function brl(n: number): string {
 }
 
 /** Transforma as linhas do tenant em fatos pontuais e concretos. */
-async function carregarFatos(tenantId: number, at: Date): Promise<{
+async function carregarFatos(tenantId: number, at: Date, timeZone: string): Promise<{
   rules: RuleInput[];
   channels: ChannelInput[];
   facts: FactInput[];
@@ -97,9 +97,9 @@ async function carregarFatos(tenantId: number, at: Date): Promise<{
 
   // Faturas só geram alerta depois da data de vencimento; status 'open'
   // antes do vencimento não significa inadimplência.
-  // UTC é provisório; fuso por cliente continua pendente no ALT-07.
+  // Usa timezone da organização, não o UTC do servidor.
   for (const inv of invoiceRows) {
-    if (!invoiceIsPastDue(inv.status, inv.dueAt, at)) continue;
+    if (!invoiceIsPastDue(inv.status, inv.dueAt, at, timeZone)) continue;
     facts.push({
       kind: 'billing',
       id: inv.id,
@@ -134,14 +134,18 @@ async function main(): Promise<void> {
   };
 
   for (const tenant of ativos) {
-    const { rules, channels, facts } = await carregarFatos(tenant.id, at);
+    const { rules, channels, facts } = await carregarFatos(tenant.id, at, tenant.timeZone);
     resumo.tenants++;
     resumo.regras += rules.length;
     resumo.canais += channels.length;
     resumo.fatos += facts.length;
 
     for (const fact of facts) {
-      const itens = planDeliveries(rules, channels, fact, at, tenant.id);
+      const itens = planDeliveries(rules, channels, fact, at, tenant.id, {
+        timeZone: tenant.timeZone,
+        deferDuringSilence: true,
+        criticalBypassSilence: tenant.criticalBypassSilence === 1,
+      });
       resumo.planejados += itens.length;
       for (const item of itens) {
         if (await enqueue(item)) resumo.enfileirados++;
