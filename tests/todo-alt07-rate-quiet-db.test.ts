@@ -111,7 +111,7 @@ test('ALT-07: mudança administrativa exige owner e valida IANA, quota, silênci
   assert.match(policy,/alertRateLimitPerHour/);
   assert.match(policy,/NOTIFICATION_POLICY_UPDATED/);
   assert.match(policy,/NOTIFICATION_RULE_TIMING_UPDATED/);
-  assert.match(policy,/minuteFromHHmm\(value\)/);
+  assert.match(policy,/validateQuietWindow\(body\.silencioDe,body\.silencioAte\)/);
   assert.match(policy,/sla<1\|\|sla>10080/);
   const worker=readFileSync('scripts/workers/notify.ts','utf8');
   assert.match(worker,/timeZone: tenant\.timeZone/);
