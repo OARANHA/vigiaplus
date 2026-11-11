@@ -132,6 +132,18 @@ async function main(): Promise<void> {
     };
     try {
       await writeState(result);
+      // Persistir no banco após terminar o filho. Não registrar PII ou stdout.
+      // Uma falha de persistência torna a execução NÃO saudável (fail closed).
+      const { getDb } = await import('../../lib/db');
+      const { notificationWorkerRuns } = await import('../../lib/db/schema');
+      const db = await getDb();
+      await db.insert(notificationWorkerRuns).values({
+        runId: result.runId, worker: result.worker,
+        startedAt: new Date(result.startedAt),
+        finishedAt: new Date(result.finishedAt),
+        durationMs: result.durationMs, status: result.status,
+        exitCode: result.exitCode, summary: result.summary ?? {},
+      }).onConflictDoNothing({ target: notificationWorkerRuns.runId });
       console.log(JSON.stringify(result));
     } finally {
       await unlock();
