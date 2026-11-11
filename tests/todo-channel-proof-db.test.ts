@@ -56,6 +56,7 @@ test('ALT-05: canal legado verified=1 sem prova não libera worker, token permit
   assert.equal(channelHasProof(verified),true);
   const [claimed]=await claimPendingDeliveries(db,1,'worker_test_abc01');
   assert.equal(claimed?.id,queued.id);
+  assert.ok(claimed);
   assert.equal(await finishClaimedDelivery(db,claimed,'worker_test_abc01',
     {ok:true,detail:'HTTP 202',providerId:'123-abc'}),'accepted');
   const [delivered]=await db.select().from(notificationDeliveries)
