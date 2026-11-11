@@ -26,7 +26,10 @@ service="${unit}.service"
 cleanup() {
   sudo systemctl stop "$timer" "$service" >/dev/null 2>&1 || true
   sudo systemctl reset-failed "$timer" "$service" >/dev/null 2>&1 || true
-  rm -rf "$state_root"
+  # Não apagar diretórios genéricos: este caminho foi criado por mktemp em RUNNER_TEMP.
+  if [[ "$state_root" == "$RUNNER_TEMP"/vigia-alt082-systemd-* ]]; then
+    sudo rm -rf -- "$state_root"
+  fi
 }
 trap cleanup EXIT
 # --on-unit-inactive is measured after the previous service completion.
@@ -35,6 +38,7 @@ sudo systemd-run --quiet --unit="$unit" \
   --on-active=2s --on-unit-inactive=4s \
   --timer-property=AccuracySec=1s \
   --property=Type=oneshot \
+  --property="User=$(id -un)" \
   --property="WorkingDirectory=$root" \
   --property=TimeoutStartSec=90s \
   --setenv=VIGIA_NOTIFY_SCHEDULER=1 \
