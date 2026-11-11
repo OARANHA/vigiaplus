@@ -14,3 +14,13 @@ export function isDemoReadMethod(method: string | null | undefined): boolean {
 export function isDemoWriteMethod(method: string | null | undefined): boolean {
   return !isDemoReadMethod(method);
 }
+
+/** Cron e webhooks são entradas operacionais, inclusive quando expõem GET. */
+export function isDemoSafeRequest(method: string | null | undefined, pathname: string): boolean {
+  if (!isDemoReadMethod(method)) return false;
+  return !(
+    pathname === '/api/cron' || pathname.startsWith('/api/cron/') ||
+    pathname === '/api/webhook' || pathname.startsWith('/api/webhook/') ||
+    pathname === '/api/webhooks' || pathname.startsWith('/api/webhooks/')
+  );
+}
