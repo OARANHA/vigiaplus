@@ -12,6 +12,7 @@ import {
 } from '../../lib/db/schema';
 import { enqueue, dispatchPending } from '../../lib/notifications/queue';
 import { loadAnalyticAlertFacts } from '../../lib/notifications/analytics-facts';
+import { invoiceIsPastDue } from '../../lib/notifications/billing';
 import {
   planDeliveries, type RuleInput, type ChannelInput, type FactInput,
 } from '../../lib/notifications/evaluate';
@@ -96,11 +97,8 @@ async function carregarFatos(tenantId: number, at: Date): Promise<{
   // Faturas só geram alerta depois da data de vencimento; status 'open'
   // antes do vencimento não significa inadimplência.
   // UTC é provisório; fuso por cliente continua pendente no ALT-07.
-  const todayUtc = at.toISOString().slice(0, 10);
   for (const inv of invoiceRows) {
-    if (inv.status !== 'open' && inv.status !== 'overdue') continue;
-    const due = inv.dueAt ? String(inv.dueAt).slice(0, 10) : null;
-    if (!due || !/^\d{4}-\d{2}-\d{2}$/.test(due) || due >= todayUtc) continue;
+    if (!invoiceIsPastDue(inv.status, inv.dueAt, at)) continue;
     facts.push({
       kind: 'billing',
       id: inv.id,
