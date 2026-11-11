@@ -88,3 +88,11 @@ Não instalar tarefas, não fazer merge/deploy, não enviar mensagens e não alt
 ### ALT-08.2 — corretiva de CI (11/11/2026)
 
 Falha reproduzida no workflow 43027899738: 426/427 testes passaram; integração dry-run ficou sem código de saída antes de 60 s no runner e o passo `Test` falhou (job PostgreSQL dependente foi skipped). O teste foi movido de `tests/` para `scripts/tests/alt082-scheduler-dryrun.test.ts` e ganhou job dedicado `dryrun-isolated` após build, usando subprocessos assíncronos com timeout explícito e fechamento do PGlite. O supervisor em modo dry-run encerra o processo CLI após persistência e liberação do lock, porque os handles PGlite podem manter o processo vivo. Confirmar GREEN no novo HEAD antes de homologar; o teste não instala cron nem envia mensagens.
+
+### ALT-08.2 — três ciclos, restart e recuperação conservadora de lock
+
+Os três ciclos são invocados por **processos Node independentes** no teste isolado; entre o segundo e o terceiro ciclo é criado um lock simulado de processo morto (`pid` inexistente e `startedAt` anterior a cinco minutos). O supervisor recupera o lock **somente** quando `VIGIA_NOTIFY_DRY_RUN=1`, após verificar formato, tempo decorrido, PID inexistente (`ESRCH`) e conteúdo/inode estáveis, e tenta readquirir o lock por `open('wx')`. Lock novo, malformado, sem timestamp, de PID ativo ou inacessível é recusado. Em modo de entrega **real**, a recuperação automática permanece proibida (fail-closed).
+
+**Limite:** a checagem do arquivo não é uma operação atômica contra troca por terceiro processo; é aceitável apenas no diretório isolado de simulação, nunca deve ser habilitada para envio real sem projeto de lock distribuído. Teste de reinicialização = processo CLI reiniciado, **não** reinicialização de host Windows/Linux. Os três ciclos são acionados pelo harness de CI, **não demonstram que Task Scheduler/systemd estejam instalados**.
+
+**Próximos gates:** CI do SHA exato; instalar voluntariamente o agendador em ambiente descartável e comprovar execução sem sessão interativa durante três janelas reais (5 minutos), incluindo lock e checkpoint. Não instalar no host operacional sem autorização.
