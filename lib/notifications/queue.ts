@@ -3,7 +3,7 @@
  * o mesmo fato/regra/canal/destino nunca dispara duas vezes no dia.
  * O banco arbitra concorrência com UNIQUE + ON CONFLICT DO NOTHING.
  */
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import type { DB } from '@/lib/db';
 import { getDb } from '@/lib/db';
@@ -27,6 +27,8 @@ export type EnqueueInput = {
   dedupeKey: string;
   /** Chave histórica opcional, usada apenas para não reenviar ao destinatário legado. */
   legacyDedupeKey?: string;
+  /** Chaves v2/v1 calculadas com UTC antes da troca para dia civil. */
+  compatibilityDedupeKeys?: string[];
   nextAttemptAt?: Date;
   slaDueAt?: Date;
 };
@@ -48,6 +50,24 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
     if (legacy.some(row => sameDestination(
       row.channel, row.destination, input.channel, input.destination,
     ))) return false;
+  }
+
+  if (input.compatibilityDedupeKeys?.length) {
+    const keys=[...new Set(input.compatibilityDedupeKeys.filter(
+      key=>typeof key==='string'&&key.length>0&&key!==input.dedupeKey,
+    ))];
+    if(keys.length>0){
+      const previous=await db.select({
+        channel:notificationDeliveries.channel,
+        destination:notificationDeliveries.destination,
+      }).from(notificationDeliveries).where(and(
+        eq(notificationDeliveries.tenantId,input.tenantId),
+        inArray(notificationDeliveries.dedupeKey,keys),
+      )).limit(keys.length);
+      if(previous.some(row=>sameDestination(
+        row.channel,row.destination,input.channel,input.destination,
+      )))return false;
+    }
   }
 
   // Antes havia SELECT + INSERT, sujeito a corrida entre dois workers.
