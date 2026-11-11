@@ -55,7 +55,7 @@ async function recoverDryRunOrphan(): Promise<boolean> {
   try { entry = JSON.parse(original); } catch { return false; }
   if (!entry || typeof entry !== 'object') return false;
   const { pid, startedAt } = entry as Record<string, unknown>;
-  if (!Number.isSafeInteger(pid) || Number(pid) <= 0 || typeof startedAt !== 'string') return false;
+  if (typeof pid !== 'number' || !Number.isSafeInteger(pid) || pid <= 0 || typeof startedAt !== 'string') return false;
   const timestamp = Date.parse(startedAt);
   if (!Number.isFinite(timestamp) || Date.now() - timestamp < orphanThresholdMs) return false;
   // PID ativo, inacessível ou reutilizado: fail closed.
