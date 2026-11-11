@@ -30,6 +30,9 @@ export const tenants = pgTable('tenants', {
   planKey: text('plan_key').notNull().default('trial'),
   status: text('status').notNull().default('active'),
   locale: text('locale').notNull().default('pt-BR'),
+  timeZone: text('time_zone').notNull().default('America/Sao_Paulo'),
+  alertRateLimitPerHour: integer('alert_rate_limit_per_hour').notNull().default(100),
+  criticalBypassSilence: integer('critical_bypass_silence').notNull().default(1),
   retentionDays: integer('retention_days').notNull().default(180),
   brandConfig: jsonb('brand_config').$type<{ logo?: string; color?: string; domain?: string }>(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -326,6 +329,7 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
   dedupeKey: text('dedupe_key').notNull(),
   error: text('error'),
+  slaDueAt: timestamp('sla_due_at', { withTimezone:true }),
   sentAt: timestamp('sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
