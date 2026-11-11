@@ -803,6 +803,18 @@ const DDL = [
     sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS notification_worker_runs (
+    run_id TEXT PRIMARY KEY,
+    worker TEXT NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL,
+    finished_at TIMESTAMPTZ NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('success','error','timeout')),
+    exit_code INTEGER,
+    summary JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS notification_worker_runs_recent ON notification_worker_runs (finished_at DESC)`,
   `CREATE TABLE IF NOT EXISTS notification_dispatch_attempts (
     id SERIAL PRIMARY KEY,
     tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
