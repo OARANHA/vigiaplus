@@ -162,30 +162,35 @@ test('mensagens de incidente e fatura tambem tem numero e origem', () => {
 // planDeliveries: dedupeKey estavel, sem duplicacao de canal, filtros.
 // ---------------------------------------------------------------------------
 
-test('dedupeKey estavel por dia e sem duplicacao de (canal, dedupeKey)', () => {
+test('dedupeKey v2 diferencia 2 emails e 1 canal extra, sem expor destinatários', () => {
   const r = rule({ id: 7, type: 'fatura_vencida', channels: [] });
   const f = fact({ kind: 'billing', id: 42 });
   const chs: ChannelInput[] = [
     channel({ channel: 'email', destination: 'a@exemplo.com' }),
-    channel({ channel: 'email', destination: 'b@exemplo.com' }), // mesmo canal
+    channel({ channel: 'email', destination: 'b@exemplo.com' }),
     channel({ channel: 'slack', destination: 'https://hooks.exemplo.com/x' }),
-    channel({ channel: 'telegram', destination: 'chat', active: 0 }), // inativo
-    channel({ channel: 'webhook', destination: 'https://y', verified: 0 }), // nao verificado
+    channel({ channel: 'telegram', destination: 'chat', active: 0 }),
+    channel({ channel: 'webhook', destination: 'https://y', verified: 0 }),
   ];
   const itens = planDeliveries([r], chs, f, AO_MEIO_DIA);
-  assert.ok(itens.length > 0);
-
-  const esperado = 'rule:7:fact:billing:42:dia:2026-05-01';
-  assert.ok(itens.every((i) => i.dedupeKey === esperado), 'dedupeKey no formato estavel');
-  const chaves = itens.map((i) => `${i.channel}::${i.dedupeKey}`);
-  assert.equal(new Set(chaves).size, chaves.length, 'nenhum (canal, dedupeKey) repetido');
-  assert.deepEqual(itens.map((i) => i.channel).sort(), ['email', 'slack'], 'so canais ativos e verificados');
-
-  // Mesma entrada => mesmas chaves (estabilidade); outro dia => chave diferente.
+  assert.equal(itens.length, 3, '2 emails e 1 slack não podem competir pelo mesmo dedupe');
+  assert.deepEqual(itens.map(i => i.channel).sort(), ['email', 'email', 'slack']);
+  assert.equal(new Set(itens.map(i => i.dedupeKey)).size, 3);
+  assert.ok(itens.every(i => /^v2:[a-f0-9]{64}$/.test(i.dedupeKey)));
+  assert.ok(itens.every(i => i.legacyDedupeKey === 'rule:7:fact:billing:42:dia:2026-05-01'));
+  assert.ok(itens.every(i => !i.dedupeKey.includes(i.destination)));
   const deNovo = planDeliveries([r], chs, f, AO_MEIO_DIA);
-  assert.deepEqual(deNovo.map((i) => i.dedupeKey), itens.map((i) => i.dedupeKey));
+  assert.deepEqual(deNovo.map(i => i.dedupeKey), itens.map(i => i.dedupeKey));
   const outroDia = planDeliveries([r], chs, f, new Date('2026-05-02T12:00:00Z'));
   assert.notEqual(outroDia[0].dedupeKey, itens[0].dedupeKey);
+
+  // A mesma caixa escrita em maiúsculas e com espaços não ganha um aviso extra.
+  const repetidos = planDeliveries([r], [
+    channel({ destination: ' A@EXEMPLO.COM ' }),
+    channel({ destination: 'a@exemplo.com' }),
+  ], f, AO_MEIO_DIA);
+  assert.equal(repetidos.length, 1);
+  assert.equal(repetidos[0].dedupeKey, itens[0].dedupeKey);
 });
 
 test('itens sao EnqueueInput prontos e respeitam tenantId injetado', () => {

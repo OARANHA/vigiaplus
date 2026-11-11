@@ -1,11 +1,13 @@
 /**
  * Fila de entregas (H2). Idempotente por (tenant_id, dedupe_key):
- * a mesma regra nunca dispara duas vezes para o mesmo fato.
+ * o mesmo fato/regra/canal/destino nunca dispara duas vezes no dia.
+ * O banco arbitra concorrência com UNIQUE + ON CONFLICT DO NOTHING.
  */
 import { and, eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { notificationDeliveries } from '@/lib/db/schema';
 import { send } from './transport';
+import { sameDestination } from './dedupe';
 
 export type EnqueueInput = {
   tenantId: number;
@@ -17,19 +19,33 @@ export type EnqueueInput = {
   title: string;
   message: string;
   dedupeKey: string;
+  /** Chave histórica opcional, usada apenas para não reenviar ao destinatário legado. */
+  legacyDedupeKey?: string;
 };
 
 export async function enqueue(input: EnqueueInput): Promise<boolean> {
   const db = await getDb();
-  const existing = await db.select({ id: notificationDeliveries.id })
-    .from(notificationDeliveries)
-    .where(and(
+  // Registros anteriores à ALT-01 usam regra/fato/dia sem canal/destino.
+  // Preservar o destinatário que JÁ recebeu sem reenviar automaticamente;
+  // os outros destinatários poderão receber normalmente sua primeira entrega.
+  // Nenhum dado antigo é excluído ou reescrito nesta migração conservadora.
+  if (input.legacyDedupeKey) {
+    const legacy = await db.select({
+      channel: notificationDeliveries.channel,
+      destination: notificationDeliveries.destination,
+    }).from(notificationDeliveries).where(and(
       eq(notificationDeliveries.tenantId, input.tenantId),
-      eq(notificationDeliveries.dedupeKey, input.dedupeKey),
+      eq(notificationDeliveries.dedupeKey, input.legacyDedupeKey),
     )).limit(1);
-  if (existing.length > 0) return false;
+    if (legacy.some(row => sameDestination(
+      row.channel, row.destination, input.channel, input.destination,
+    ))) return false;
+  }
 
-  await db.insert(notificationDeliveries).values({
+  // Antes havia SELECT + INSERT, sujeito a corrida entre dois workers.
+  // Este único INSERT usa o índice UNIQUE já existente no schema:
+  // notification_deliveries_dedupe (tenant_id, dedupe_key).
+  const inserted = await db.insert(notificationDeliveries).values({
     tenantId: input.tenantId,
     ruleId: input.ruleId ?? null,
     channel: input.channel,
@@ -40,8 +56,10 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
     message: input.message,
     status: 'queued',
     dedupeKey: input.dedupeKey,
-  });
-  return true;
+  }).onConflictDoNothing({
+    target: [notificationDeliveries.tenantId, notificationDeliveries.dedupeKey],
+  }).returning({ id: notificationDeliveries.id });
+  return inserted.length === 1;
 }
 
 /** Envia o que esta na fila. Pode rodar em qualquer worker ou no cron. */

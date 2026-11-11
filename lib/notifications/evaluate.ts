@@ -5,6 +5,7 @@
  * nem variacao temporal inventada sem historico.
  */
 import type { EnqueueInput } from './queue';
+import { deliveryDedupeKey, legacyDeliveryDedupeKey } from './dedupe';
 
 // ---------------------------------------------------------------------------
 // Tipos de entrada (espelham as colunas do banco sem trazer o driver junto).
@@ -246,8 +247,9 @@ export function buildMessage(rule: RuleInput, fact: FactInput): {
 /**
  * Para um fato, planeja as entregas das regras ativas, nao silenciadas e que
  * casam com o fato. Respeita `rule.channels` (vazio = todos os canais ativos
- * e verificados). dedupeKey e estavel por (regra, fato, dia UTC). Nunca emite
- * dois itens com o mesmo (channel, dedupeKey).
+ * e verificados). dedupeKey v2 e estavel por regra, fato, dia UTC, canal
+ * e DESTINO canonizado (hash, sem PII); varios destinatarios sao preservados.
+ * A chave antiga segue apenas para reconciliação do histórico sem reenviar.
  *
  * `tenantId` e opcional e injetado pelo worker; quando ausente fica 0, pois
  * regras/canais/fatos ja chegam escopados por tenant. Itens prontos p/ enqueue.
@@ -269,16 +271,21 @@ export function planDeliveries(
     if (isSilenced(rule, at)) continue;
     if (!ruleMatches(rule, fact)) continue;
 
-    const dedupeKey = `rule:${rule.id}:fact:${fact.kind}:${fact.id}:dia:${dia}`;
+    const legacyDedupeKey = legacyDeliveryDedupeKey({ ruleId: rule.id, factKind: fact.kind, factId: fact.id, dayUtc: dia });
     const { title, message, severity } = buildMessage(rule, fact);
     const selecionados = rule.channels.length > 0
       ? ativos.filter((c) => rule.channels.includes(c.channel))
       : ativos;
 
     for (const canal of selecionados) {
-      const chave = `${canal.channel}::${dedupeKey}`;
-      if (vistos.has(chave)) continue;
-      vistos.add(chave);
+      const dedupeKey = deliveryDedupeKey({
+        ruleId: rule.id, factKind: fact.kind, factId: fact.id, dayUtc: dia,
+        channel: canal.channel, destination: canal.destination,
+      });
+      // Hash inclui canal e destino, portanto esta dedupe local não elimina
+      // pessoas distintas e elimina repetições com e-mails capitalizados.
+      if (vistos.has(dedupeKey)) continue;
+      vistos.add(dedupeKey);
       itens.push({
         tenantId,
         ruleId: rule.id,
@@ -289,6 +296,7 @@ export function planDeliveries(
         title,
         message,
         dedupeKey,
+        legacyDedupeKey,
       });
     }
   }
