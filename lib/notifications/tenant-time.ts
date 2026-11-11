@@ -47,6 +47,22 @@ export function minuteFromHHmm(value:string|null|undefined):number|null{
   return match?Number(match[1])*60+Number(match[2]):null;
 }
 
+/**
+ * Configuração de janela civil: sempre dois extremos HH:mm, ou ambos null.
+ * Recusar intervalos sem instantes de liberação (por exemplo 00:00–23:59),
+ * pois eles manteriam todos os alertas represados indefinidamente.
+ */
+export function validateQuietWindow(from:unknown,until:unknown):{
+  start:string|null;end:string|null;
+}{
+  if(from===null && until===null)return {start:null,end:null};
+  const start=minuteFromHHmm(typeof from==='string'?from:null);
+  const end=minuteFromHHmm(typeof until==='string'?until:null);
+  if(start===null||end===null||start===end||(start===0&&end===1439))
+    throw new RangeError('Silêncio exige dois horários HH:mm e uma janela com liberação');
+  return {start:from as string,end:until as string};
+}
+
 export function inQuietHours(
   from:string|null,until:string|null,at:Date,timeZone:string,
 ):boolean{
