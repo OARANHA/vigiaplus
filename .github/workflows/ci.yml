@@ -70,3 +70,18 @@ jobs:
         run: npm install --no-save --package-lock=false pg
       - name: Executar testes PostgreSQL com pools independentes
         run: node --import tsx --test scripts/tests/alt081-postgres.test.ts
+
+  dryrun-isolated:
+    name: ALT-08.2 dry-run isolado
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Duas execuções dry-run com PGlite descartável
+        run: node --import tsx --test scripts/tests/alt082-scheduler-dryrun.test.ts
