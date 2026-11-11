@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 type State = {
-  worker: 'notify';
+  worker: 'notify' | 'notify_dry_run';
   runId: string;
   startedAt: string;
   finishedAt: string;
@@ -68,6 +68,8 @@ async function main(): Promise<void> {
     throw error;
   }
 
+  // Dry-run testa o ciclo do agendador e a persistência, SEM ler fila ou chamar transportes.
+  const dryRun = process.env.VIGIA_NOTIFY_DRY_RUN === '1';
   const runId = randomUUID();
   const startedAt = new Date();
   let status: State['status'] = 'error';
@@ -75,6 +77,12 @@ async function main(): Promise<void> {
   let summary: Record<string, unknown> | undefined;
 
   try {
+    if (dryRun) {
+      summary = { dryRun: true, tenants: 0, regras: 0, canais: 0,
+        fatos: 0, planejados: 0, enfileirados: 0, entregas: { sent: 0, failed: 0 } };
+      exitCode = 0;
+      status = 'success';
+    } else {
     const script = resolve('scripts/workers/notify.ts');
     const child = spawn(process.execPath, ['--import', 'tsx', script], {
       env: process.env, shell: false, windowsHide: true,
@@ -123,9 +131,10 @@ async function main(): Promise<void> {
     } else {
       status = timedOut ? 'timeout' : 'error';
     }
+    }
   } finally {
     const result: State = {
-      worker: 'notify', runId, startedAt: startedAt.toISOString(),
+      worker: dryRun ? 'notify_dry_run' : 'notify', runId, startedAt: startedAt.toISOString(),
       finishedAt: new Date().toISOString(),
       durationMs: Date.now() - startedAt.getTime(),
       status, exitCode, ...(summary ? { summary } : {}),
