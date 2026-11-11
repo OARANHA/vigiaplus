@@ -294,6 +294,12 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   title: text('title').notNull(),
   message: text('message').notNull(),
   status: text('status').notNull().default('sent'),
+  // ALT-02: tentativas, lease e agendamento na própria outbox, sem filas externas.
+  attemptCount: integer('attempt_count').notNull().default(0),
+  leaseOwner: text('lease_owner'),
+  leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+  nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+  lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
   dedupeKey: text('dedupe_key').notNull(),
   error: text('error'),
   sentAt: timestamp('sent_at', { withTimezone: true }),
