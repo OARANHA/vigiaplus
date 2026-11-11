@@ -803,6 +803,16 @@ const DDL = [
     sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS notification_dispatch_attempts (
+    id SERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    delivery_id INTEGER REFERENCES notification_deliveries(id) ON DELETE SET NULL,
+    attempt_count INTEGER NOT NULL,
+    claimed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (delivery_id,attempt_count)
+  )`,
+  `CREATE INDEX IF NOT EXISTS notification_dispatch_attempts_hour
+    ON notification_dispatch_attempts(tenant_id,claimed_at DESC)`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS sla_due_at TIMESTAMPTZ`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS provider_message_id TEXT`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS delivery_state TEXT NOT NULL DEFAULT 'unconfirmed'`,
