@@ -312,6 +312,7 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   title: text('title').notNull(),
   message: text('message').notNull(),
   status: text('status').notNull().default('sent'),
+  providerMessageId: text('provider_message_id'),
   // ALT-02: tentativas, lease e agendamento na própria outbox, sem filas externas.
   attemptCount: integer('attempt_count').notNull().default(0),
   leaseOwner: text('lease_owner'),
