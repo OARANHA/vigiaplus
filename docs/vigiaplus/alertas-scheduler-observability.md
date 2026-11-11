@@ -45,3 +45,9 @@ O scheduler de **coleta de fontes** da PR #11 não é o scheduler de **envio de 
 | Falha definitiva | Quinta tentativa vira `dead_letter`; sem claim posterior | Reprocessamento manual exige owner e auditoria |
 
 **Protocolo:** nenhuma mensagem real; testes usam canal interno `ledger` e PGlite temporário. A existência dos testes não representa aprovação; validar CI específico do commit e reproduzir em banco descartável real antes de classificar ALT-08.1 como concluída.
+
+### Prova PostgreSQL isolada adicionada ao CI
+
+O job `postgres-disposable` usa um serviço PostgreSQL 16 efêmero criado no runner do GitHub; o teste `scripts/tests/alt081-postgres.test.ts` exige explicitamente `ALT081_EPHEMERAL_POSTGRES=1`, host local `127.0.0.1`, database `vigia_alt081_ci` e ausência de `DATABASE_URL`. Dois pools de conexão independentes executam o código real `claimPendingDeliveries` e `finishClaimedDelivery` com o DDL da aplicação. Os cenários incluem claim concorrente, recuperação de lease, fencing, retries, dead-letter e ledger de tentativas.
+
+**Limitação:** pools independentes no mesmo processo de teste não provam recuperação de crash de processo real, múltiplos hosts, segurança do lock órfão ou exactly-once externo. Não ligar Resend nem apontar este teste a Neon de produção.
