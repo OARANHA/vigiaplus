@@ -11,6 +11,7 @@ if (process.env.CI!=='true' || process.env.GITHUB_ACTIONS!=='true'
     || !process.env.RUNNER_TEMP || !directory.startsWith(process.env.RUNNER_TEMP+'/')) {
   throw new Error('ALT082 verifier only allowed in isolated GitHub CI PGlite');
 }
+async function main():Promise<void> {
 const db=new PGlite(directory);
 try {
   const result=await db.query<{
@@ -31,3 +32,9 @@ try {
 }finally{
   await db.close();
 }
+}
+main().catch(() => {
+  // Não expor dados internos do PGlite ou caminhos do runner em logs públicos.
+  console.error('ALT082: auditoria de histórico systemd falhou');
+  process.exitCode=1;
+});
