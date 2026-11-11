@@ -10,7 +10,7 @@ import { getDb } from '@/lib/db';
 import { notificationDeliveries } from '@/lib/db/schema';
 import { send } from './transport';
 import { sameDestination } from './dedupe';
-import { reconcileAcceptedResendDelivery } from './resend-events';
+import { reconcileAcceptedResendDelivery, reconcileUnmatchedResendEvents } from './resend-events';
 
 export type EnqueueInput = {
   tenantId: number;
@@ -242,6 +242,8 @@ export async function dispatchPending(
   const db = options.db ?? await getDb();
   const workerId = options.workerId ?? randomUUID();
   const sendImpl = options.sendImpl ?? send;
+  // Sem rede: recuperar callbacks autenticados persistidos antes da queda.
+  await reconcileUnmatchedResendEvents(db,25);
   const exhausted = await sweepExhaustedDeliveries(db);
   if (!Number.isSafeInteger(limit) || limit < 1 || limit > 500)
     throw new Error('Limite do lote inválido (1 a 500)');
