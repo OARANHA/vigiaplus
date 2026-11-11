@@ -9,6 +9,7 @@ import { requireAction } from '@/lib/tenant/rbac';
 import { AppError } from '@/lib/tenant/errors';
 import { KNOWN_CHANNELS } from '@/lib/notifications/evaluate';
 import { requireFeature } from '@/lib/tenant/entitlements';
+import { channelHasProof } from '@/lib/notifications/channel-proof';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,7 +65,8 @@ export async function GET(request: Request) {
         id: c.id,
         channel: c.channel,
         destination: c.destination,
-        verified: c.verified === 1,
+        verified: channelHasProof(c),
+        verifiedAt: channelHasProof(c) ? c.verifiedAt : null,
         active: c.active === 1,
         createdAt: c.createdAt,
       })),
@@ -108,9 +110,15 @@ export async function PATCH(request: Request) {
     const body = asBody(await request.json().catch(() => null));
     const id = readId(body.id);
 
-    const set: { active?: number; verified?: number } = {};
+    const set: { active?: number; verified?: number; verifiedAt?: null } = {};
     if (Object.prototype.hasOwnProperty.call(body, 'active')) set.active = toFlag(body.active);
-    if (Object.prototype.hasOwnProperty.call(body, 'verified')) set.verified = toFlag(body.verified);
+    if (Object.prototype.hasOwnProperty.call(body, 'verified')) {
+      // Nunca mais permitir que alguém se autoaprove com PATCH. Para revogar,
+      // aceitamos apenas false e apagamos a prova da coluna vigente.
+      if (toFlag(body.verified) !== 0) throw AppError.forbidden('Verificação exige prova de posse por e-mail');
+      set.verified = 0;
+      set.verifiedAt = null;
+    }
     if (Object.keys(set).length === 0) throw AppError.badRequest('Nada para atualizar');
 
     const db = await getDb();
