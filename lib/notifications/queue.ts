@@ -208,13 +208,20 @@ export async function dispatchPending(
   const workerId = options.workerId ?? randomUUID();
   const sendImpl = options.sendImpl ?? send;
   const exhausted = await sweepExhaustedDeliveries(db);
-  const pending = await claimPendingDeliveries(db, limit, workerId);
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 500)
+    throw new Error('Limite do lote inválido (1 a 500)');
   const report: DispatchReport = {
-    sent: 0, failed: 0, claimed: pending.length, retried: 0,
+    sent: 0, failed: 0, claimed: 0, retried: 0,
     deadLetter: 0, lostLease: 0, exhausted,
   };
 
-  for (const item of pending) {
+  // Reservar imediatamente antes de enviar: se reservássemos 100 registros
+  // e os enviassemos em sequência, o lease dos últimos expiraria ANTES do
+  // envio, permitindo duplicação por outro worker. 1 reserva = 1 envio.
+  for (let index=0; index<limit; index++) {
+    const [item] = await claimPendingDeliveries(db, 1, workerId);
+    if (!item) break;
+    report.claimed++;
     let result: {ok:boolean;detail:string};
     try {
       result = await sendImpl({
