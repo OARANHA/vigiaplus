@@ -64,7 +64,7 @@ type EmailDiag = {keyConfigured:boolean;senderConfigured:boolean;publicUrlHttps:
 type OwnerChannel = {id:number;channel:string;destination:string;verified:boolean;
   active:boolean;verifiedAt:string|null};
 type OwnerDelivery = {id:number;eventRef:string|null;sourceProjectId:number|null;
-  channel:string;destination:string;status:string;
+  channel:string;destination:string;status:string;providerMessageId:string|null;
   attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
   error:string|null;createdAt:string;sentAt:string|null};
 const DELIVERY_LABELS:Record<string,string>={
@@ -669,6 +669,7 @@ export function OwnerAdminWorkspace() {
                     {d.sourceProjectId&&<p className="vpx-owner-muted">Projeto #{d.sourceProjectId}</p>}</td>
                   <td>{d.channel}: {d.destination}</td>
                   <td>{DELIVERY_LABELS[d.status]??d.status}
+                    {d.providerMessageId&&<p className="vpx-owner-muted">ID provedor: {d.providerMessageId}</p>}
                     {d.error&&<p className="vpx-owner-muted">{d.error}</p>}</td>
                   <td>{d.attemptCount}/5</td>
                   <td>{d.status==='retry'?showDate(d.nextAttemptAt):
