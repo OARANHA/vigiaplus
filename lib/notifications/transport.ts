@@ -9,9 +9,11 @@ export type Delivery = {
   destination: string;
   title: string;
   message: string;
+  /** Header Resend: chave estável por entrega para retries em até 24 h. */
+  idempotencyKey?: string;
 };
 
-export type SendResult = { ok: boolean; detail: string };
+export type SendResult = { ok: boolean; detail: string; providerId?: string };
 
 async function postJson(url: string, body: unknown, headers: Record<string, string> = {}): Promise<SendResult> {
   const r = await fetch(url, {
@@ -36,16 +38,36 @@ export async function send(d: Delivery): Promise<SendResult> {
       );
     }
     case 'email': {
-      const key = process.env.RESEND_API_KEY;
-      const from = process.env.ALERT_EMAIL_FROM ?? 'VigiaPlus <avisos@vigiaplus.app>';
-      if (!key) return { ok: false, detail: 'RESEND_API_KEY ausente' };
+      const key = process.env.RESEND_API_KEY?.trim();
+      const from = process.env.ALERT_EMAIL_FROM?.trim();
+      // Não fingir que existe um remetente verificado: nunca usar fallback.
+      if (!key || !from) return { ok: false, detail: 'EMAIL_NOT_CONFIGURED' };
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.destination.trim())) {
+        return { ok: false, detail: 'EMAIL_DESTINATION_INVALID' };
+      }
+      const headers: Record<string,string> = {
+        Authorization: `Bearer ${key}`,
+        'Content-Type': 'application/json',
+      };
+      if (d.idempotencyKey && d.idempotencyKey.length <= 256 &&
+          /^[a-zA-Z0-9._:/-]+$/.test(d.idempotencyKey)) {
+        headers['Idempotency-Key'] = d.idempotencyKey;
+      }
       const r = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from, to: [d.destination], subject: d.title, text }),
+        method: 'POST', headers,
+        body: JSON.stringify({ from, to: [d.destination.trim()], subject: d.title, text }),
         signal: AbortSignal.timeout(10_000),
       });
-      return { ok: r.ok, detail: `HTTP ${r.status}` };
+      // ID permite conciliação com webhook futuro; jamais retornar mensagem do
+      // provedor (pode conter segredo, payload ou PII).
+      if (!r.ok) return { ok: false, detail: `HTTP ${r.status}` };
+      const data: unknown = await r.json().catch(() => null);
+      const id = data && typeof data === 'object' && typeof (data as {id?:unknown}).id === 'string'
+        ? (data as {id:string}).id : null;
+      return {
+        ok: true, detail: `HTTP ${r.status}`,
+        ...(id && /^[a-zA-Z0-9_-]{1,128}$/.test(id) ? { providerId: id } : {}),
+      };
     }
     case 'whatsapp':
     case 'webhook':

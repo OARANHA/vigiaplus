@@ -1,7 +1,7 @@
 // H2 - Canais de notificacao por tenant.
 // O tenant_id vem SEMPRE da sessao (resolveTenantContext), nunca do body.
 import { NextResponse } from 'next/server';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, sql } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { notificationChannels } from '@/lib/db/schema';
 import { resolveTenantContext, parseRequestedTenantId, type TenantContext } from '@/lib/tenant/context';
@@ -9,6 +9,7 @@ import { requireAction } from '@/lib/tenant/rbac';
 import { AppError } from '@/lib/tenant/errors';
 import { KNOWN_CHANNELS } from '@/lib/notifications/evaluate';
 import { requireFeature } from '@/lib/tenant/entitlements';
+import { channelHasProof } from '@/lib/notifications/channel-proof';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -64,7 +65,8 @@ export async function GET(request: Request) {
         id: c.id,
         channel: c.channel,
         destination: c.destination,
-        verified: c.verified === 1,
+        verified: channelHasProof(c),
+        verifiedAt: channelHasProof(c) ? c.verifiedAt : null,
         active: c.active === 1,
         createdAt: c.createdAt,
       })),
@@ -108,12 +110,40 @@ export async function PATCH(request: Request) {
     const body = asBody(await request.json().catch(() => null));
     const id = readId(body.id);
 
-    const set: { active?: number; verified?: number } = {};
+    const set: { active?: number; verified?: number; verifiedAt?: null } = {};
     if (Object.prototype.hasOwnProperty.call(body, 'active')) set.active = toFlag(body.active);
-    if (Object.prototype.hasOwnProperty.call(body, 'verified')) set.verified = toFlag(body.verified);
+    if (Object.prototype.hasOwnProperty.call(body, 'verified')) {
+      // Nunca mais permitir que alguém se autoaprove com PATCH. Para revogar,
+      // aceitamos apenas false e apagamos a prova da coluna vigente.
+      if (toFlag(body.verified) !== 0) throw AppError.forbidden('Verificação exige prova de posse por e-mail');
+      set.verified = 0;
+      set.verifiedAt = null;
+    }
     if (Object.keys(set).length === 0) throw AppError.badRequest('Nada para atualizar');
 
     const db = await getDb();
+    if (set.verified === 0) {
+      // Revogar provas ainda pendentes junto com o desligamento no MESMO SQL.
+      // Um link antigo não pode reativar o canal após revogação explícita.
+      const revoked = await db.execute(sql`
+        WITH disabled AS (
+          UPDATE notification_channels SET verified=0,verified_at=NULL,
+            active=COALESCE(${set.active ?? null}::integer, active)
+          WHERE id=${id} AND tenant_id=${tenantId}
+          RETURNING id
+        ), canceled AS (
+          UPDATE notification_channel_proofs SET revoked_at=now()
+          WHERE channel_id IN (SELECT id FROM disabled) AND used_at IS NULL
+            AND revoked_at IS NULL
+          RETURNING id
+        )
+        SELECT id FROM disabled
+      `);
+      if(revoked.rows.length===0) throw AppError.notFound('Canal nao encontrado');
+      const [updated]=await db.select().from(notificationChannels)
+        .where(and(eq(notificationChannels.id,id),eq(notificationChannels.tenantId,tenantId)));
+      return NextResponse.json({channel:updated});
+    }
     const [row] = await db.update(notificationChannels).set(set)
       .where(and(
         eq(notificationChannels.id, id),

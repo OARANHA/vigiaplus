@@ -46,6 +46,7 @@ export async function GET(request:Request) {
       channel:notificationDeliveries.channel,
       destination:notificationDeliveries.destination,
       status:notificationDeliveries.status,
+      providerMessageId:notificationDeliveries.providerMessageId,
       attemptCount:notificationDeliveries.attemptCount,
       nextAttemptAt:notificationDeliveries.nextAttemptAt,
       leaseExpiresAt:notificationDeliveries.leaseExpiresAt,

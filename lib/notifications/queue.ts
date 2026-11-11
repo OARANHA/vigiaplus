@@ -126,16 +126,25 @@ export async function claimPendingDeliveries(
     throw new Error('Identificador do worker inválido');
   const result = await db.execute(sql`
     WITH candidates AS (
-      SELECT id FROM notification_deliveries
-       WHERE attempt_count < ${DELIVERY_MAX_ATTEMPTS}
+      SELECT d.id FROM notification_deliveries d
+       WHERE d.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
          AND (
-           (status IN ('queued','retry')
-             AND (next_attempt_at IS NULL OR next_attempt_at<=now()))
-           OR (status='processing' AND lease_expires_at<=now())
+           (d.status IN ('queued','retry')
+             AND (d.next_attempt_at IS NULL OR d.next_attempt_at<=now()))
+           OR (d.status='processing' AND d.lease_expires_at<=now())
          )
-       ORDER BY created_at ASC, id ASC
+         AND (
+           d.channel='ledger'
+           OR EXISTS (
+             SELECT 1 FROM notification_channels c
+              WHERE c.tenant_id=d.tenant_id
+                AND c.channel=d.channel AND c.destination=d.destination
+                AND c.active=1 AND c.verified=1 AND c.verified_at IS NOT NULL
+           )
+         )
+       ORDER BY d.created_at ASC, d.id ASC
        LIMIT ${limit}
-       FOR UPDATE SKIP LOCKED
+       FOR UPDATE OF d SKIP LOCKED
     )
     UPDATE notification_deliveries AS d
        SET status='processing',
@@ -168,7 +177,7 @@ export async function finishClaimedDelivery(
   db: DB,
   delivery: Pick<ClaimedDelivery, 'id' | 'attempt_count'>,
   workerId: string,
-  result: { ok: boolean; detail: string },
+  result: { ok: boolean; detail: string; providerId?: string },
 ): Promise<DeliveryCompletion> {
   const exhausted = !result.ok && delivery.attempt_count >= DELIVERY_MAX_ATTEMPTS;
   const status = result.ok ? 'sent' : exhausted ? 'dead_letter' : 'retry';
@@ -186,7 +195,9 @@ export async function finishClaimedDelivery(
            next_attempt_at=CASE WHEN ${status}='retry'
              THEN now() + ${delay} * interval '1 second' ELSE NULL END,
            sent_at=CASE WHEN ${status}='sent' THEN now() ELSE sent_at END,
-           error=${error}
+           error=${error},
+           provider_message_id=CASE WHEN ${status}='sent'
+             THEN ${result.providerId ?? null} ELSE provider_message_id END
      WHERE id=${delivery.id} AND status='processing'
        AND lease_owner=${workerId}
        AND attempt_count=${delivery.attempt_count}
@@ -232,6 +243,7 @@ export async function dispatchPending(
       result = await sendImpl({
         channel: item.channel, destination: item.destination,
         title: item.title, message: item.message,
+        idempotencyKey: `vpx-delivery/${item.id}`,
       });
     } catch {
       // Erros brutos de SDK/transporte não devem entrar no banco nem em logs.

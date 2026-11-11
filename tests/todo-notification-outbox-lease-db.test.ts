@@ -40,6 +40,14 @@ async function insertTenant(name:string){
 
 async function enqueueFor(tenantId:number,unique:string){
   const {enqueue}=await import('../lib/notifications/queue');
+  const {getDb}=await import('../lib/db');
+  const {notificationChannels}=await import('../lib/db/schema');
+  const db=await getDb();
+  // Cada destino de teste comprova posse antes que a fila o reserve.
+  await db.insert(notificationChannels).values({
+    tenantId,channel:'email',destination:unique+'@exemplo.test',
+    verified:1,verifiedAt:new Date(),active:1,
+  });
   assert.equal(await enqueue({
     tenantId,ruleId:4,channel:'email',destination:unique+'@exemplo.test',
     kind:'incident',severity:'alta',title:'Atenção',message:'Fato real de teste',

@@ -208,8 +208,24 @@ export const notificationChannels = pgTable('notification_channels', {
   channel: text('channel').notNull(),
   destination: text('destination').notNull(),
   verified: integer('verified').notNull().default(0),
+  // Null nos canais legados: o flag antigo isolado não prova posse.
+  verifiedAt: timestamp('verified_at', { withTimezone: true }),
   active: integer('active').notNull().default(1),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Prova de posse por token temporário. Mantém apenas SHA-256 do segredo. */
+export const notificationChannelProofs = pgTable('notification_channel_proofs', {
+  id: serial('id').primaryKey(),
+  tenantId: integer('tenant_id').notNull().references(() => tenants.id, { onDelete: 'cascade' }),
+  channelId: integer('channel_id').notNull().unique()
+    .references(() => notificationChannels.id, { onDelete: 'cascade' }),
+  destination: text('destination').notNull(),
+  tokenHash: text('token_hash').notNull().unique(),
+  requestedAt: timestamp('requested_at', { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
 });
 
 /** Regras de alerta por tenant. */
@@ -296,6 +312,7 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   title: text('title').notNull(),
   message: text('message').notNull(),
   status: text('status').notNull().default('sent'),
+  providerMessageId: text('provider_message_id'),
   // ALT-02: tentativas, lease e agendamento na própria outbox, sem filas externas.
   attemptCount: integer('attempt_count').notNull().default(0),
   leaseOwner: text('lease_owner'),
