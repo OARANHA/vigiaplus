@@ -65,6 +65,26 @@ if (( ${#seen[@]} < 3 )); then
   sudo journalctl -u "$service" -n 35 --no-pager >&2 || true
   exit 1
 fi
+# Explicitly restart the transient scheduler (not the OS), then require a NEW cycle.
+sudo systemctl restart "$timer"
+sudo systemctl is-active --quiet "$timer"
+restart_observed=0
+restart_deadline=$((SECONDS+75))
+while (( SECONDS < restart_deadline )); do
+  if [[ -s "$state_dir/latest.json" ]]; then
+    restart_run_id="$(node -e 'try { const s=require(process.argv[1]);if(s.worker==="notify_dry_run"&&s.status==="success") process.stdout.write(s.runId); } catch {}' "$state_dir/latest.json" || true)"
+    if [[ -n "$restart_run_id" && -z "${seen[$restart_run_id]+x}" ]]; then
+      restart_observed=1
+      break
+    fi
+  fi
+  sleep 2
+done
+if (( restart_observed != 1 )); then
+  echo "ALT083: no distinct dry-run after systemd timer restart" >&2
+  sudo journalctl -u "$service" -n 25 --no-pager >&2 || true
+  exit 1
+fi
 sudo systemctl stop "$timer"
 # Do not read PGlite while the systemd service owns its backing files.
 for _ in $(seq 1 20); do
