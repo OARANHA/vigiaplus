@@ -106,13 +106,32 @@ export async function reconcileResendProvider(
     .sort((a,b)=>b.at.getTime()-a.at.getTime())[0];
   // Verificar o ID no WHERE novamente: um reprocessamento manual pode ter
   // substituído o provider_message_id enquanto a reconciliação estava ativa.
+  const priority=PRIORITIES[winner.type];
+  // CAS SQL: mesmo com dois callbacks simultâneos, nunca rebaixar estado
+  // terminal para "delayed" ou "accepted", nem trocar evento mais recente
+  // pelo mais antigo de mesma prioridade.
   await db.execute(sql`
     UPDATE notification_deliveries SET
       delivery_state=${state},delivery_state_at=${winner.at},
-      delivered_at=${delivered?.at??null},
+      delivered_at=COALESCE(${delivered?.at??null},delivered_at),
       delivery_failure_code=${CODES[state]??null}
     WHERE id=${id} AND provider_message_id=${providerMessageId}
       AND lower(btrim(destination))=${recipient}
+      AND (
+        (CASE delivery_state
+          WHEN 'accepted' THEN 1 WHEN 'delayed' THEN 2
+          WHEN 'delivered' THEN 3 WHEN 'bounced' THEN 4
+          WHEN 'failed' THEN 4 WHEN 'suppressed' THEN 4
+          WHEN 'complained' THEN 5 ELSE 0 END)<${priority}
+        OR (
+          (CASE delivery_state
+            WHEN 'accepted' THEN 1 WHEN 'delayed' THEN 2
+            WHEN 'delivered' THEN 3 WHEN 'bounced' THEN 4
+            WHEN 'failed' THEN 4 WHEN 'suppressed' THEN 4
+            WHEN 'complained' THEN 5 ELSE 0 END)=${priority}
+          AND (delivery_state_at IS NULL OR delivery_state_at<=${winner.at})
+        )
+      )
   `);
   // Destinatário que reclamou ou recebeu bounce terminal não deve receber
   // avisos seguintes. Desativação limitada ao mesmo tenant e endereço.
