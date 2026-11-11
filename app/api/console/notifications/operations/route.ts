@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db';
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireOwner } from '@/lib/tenant/rbac';
 import { AppError } from '@/lib/tenant/errors';
+import { evaluateWorkerHealth, sanitizedWorkerSummary } from '@/lib/notifications/operations-health';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -58,16 +59,17 @@ export async function GET() {
       durationMs: count(r.duration_ms),
       status: String(r.status),
       exitCode: r.exit_code,
-      summary: r.summary,
+      summary: sanitizedWorkerSummary(r.summary),
     }));
     const latest = recent[0] ?? null;
-    const lastFinished = latest ? new Date(String(latest.finishedAt)).getTime() : NaN;
-    // 'unknown' nunca significa saudável: ausência de execução é dado ausente.
-    const healthy = Boolean(latest && latest.status === 'success'
-      && Number.isFinite(lastFinished) && Date.now() - lastFinished <= 10 * 60_000);
+    // Uma simulação ou timestamp futuro nunca torna o worker real saudável.
+    const health = evaluateWorkerHealth(latest ? {
+      worker: latest.worker, status: latest.status,
+      finishedAt: latest.finishedAt == null ? null : String(latest.finishedAt),
+    } : null);
     return NextResponse.json({
       worker: {
-        status: latest ? healthy ? 'healthy' : 'degraded' : 'not_observed',
+        status: health,
         configured: null, // O HTTP não sabe se o agendador do host está instalado.
         lastFinishedAt: latest?.finishedAt ?? null,
         expectedMaxLagMinutes: 10,
