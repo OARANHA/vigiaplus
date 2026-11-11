@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail, Radar } from 'lucide-react';
 import type { Locale } from '@/lib/i18n-dict';
 
@@ -64,6 +65,7 @@ export function LoginForm({ locale: _locale }: { locale: Locale }) {
           </button>
         </div>
       </label>
+      <div style={{textAlign:'right',marginTop:8,marginBottom:12}}><Link href="/recuperar">Esqueceu sua senha?</Link></div>
       {error && <p role="alert" className="va-form-error">{error}</p>}
       <button type="submit" className="va-submit" disabled={busy || !email || !password}>
         {busy && <Loader2 size={17} className="animate-spin"/>}
