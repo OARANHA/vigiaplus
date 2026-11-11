@@ -14,7 +14,8 @@ if(process.env.ALT083_EPHEMERAL_HTTP!=='1' || process.env.DATABASE_URL
   throw new Error('ALT083 HTTP check requires isolated CI fixtures');
 }
 async function request(id:number|undefined,headers:Record<string,string>={}){
-  const cookies=id?{Cookie:`${SESSION_COOKIE}=${signSession(id,0)}`}:{ };
+  const cookies: Record<string,string> = id
+    ? { Cookie: `${SESSION_COOKIE}=${signSession(id,0)}` } : {};
   return fetch(origin+'/api/console/notifications/operations?tenant_id=999999',{
     headers:{...cookies,...headers},
     redirect:'manual',signal:AbortSignal.timeout(30000),
