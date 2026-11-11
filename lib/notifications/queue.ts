@@ -27,6 +27,8 @@ export type EnqueueInput = {
   dedupeKey: string;
   /** Chave histórica opcional, usada apenas para não reenviar ao destinatário legado. */
   legacyDedupeKey?: string;
+  nextAttemptAt?: Date;
+  slaDueAt?: Date;
 };
 
 export async function enqueue(input: EnqueueInput): Promise<boolean> {
@@ -63,6 +65,8 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
     title: input.title,
     message: input.message,
     status: 'queued',
+    nextAttemptAt: input.nextAttemptAt ?? null,
+    slaDueAt: input.slaDueAt ?? null,
     dedupeKey: input.dedupeKey,
   }).onConflictDoNothing({
     target: [notificationDeliveries.tenantId, notificationDeliveries.dedupeKey],
@@ -126,26 +130,68 @@ export async function claimPendingDeliveries(
   if (!/^[a-zA-Z0-9_-]{8,128}$/.test(workerId))
     throw new Error('Identificador do worker inválido');
   const result = await db.execute(sql`
-    WITH candidates AS (
+    -- Serializar claims por organização. O SELECT de tenants é bloqueante
+    -- apenas durante esta instrução; não durante envio de e-mail.
+    WITH tenant_locks AS MATERIALIZED (
+      SELECT t.id,t.alert_rate_limit_per_hour,t.time_zone,t.critical_bypass_silence
+      FROM tenants t
+      WHERE EXISTS (
+        SELECT 1 FROM notification_deliveries x WHERE x.tenant_id=t.id
+          AND x.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
+          AND (
+            (x.status IN ('queued','retry')
+              AND (x.next_attempt_at IS NULL OR x.next_attempt_at<=now()))
+            OR (x.status='processing' AND x.lease_expires_at<=now())
+          )
+      )
+      ORDER BY t.id
+      FOR UPDATE OF t SKIP LOCKED
+    ), candidates AS (
       SELECT d.id FROM notification_deliveries d
-       WHERE d.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
-         AND (
-           (d.status IN ('queued','retry')
-             AND (d.next_attempt_at IS NULL OR d.next_attempt_at<=now()))
-           OR (d.status='processing' AND d.lease_expires_at<=now())
-         )
-         AND (
-           d.channel='ledger'
-           OR EXISTS (
-             SELECT 1 FROM notification_channels c
-              WHERE c.tenant_id=d.tenant_id
-                AND c.channel=d.channel AND c.destination=d.destination
+      JOIN tenant_locks t ON t.id=d.tenant_id
+      LEFT JOIN alert_rules r ON r.id=d.rule_id AND r.tenant_id=d.tenant_id
+      WHERE d.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
+        AND (
+          (d.status IN ('queued','retry')
+            AND (d.next_attempt_at IS NULL OR d.next_attempt_at<=now()))
+          OR (d.status='processing' AND d.lease_expires_at<=now())
+        )
+        AND (
+          d.channel='ledger' OR EXISTS (
+            SELECT 1 FROM notification_channels c
+              WHERE c.tenant_id=d.tenant_id AND c.channel=d.channel
+                AND c.destination=d.destination
                 AND c.active=1 AND c.verified=1 AND c.verified_at IS NOT NULL
-           )
-         )
-       ORDER BY d.created_at ASC, d.id ASC
-       LIMIT ${limit}
-       FOR UPDATE OF d SKIP LOCKED
+          )
+        )
+        -- Mudanças de regras também protegem mensagens já na fila.
+        AND (
+          r.id IS NULL OR r.silencio_de IS NULL OR r.silencio_ate IS NULL
+          OR (t.critical_bypass_silence=1
+            AND lower(d.severity) IN ('critica','critico','critical'))
+          OR CASE WHEN r.silencio_de<=r.silencio_ate THEN
+            to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') NOT BETWEEN
+              r.silencio_de AND r.silencio_ate
+          ELSE
+            to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') < r.silencio_de
+            AND to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') > r.silencio_ate
+          END
+        )
+        -- Contagem de tentativas no intervalo UTC fixo, incluindo retries.
+        -- Lock em tenants impede dois workers de consumir a última vaga.
+        AND (
+          SELECT count(*) FROM notification_deliveries done
+          WHERE done.tenant_id=d.tenant_id
+            AND done.last_attempt_at >= date_trunc('hour',now())
+        ) < t.alert_rate_limit_per_hour
+      ORDER BY CASE WHEN lower(d.severity) IN
+           ('critica','critico','critical') THEN 0
+         WHEN lower(d.severity) IN ('alta','high') THEN 1
+         WHEN lower(d.severity) IN ('media','medio','medium') THEN 2
+         ELSE 3 END,
+        d.sla_due_at ASC NULLS LAST,d.created_at ASC,d.id ASC
+      LIMIT ${limit}
+      FOR UPDATE OF d SKIP LOCKED
     )
     UPDATE notification_deliveries AS d
        SET status='processing',
