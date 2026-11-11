@@ -84,3 +84,7 @@ Os arquivos `deploy/systemd/vigiaplus-notify-dryrun.service` e `.timer` usam int
 - E2E owner e QA visual da página em 3199; políticas RLS/Neon descartável.
 
 Não instalar tarefas, não fazer merge/deploy, não enviar mensagens e não alterar banco remoto sem autorização explícita.
+
+### ALT-08.2 — corretiva de CI (11/11/2026)
+
+Falha reproduzida no workflow 43027899738: 426/427 testes passaram; integração dry-run ficou sem código de saída antes de 60 s no runner e o passo `Test` falhou (job PostgreSQL dependente foi skipped). O teste foi movido de `tests/` para `scripts/tests/alt082-scheduler-dryrun.test.ts` e ganhou job dedicado `dryrun-isolated` após build, usando subprocessos assíncronos com timeout explícito e fechamento do PGlite. O supervisor em modo dry-run encerra o processo CLI após persistência e liberação do lock, porque os handles PGlite podem manter o processo vivo. Confirmar GREEN no novo HEAD antes de homologar; o teste não instala cron nem envia mensagens.
