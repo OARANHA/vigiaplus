@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { eq, and } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 // Banco isolado: nenhuma credencial de transporte ou banco remoto.
 process.env.PGLITE_DIR = mkdtempSync(join(tmpdir(), 'vpx-alt081-'));
