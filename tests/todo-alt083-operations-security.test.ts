@@ -48,7 +48,7 @@ function ctx(role:TenantContext['role'], tenantId:number|null, system=false):Ten
 test('ALT-08.3 RBAC: console operacional proprietário independe de densidade; cliente e analista negados', () => {
   assert.equal(requireOwner(ctx('owner',null,true)).role,'owner');
   assert.equal(requireOwner(ctx('owner',5,false)).role,'owner');
-  for (const role of ['analyst','client_admin','client_user'] as const) {
+  for (const role of ['analyst','client_admin','client_viewer'] as const) {
     const user=ctx(role,41);
     assert.throws(()=>requireOwner(user),(err:unknown)=>
       err instanceof AppError && err.code==='FORBIDDEN' && err.status===403);
