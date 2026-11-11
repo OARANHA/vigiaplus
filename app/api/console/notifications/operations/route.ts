@@ -20,7 +20,7 @@ export async function GET() {
     const ctx = await resolveTenantContext({ surface: 'console' });
     requireOwner(ctx);
     const db = await getDb();
-    const [runs, queue] = await Promise.all([
+    const [runs, simulation, queue] = await Promise.all([
       db.execute(sql`
         SELECT run_id, worker, started_at, finished_at, duration_ms, status,
                exit_code, summary
@@ -28,6 +28,11 @@ export async function GET() {
          WHERE worker='notify'
          ORDER BY finished_at DESC
          LIMIT 20
+      `),
+      db.execute(sql`
+        SELECT run_id, started_at, finished_at, duration_ms, status, exit_code
+          FROM notification_worker_runs WHERE worker='notify_dry_run'
+          ORDER BY finished_at DESC LIMIT 10
       `),
       db.execute(sql`
         SELECT
@@ -67,6 +72,14 @@ export async function GET() {
         lastFinishedAt: latest?.finishedAt ?? null,
         expectedMaxLagMinutes: 10,
         runs: recent,
+      },
+      simulation: {
+        lastFinishedAt: simulation.rows[0]?.finished_at ?? null,
+        runs: simulation.rows.map(r=>({
+          runId: String(r.run_id), startedAt:r.started_at, finishedAt:r.finished_at,
+          durationMs:count(r.duration_ms), status:String(r.status), exitCode:r.exit_code,
+        })),
+        simulatedOnly: true,
       },
       queue: {
         pending: count(row.pending),
