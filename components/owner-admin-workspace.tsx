@@ -63,10 +63,16 @@ type EmailDiag = {keyConfigured:boolean;senderConfigured:boolean;publicUrlHttps:
   lastTest:{createdAt:string;status:string}|null};
 type OwnerChannel = {id:number;channel:string;destination:string;verified:boolean;
   active:boolean;verifiedAt:string|null};
+type TenantAlertRule = {id:number;type:string;silencioDe:string|null;
+  silencioAte:string|null;slaMinutes:number;active:number};
+type TenantAlertPolicy = {tenant:{id:number;name:string;timeZone:string;
+  alertRateLimitPerHour:number;criticalBypassSilence:number};
+  rules:TenantAlertRule[]};
 type OwnerDelivery = {id:number;eventRef:string|null;sourceProjectId:number|null;
   channel:string;destination:string;status:string;providerMessageId:string|null;
   deliveryState:string;deliveryStateAt:string|null;deliveredAt:string|null;
   deliveryFailureCode:string|null;attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
+  slaDueAt:string|null;
   error:string|null;createdAt:string;sentAt:string|null};
 const DELIVERY_PROVIDER_LABELS:Record<string,string>={
   unconfirmed:'Ainda não confirmada',accepted:'Aceita pelo provedor',
@@ -158,6 +164,11 @@ export function OwnerAdminWorkspace() {
   const [emailDiag,setEmailDiag]=useState<EmailDiag|null>(null);
   const [channels,setChannels]=useState<OwnerChannel[]>([]);
   const [newAlertEmail,setNewAlertEmail]=useState('');
+  const [alertPolicy,setAlertPolicy]=useState<TenantAlertPolicy|null>(null);
+  const [zoneDraft,setZoneDraft]=useState('America/Sao_Paulo');
+  const [hourLimitDraft,setHourLimitDraft]=useState(100);
+  const [criticalBypassDraft,setCriticalBypassDraft]=useState(true);
+  const [ruleDraft,setRuleDraft]=useState<TenantAlertRule|null>(null);
   const [deliveryReason,setDeliveryReason]=useState('');
   const [deliveriesLoading,setDeliveriesLoading]=useState(false);
   const [inviteEmail,setInviteEmail]=useState('');
@@ -224,6 +235,17 @@ export function OwnerAdminWorkspace() {
     void api<EmailDiag>('/api/console/notifications/email-diagnostics')
       .then(setEmailDiag).catch(e=>setError('Diagnóstico de e-mail indisponível: '+String(e)));
   },[section]);
+  useEffect(()=>{
+    if(section!=='crises'||!selectedTenant)return;
+    setAlertPolicy(null);setRuleDraft(null);
+    void api<TenantAlertPolicy>('/api/console/notifications/policy?tenant_id='+selectedTenant)
+      .then(p=>{
+        setAlertPolicy(p);setZoneDraft(p.tenant.timeZone);
+        setHourLimitDraft(p.tenant.alertRateLimitPerHour);
+        setCriticalBypassDraft(p.tenant.criticalBypassSilence===1);
+        setRuleDraft(p.rules[0]??null);
+      }).catch(e=>setError('Política de alertas indisponível: '+String(e)));
+  },[section,selectedTenant]);
   useEffect(()=>{
     if(section!=='crises'||!selectedTenant)return;
     void api<{channels:OwnerChannel[]}>('/api/notifications/channels?tenant_id='+selectedTenant)
@@ -309,6 +331,46 @@ export function OwnerAdminWorkspace() {
         '/api/console/invitations?tenant_id='+selectedTenant);
       setInvitations(updated.invitations);setMessage('Convite revogado sem alterar outras contas.');
     }catch(e){setError(String(e));}finally{setBusy(false);}
+  }
+  async function refreshAlertPolicy(){
+    if(!selectedTenant)return;
+    const p=await api<TenantAlertPolicy>(
+      '/api/console/notifications/policy?tenant_id='+selectedTenant);
+    setAlertPolicy(p);setZoneDraft(p.tenant.timeZone);
+    setHourLimitDraft(p.tenant.alertRateLimitPerHour);
+    setCriticalBypassDraft(p.tenant.criticalBypassSilence===1);
+    setRuleDraft(old=>p.rules.find(r=>r.id===old?.id)??p.rules[0]??null);
+  }
+  async function saveTenantAlertPolicy(){
+    if(!selectedTenant)return;
+    setBusy(true);setError('');setMessage('');
+    try{
+      await api('/api/console/notifications/policy',{
+        method:'PATCH',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({scope:'tenant',tenantId:selectedTenant,
+          timeZone:zoneDraft,alertRateLimitPerHour:hourLimitDraft,
+          criticalBypassSilence:criticalBypassDraft}),
+      });
+      await refreshAlertPolicy();
+      setMessage('Política do cliente atualizada e auditada. Mensagens pendentes respeitam o limite e o silêncio.');
+    }catch(e){setError(String(e));}
+    finally{setBusy(false);}
+  }
+  async function saveAlertRuleTiming(){
+    if(!selectedTenant||!ruleDraft)return;
+    setBusy(true);setError('');setMessage('');
+    try{
+      await api('/api/console/notifications/policy',{
+        method:'PATCH',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({scope:'rule',tenantId:selectedTenant,
+          ruleId:ruleDraft.id,silencioDe:ruleDraft.silencioDe,
+          silencioAte:ruleDraft.silencioAte,slaMinutes:ruleDraft.slaMinutes,
+          active:ruleDraft.active}),
+      });
+      await refreshAlertPolicy();
+      setMessage('Silêncio e SLA atualizados com registro de auditoria.');
+    }catch(e){setError(String(e));}
+    finally{setBusy(false);}
   }
   async function refreshChannels(){
     if(!selectedTenant)return;
@@ -619,6 +681,63 @@ export function OwnerAdminWorkspace() {
           {label:'Agendamento por cliente',description:'Integração e homologação do scheduler de 15 minutos ainda pendentes.',pending:true},
         ]}/></SubPanel>}
         {section==='crises'&&<>
+          <SubPanel title="Horários, severidade e SLA por cliente">
+            <p className="vpx-owner-muted">O fuso é individual. Avisos durante silêncio ficam na fila para a próxima janela; crises críticas podem atravessar o silêncio. O limite considera tentativas de envio por hora UTC.</p>
+            <div className="vpx-owner-formgrid">
+              <label>Organização
+                <select value={selectedTenant??''} onChange={e=>setSelectedTenant(Number(e.target.value))}>
+                  {clients.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </label>
+              <label>Fuso horário (IANA)
+                <input value={zoneDraft} maxLength={64}
+                  onChange={e=>setZoneDraft(e.target.value)}
+                  placeholder="America/Sao_Paulo"/>
+              </label>
+              <label>Tentativas por hora (1 a 1.000)
+                <input type="number" min={1} max={1000} value={hourLimitDraft}
+                  onChange={e=>setHourLimitDraft(Number(e.target.value))}/>
+              </label>
+              <label>
+                <input type="checkbox" checked={criticalBypassDraft}
+                  onChange={e=>setCriticalBypassDraft(e.target.checked)}/>
+                Crises críticas ignoram horário de silêncio
+              </label>
+            </div>
+            <button className="vpx-owner-button" type="button" disabled={!selectedTenant||busy||!alertPolicy}
+              onClick={()=>{void saveTenantAlertPolicy();}}>Salvar política do cliente</button>
+            <p className="vpx-owner-muted">O SLA abaixo é um prazo previsto, não uma confirmação de que o cliente reconheceu ou resolveu o incidente.</p>
+            {alertPolicy&&alertPolicy.rules.length>0&&ruleDraft&&<>
+              <div className="vpx-owner-formgrid">
+                <label>Regra
+                  <select value={ruleDraft.id} onChange={e=>setRuleDraft(
+                    alertPolicy.rules.find(x=>x.id===Number(e.target.value))??null)}>
+                    {alertPolicy.rules.map(r=><option key={r.id} value={r.id}>#{r.id} · {r.type}</option>)}
+                  </select>
+                </label>
+                <label>Silenciar de (HH:mm)
+                  <input type="time" value={ruleDraft.silencioDe??''}
+                    onChange={e=>setRuleDraft(old=>old?{...old,silencioDe:e.target.value||null}:null)}/>
+                </label>
+                <label>Silenciar até (HH:mm)
+                  <input type="time" value={ruleDraft.silencioAte??''}
+                    onChange={e=>setRuleDraft(old=>old?{...old,silencioAte:e.target.value||null}:null)}/>
+                </label>
+                <label>SLA de reação previsto (min)
+                  <input type="number" min={1} max={10080} value={ruleDraft.slaMinutes}
+                    onChange={e=>setRuleDraft(old=>old?{...old,slaMinutes:Number(e.target.value)}:null)}/>
+                </label>
+                <label>
+                  <input type="checkbox" checked={ruleDraft.active===1}
+                    onChange={e=>setRuleDraft(old=>old?{...old,active:e.target.checked?1:0}:null)}/>
+                  Regra ativa
+                </label>
+              </div>
+              <button className="vpx-owner-button" type="button" disabled={busy}
+                onClick={()=>{void saveAlertRuleTiming();}}>Salvar horários e SLA da regra</button>
+            </>}
+            {alertPolicy&&alertPolicy.rules.length===0&&<p className="vpx-owner-muted">Nenhuma regra criada para esta organização.</p>}
+          </SubPanel>
           <SubPanel title="Resend — estado do envio de e-mails">
             <p className="vpx-owner-muted">O diagnóstico não mostra credenciais e não afirma domínio verificado. O teste só pode ser enviado ao e-mail da conta do proprietário, mediante clique.</p>
             <p>{emailDiag?.readyForTest?'Configurado para teste (entrega não verificada)':'Não configurado para testes externos'}</p>
@@ -669,7 +788,7 @@ export function OwnerAdminWorkspace() {
               {deliveriesLoading?'Consultando…':'Atualizar fila'}
             </button>
             <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
-              <thead><tr><th>Origem</th><th>Destino</th><th>Fila</th><th>Entrega pelo provedor</th><th>Tentativas</th><th>Próximo evento</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Origem</th><th>Destino</th><th>Fila</th><th>Entrega pelo provedor</th><th>Tentativas</th><th>SLA previsto</th><th>Próximo evento</th><th>Ação</th></tr></thead>
               <tbody>
                 {deliveries.map(d=><tr key={d.id}>
                   <td>{d.eventRef??'Registro anterior'}
@@ -687,6 +806,8 @@ export function OwnerAdminWorkspace() {
                     {d.deliveryFailureCode&&<p className="vpx-owner-muted">{d.deliveryFailureCode}</p>}
                   </td>
                   <td>{d.attemptCount}/5</td>
+                  <td>{showDate(d.slaDueAt)}{d.slaDueAt&&new Date(d.slaDueAt).getTime()<Date.now()&&
+                    <p className="vpx-owner-muted">Prazo transcorrido (reação não auditada)</p>}</td>
                   <td>{d.status==='retry'?showDate(d.nextAttemptAt):
                     d.status==='processing'?showDate(d.leaseExpiresAt):
                     d.status==='sent'?showDate(d.sentAt):showDate(d.createdAt)}</td>
@@ -694,7 +815,7 @@ export function OwnerAdminWorkspace() {
                     ?<button type="button" disabled={busy||deliveryReason.trim().length<5}
                       onClick={()=>{void requeueDelivery(d.id);}}>Reprocessar</button>:'—'}</td>
                 </tr>)}
-                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={7}>Sem entregas registradas para a organização.</td></tr>}
+                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={8}>Sem entregas registradas para a organização.</td></tr>}
               </tbody>
             </table></div>
           </SubPanel>

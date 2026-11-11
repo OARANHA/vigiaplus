@@ -3,7 +3,7 @@
  * o mesmo fato/regra/canal/destino nunca dispara duas vezes no dia.
  * O banco arbitra concorrência com UNIQUE + ON CONFLICT DO NOTHING.
  */
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import type { DB } from '@/lib/db';
 import { getDb } from '@/lib/db';
@@ -27,6 +27,10 @@ export type EnqueueInput = {
   dedupeKey: string;
   /** Chave histórica opcional, usada apenas para não reenviar ao destinatário legado. */
   legacyDedupeKey?: string;
+  /** Chaves v2/v1 calculadas com UTC antes da troca para dia civil. */
+  compatibilityDedupeKeys?: string[];
+  nextAttemptAt?: Date;
+  slaDueAt?: Date;
 };
 
 export async function enqueue(input: EnqueueInput): Promise<boolean> {
@@ -48,6 +52,24 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
     ))) return false;
   }
 
+  if (input.compatibilityDedupeKeys?.length) {
+    const keys=[...new Set(input.compatibilityDedupeKeys.filter(
+      key=>typeof key==='string'&&key.length>0&&key!==input.dedupeKey,
+    ))];
+    if(keys.length>0){
+      const previous=await db.select({
+        channel:notificationDeliveries.channel,
+        destination:notificationDeliveries.destination,
+      }).from(notificationDeliveries).where(and(
+        eq(notificationDeliveries.tenantId,input.tenantId),
+        inArray(notificationDeliveries.dedupeKey,keys),
+      )).limit(keys.length);
+      if(previous.some(row=>sameDestination(
+        row.channel,row.destination,input.channel,input.destination,
+      )))return false;
+    }
+  }
+
   // Antes havia SELECT + INSERT, sujeito a corrida entre dois workers.
   // Este único INSERT usa o índice UNIQUE já existente no schema:
   // notification_deliveries_dedupe (tenant_id, dedupe_key).
@@ -63,6 +85,8 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
     title: input.title,
     message: input.message,
     status: 'queued',
+    nextAttemptAt: input.nextAttemptAt ?? null,
+    slaDueAt: input.slaDueAt ?? null,
     dedupeKey: input.dedupeKey,
   }).onConflictDoNothing({
     target: [notificationDeliveries.tenantId, notificationDeliveries.dedupeKey],
@@ -125,29 +149,74 @@ export async function claimPendingDeliveries(
     throw new Error('Limite do lote inválido (1 a 500)');
   if (!/^[a-zA-Z0-9_-]{8,128}$/.test(workerId))
     throw new Error('Identificador do worker inválido');
-  const result = await db.execute(sql`
-    WITH candidates AS (
+  const claimed: ClaimedDelivery[] = [];
+  for(let index=0;index<limit;index++) {
+    const result = await db.execute(sql`
+    -- Serializar claims por organização. O SELECT de tenants é bloqueante
+    -- apenas durante esta instrução; não durante envio de e-mail.
+    WITH tenant_locks AS MATERIALIZED (
+      SELECT t.id,t.alert_rate_limit_per_hour,t.time_zone,t.critical_bypass_silence
+      FROM tenants t
+      WHERE EXISTS (
+        SELECT 1 FROM notification_deliveries x WHERE x.tenant_id=t.id
+          AND x.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
+          AND (
+            (x.status IN ('queued','retry')
+              AND (x.next_attempt_at IS NULL OR x.next_attempt_at<=now()))
+            OR (x.status='processing' AND x.lease_expires_at<=now())
+          )
+      )
+      ORDER BY t.id
+      FOR UPDATE OF t SKIP LOCKED
+    ), candidates AS (
       SELECT d.id FROM notification_deliveries d
-       WHERE d.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
-         AND (
-           (d.status IN ('queued','retry')
-             AND (d.next_attempt_at IS NULL OR d.next_attempt_at<=now()))
-           OR (d.status='processing' AND d.lease_expires_at<=now())
-         )
-         AND (
-           d.channel='ledger'
-           OR EXISTS (
-             SELECT 1 FROM notification_channels c
-              WHERE c.tenant_id=d.tenant_id
-                AND c.channel=d.channel AND c.destination=d.destination
+      JOIN tenant_locks t ON t.id=d.tenant_id
+      LEFT JOIN alert_rules r ON r.id=d.rule_id AND r.tenant_id=d.tenant_id
+      WHERE d.attempt_count < ${DELIVERY_MAX_ATTEMPTS}
+        AND (
+          (d.status IN ('queued','retry')
+            AND (d.next_attempt_at IS NULL OR d.next_attempt_at<=now()))
+          OR (d.status='processing' AND d.lease_expires_at<=now())
+        )
+        AND (
+          d.channel='ledger' OR EXISTS (
+            SELECT 1 FROM notification_channels c
+              WHERE c.tenant_id=d.tenant_id AND c.channel=d.channel
+                AND c.destination=d.destination
                 AND c.active=1 AND c.verified=1 AND c.verified_at IS NOT NULL
-           )
-         )
-       ORDER BY d.created_at ASC, d.id ASC
-       LIMIT ${limit}
-       FOR UPDATE OF d SKIP LOCKED
+          )
+        )
+        -- Mudanças de regras também protegem mensagens já na fila.
+        AND (
+          r.id IS NULL OR r.silencio_de IS NULL OR r.silencio_ate IS NULL
+          OR (t.critical_bypass_silence=1
+            AND lower(d.severity) IN ('critica','critico','critical','grave','4'))
+          OR CASE WHEN r.silencio_de<=r.silencio_ate THEN
+            to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') NOT BETWEEN
+              r.silencio_de AND r.silencio_ate
+          ELSE
+            to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') < r.silencio_de
+            AND to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') > r.silencio_ate
+          END
+        )
+        -- Contagem de tentativas no intervalo UTC fixo, incluindo retries.
+        -- Lock em tenants impede dois workers de consumir a última vaga.
+        AND (
+          SELECT count(*) FROM notification_dispatch_attempts done
+          WHERE done.tenant_id=d.tenant_id
+            AND done.claimed_at >= date_trunc('hour',now())
+        ) < t.alert_rate_limit_per_hour
+      ORDER BY CASE WHEN lower(d.severity) IN
+           ('critica','critico','critical','grave','4') THEN 0
+         WHEN lower(d.severity) IN ('alta','high','3') THEN 1
+         WHEN lower(d.severity) IN ('media','medio','moderada','moderate','medium','2') THEN 2
+         ELSE 3 END,
+        d.sla_due_at ASC NULLS LAST,d.created_at ASC,d.id ASC
+      LIMIT 1
+      FOR UPDATE OF d SKIP LOCKED
     )
-    UPDATE notification_deliveries AS d
+    , acquired AS (
+      UPDATE notification_deliveries AS d
        SET status='processing',
            lease_owner=${workerId},
            lease_expires_at=now() + ${DELIVERY_LEASE_SECONDS} * interval '1 second',
@@ -158,13 +227,24 @@ export async function claimPendingDeliveries(
       FROM candidates
      WHERE d.id=candidates.id
      RETURNING d.id,d.tenant_id,d.channel,d.destination,d.title,d.message,d.attempt_count
+    ), logged AS (
+      INSERT INTO notification_dispatch_attempts(tenant_id,delivery_id,attempt_count)
+      SELECT tenant_id,id,attempt_count FROM acquired
+      RETURNING delivery_id
+    )
+    SELECT acquired.* FROM acquired
+    JOIN logged ON logged.delivery_id=acquired.id
   `);
-  return result.rows.map((row) => ({
-    id: Number(row.id), tenant_id: Number(row.tenant_id),
-    channel: String(row.channel), destination: String(row.destination),
-    title: String(row.title), message: String(row.message),
-    attempt_count: Number(row.attempt_count),
-  }));
+    if(result.rows.length===0)break;
+    const row=result.rows[0];
+    claimed.push({
+      id: Number(row.id), tenant_id: Number(row.tenant_id),
+      channel: String(row.channel), destination: String(row.destination),
+      title: String(row.title), message: String(row.message),
+      attempt_count: Number(row.attempt_count),
+    });
+  }
+  return claimed;
 }
 
 export type DeliveryCompletion = 'accepted' | 'retry' | 'dead_letter' | 'lost_lease';

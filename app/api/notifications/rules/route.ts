@@ -8,6 +8,7 @@ import { resolveTenantContext, parseRequestedTenantId, type TenantContext } from
 import { requireAction } from '@/lib/tenant/rbac';
 import { AppError } from '@/lib/tenant/errors';
 import { RULE_TYPES } from '@/lib/notifications/evaluate';
+import { validateQuietWindow } from '@/lib/notifications/tenant-time';
 import { requireFeature } from '@/lib/tenant/entitlements';
 
 export const runtime = 'nodejs';
@@ -51,8 +52,9 @@ function asThreshold(v: unknown): Record<string, unknown> {
     : {};
 }
 
-function asOptionalString(v: unknown): string | null {
-  return typeof v === 'string' ? v : null;
+function quietPair(from:unknown,to:unknown):{start:string|null;end:string|null} {
+  try{return validateQuietWindow(from,to);}
+  catch{throw AppError.badRequest('Silêncio exige horários HH:mm válidos e uma janela com liberação');}
 }
 
 /** Valida e converte slaMinutes; ausente = null (usa o default do banco). */
@@ -115,6 +117,7 @@ export async function POST(request: Request) {
     const type = readType(body.type);
     const sla = readSla(body.slaMinutes);
     const active = body.active === undefined ? 1 : toFlag(body.active);
+    const quiet=quietPair(body.silencioDe??null,body.silencioAte??null);
 
     const db = await getDb();
     const [row] = await db.insert(alertRules).values({
@@ -122,8 +125,8 @@ export async function POST(request: Request) {
       type,
       threshold: asThreshold(body.threshold),
       channels: asStringArray(body.channels),
-      silencioDe: asOptionalString(body.silencioDe),
-      silencioAte: asOptionalString(body.silencioAte),
+      silencioDe: quiet.start,
+      silencioAte: quiet.end,
       slaMinutes: sla ?? 900,
       active,
     }).returning();
@@ -144,8 +147,14 @@ export async function PATCH(request: Request) {
     if (Object.prototype.hasOwnProperty.call(body, 'type')) set.type = readType(body.type);
     if (Object.prototype.hasOwnProperty.call(body, 'threshold')) set.threshold = asThreshold(body.threshold);
     if (Object.prototype.hasOwnProperty.call(body, 'channels')) set.channels = asStringArray(body.channels);
-    if (Object.prototype.hasOwnProperty.call(body, 'silencioDe')) set.silencioDe = asOptionalString(body.silencioDe);
-    if (Object.prototype.hasOwnProperty.call(body, 'silencioAte')) set.silencioAte = asOptionalString(body.silencioAte);
+    if (Object.prototype.hasOwnProperty.call(body, 'silencioDe') ||
+        Object.prototype.hasOwnProperty.call(body, 'silencioAte')) {
+      // Horários precisam ser enviados juntos: evita um intervalo parcial
+      // capaz de desabilitar inadvertidamente o silêncio de uma regra.
+      const quiet=quietPair(body.silencioDe,body.silencioAte);
+      set.silencioDe=quiet.start;
+      set.silencioAte=quiet.end;
+    }
     if (Object.prototype.hasOwnProperty.call(body, 'slaMinutes')) {
       const sla = readSla(body.slaMinutes);
       if (sla !== null) set.slaMinutes = sla;

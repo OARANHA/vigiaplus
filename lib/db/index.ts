@@ -517,10 +517,16 @@ const DDL = [
     plan_key TEXT NOT NULL DEFAULT 'trial',
     status TEXT NOT NULL DEFAULT 'active',
     locale TEXT NOT NULL DEFAULT 'pt-BR',
+    time_zone TEXT NOT NULL DEFAULT 'America/Sao_Paulo',
+    alert_rate_limit_per_hour INTEGER NOT NULL DEFAULT 100,
+    critical_bypass_silence INTEGER NOT NULL DEFAULT 1,
     retention_days INTEGER NOT NULL DEFAULT 180,
     brand_config JSONB,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE tenants ADD COLUMN IF NOT EXISTS time_zone TEXT NOT NULL DEFAULT 'America/Sao_Paulo'`,
+  `ALTER TABLE tenants ADD COLUMN IF NOT EXISTS alert_rate_limit_per_hour INTEGER NOT NULL DEFAULT 100`,
+  `ALTER TABLE tenants ADD COLUMN IF NOT EXISTS critical_bypass_silence INTEGER NOT NULL DEFAULT 1`,
   `CREATE TABLE IF NOT EXISTS memberships (
     id SERIAL PRIMARY KEY,
     tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -793,9 +799,21 @@ const DDL = [
     last_attempt_at TIMESTAMPTZ,
     dedupe_key TEXT NOT NULL,
     error TEXT,
+    sla_due_at TIMESTAMPTZ,
     sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS notification_dispatch_attempts (
+    id SERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    delivery_id INTEGER REFERENCES notification_deliveries(id) ON DELETE SET NULL,
+    attempt_count INTEGER NOT NULL,
+    claimed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    UNIQUE (delivery_id,attempt_count)
+  )`,
+  `CREATE INDEX IF NOT EXISTS notification_dispatch_attempts_hour
+    ON notification_dispatch_attempts(tenant_id,claimed_at DESC)`,
+  `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS sla_due_at TIMESTAMPTZ`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS provider_message_id TEXT`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS delivery_state TEXT NOT NULL DEFAULT 'unconfirmed'`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS delivery_state_at TIMESTAMPTZ`,

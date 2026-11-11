@@ -6,6 +6,7 @@
  */
 import type { EnqueueInput } from './queue';
 import { deliveryDedupeKey, legacyDeliveryDedupeKey } from './dedupe';
+import { inQuietHours, nextQuietEnd, tenantCivilTime } from './tenant-time';
 
 // ---------------------------------------------------------------------------
 // Tipos de entrada (espelham as colunas do banco sem trazer o driver junto).
@@ -95,17 +96,6 @@ function isOn(flag: number | boolean): boolean {
   return Boolean(flag);
 }
 
-/** 'HH:mm' -> minutos desde a meia-noite, ou null se ausente/invalido. */
-function parseHHmm(v: string | null): number | null {
-  if (v === null) return null;
-  const m = /^(\d{1,2}):(\d{2})$/.exec(v.trim());
-  if (!m) return null;
-  const h = Number(m[1]);
-  const min = Number(m[2]);
-  if (h < 0 || h > 23 || min < 0 || min > 59) return null;
-  return h * 60 + min;
-}
-
 const NF = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 });
 function fmt(n: number): string { return NF.format(n); }
 function pontos(n: number): string { return Math.abs(n) === 1 ? 'ponto' : 'pontos'; }
@@ -138,14 +128,8 @@ function thresholdOf(rule: RuleInput): Record<string, unknown> {
  * meia-noite (ex.: 22:00 -> 06:00) valem de `de` ate 23:59 OU de 00:00 ate
  * `ate`. Janela ausente ou invalida nunca silencia.
  */
-export function isSilenced(rule: RuleInput, at: Date): boolean {
-  const from = parseHHmm(rule.silencioDe);
-  const to = parseHHmm(rule.silencioAte);
-  if (from === null || to === null) return false;
-  const now = at.getUTCHours() * 60 + at.getUTCMinutes();
-  return from <= to
-    ? now >= from && now <= to
-    : now >= from || now <= to;
+export function isSilenced(rule: RuleInput, at: Date, timeZone='UTC'): boolean {
+  return inQuietHours(rule.silencioDe,rule.silencioAte,at,timeZone);
 }
 
 // ---------------------------------------------------------------------------
@@ -284,26 +268,52 @@ export function buildMessage(rule: RuleInput, fact: FactInput): {
  * `tenantId` e opcional e injetado pelo worker; quando ausente fica 0, pois
  * regras/canais/fatos ja chegam escopados por tenant. Itens prontos p/ enqueue.
  */
+export type TenantDeliveryPolicy = {
+  timeZone?: string;
+  deferDuringSilence?: boolean;
+  criticalBypassSilence?: boolean;
+};
+
 export function planDeliveries(
   rules: RuleInput[],
   channels: ChannelInput[],
   fact: FactInput,
   at: Date,
   tenantId = 0,
+  policy: TenantDeliveryPolicy = {},
 ): EnqueueInput[] {
   // Uma anomalia é um evento imutável: fixar o dia na criação do alerta
   // evita reaviso ao cruzar meia-noite enquanto ele ainda está nas últimas 24h.
   const clock = fact.kind === 'analytics' && fact.ocorridoEm instanceof Date
     && !Number.isNaN(fact.ocorridoEm.getTime()) ? fact.ocorridoEm : at;
-  const dia = clock.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+  // Analytics é um evento imutável, preserva data-base da PR #32.
+  // Demais alertas respeitam o dia civil do cliente na deduplicação.
+  const tz = policy.timeZone ?? 'UTC';
+  const dia = fact.kind === 'analytics'
+    ? clock.toISOString().slice(0,10)
+    : tenantCivilTime(clock,tz).day;
   const ativos = channels.filter((c) => isOn(c.active) && isOn(c.verified));
   const itens: EnqueueInput[] = [];
   const vistos = new Set<string>();
 
   for (const rule of rules) {
     if (!isOn(rule.active)) continue;
-    if (isSilenced(rule, at)) continue;
     if (!ruleMatches(rule, fact)) continue;
+    const critical = severityRank(fact.severity) >= 4;
+    const bypass = critical && policy.criticalBypassSilence === true;
+    const quiet = !bypass && isSilenced(rule,at,tz);
+    if (quiet && !policy.deferDuringSilence) continue; // compatibilidade testes legados
+    const deferUntil = quiet
+      ? nextQuietEnd(rule.silencioDe,rule.silencioAte,at,tz) : null;
+    // Prazo de reação: para incidentes/anomalias usar criação do evento;
+    // para cobrança e medição periódica usar instante de avaliação.
+    const occurred = (fact.kind === 'incident'||fact.kind === 'analytics')
+      && fact.ocorridoEm instanceof Date
+      && !Number.isNaN(fact.ocorridoEm.getTime()) ? fact.ocorridoEm : at;
+    const slaMinutes = Number.isSafeInteger(rule.slaMinutes)
+      && rule.slaMinutes >= 1 && rule.slaMinutes <= 10080
+      ? rule.slaMinutes : 900;
+    const slaDueAt = new Date(occurred.getTime()+slaMinutes*60_000);
 
     const legacyDedupeKey = legacyDeliveryDedupeKey({ ruleId: rule.id, factKind: fact.kind, factId: fact.id, dayUtc: dia });
     const { title, message, severity } = buildMessage(rule, fact);
@@ -316,6 +326,19 @@ export function planDeliveries(
         ruleId: rule.id, factKind: fact.kind, factId: fact.id, dayUtc: dia,
         channel: canal.channel, destination: canal.destination,
       });
+      // Compatibilidade de migração: PR #34 usava dia UTC no hash. Na
+      // virada UTC/local, evitar reemitir evento já persistido com a chave
+      // antiga, inclusive a primeira versão sem hash (regra/fato/dia).
+      const oldDay=clock.toISOString().slice(0,10);
+      const compatibilityDedupeKeys=oldDay===dia?undefined:[
+        deliveryDedupeKey({
+          ruleId:rule.id,factKind:fact.kind,factId:fact.id,dayUtc:oldDay,
+          channel:canal.channel,destination:canal.destination,
+        }),
+        legacyDeliveryDedupeKey({
+          ruleId:rule.id,factKind:fact.kind,factId:fact.id,dayUtc:oldDay,
+        }),
+      ];
       // Hash inclui canal e destino, portanto esta dedupe local não elimina
       // pessoas distintas e elimina repetições com e-mails capitalizados.
       if (vistos.has(dedupeKey)) continue;
@@ -331,8 +354,11 @@ export function planDeliveries(
         message,
         dedupeKey,
         legacyDedupeKey,
+        compatibilityDedupeKeys,
         eventRef: `${fact.kind}:${fact.id}`,
         sourceProjectId: fact.kind === 'analytics' ? fact.projectId : undefined,
+        nextAttemptAt: deferUntil ?? undefined,
+        slaDueAt,
       });
     }
   }
