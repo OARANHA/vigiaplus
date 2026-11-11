@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
+import { isDemoReadMethod } from '@/lib/demo-readonly';
 
 // Protezione dell'intera app: richiede una sessione utente valida.
 // Esclusi: landing, login, /api/auth, cron (protetto da CRON_SECRET), report
@@ -23,14 +24,19 @@ export function proxy(req: NextRequest) {
   const nextWithPath = () => {
     const h = new Headers(req.headers);
     h.set('x-vigia-request-path', pathname);
+    // Sobrescreve valores fornecidos pelo cliente; verificação interna usa esta marca.
+    h.set('x-vigia-request-method', req.method);
     return NextResponse.next({ request: { headers: h } });
   };
   // Public read-only demo: no auth gate at all.
   if (process.env.DEMO_MODE === '1') {
-    // Server Actions also accept progressive multipart form submissions without
-    // a Next-Action header. Block all page POSTs, not just API mutations.
-    if (req.method === 'POST' && !pathname.startsWith('/api/')) {
-      return NextResponse.json({ error: 'demo mode: read-only' }, { status: 403 });
+    // Gate global, antes de qualquer API, webhook, cron ou Server Action.
+    // Métodos inesperados também falham fechados: não confiar só nas rotas.
+    if (!isDemoReadMethod(req.method)) {
+      return NextResponse.json({ error: 'DEMO_READ_ONLY',
+        message: 'Demonstração disponível somente para leitura' }, {
+        status: 403, headers: { 'Cache-Control': 'no-store' },
+      });
     }
     return nextWithPath();
   }
