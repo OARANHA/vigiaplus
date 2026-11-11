@@ -5,6 +5,7 @@ import { users } from '@/lib/db/schema';
 import { SESSION_COOKIE, verifySession, isDemoMode } from '@/lib/session';
 import { readViewPrefs } from '@/lib/view-prefs';
 import { canUseBusinessSurface } from '@/lib/password-access';
+import { isDemoReadMethod } from '@/lib/demo-readonly';
 
 export type User = typeof users.$inferSelect;
 
@@ -29,6 +30,11 @@ const DEMO_USER: User = {
 export async function getCurrentUser(): Promise<User | null> {
   let user: User;
   if (isDemoMode()) {
+    // Defesa no servidor contra APIs que chamem getCurrentUser diretamente:
+    // uma identidade sintética com papel owner NUNCA autoriza escrita.
+    // O proxy substitui o cabeçalho por req.method; ausência nega acesso.
+    const method = (await headers()).get('x-vigia-request-method');
+    if (!isDemoReadMethod(method)) return null;
     user = DEMO_USER;
   } else {
     const cookieStore = await cookies();
