@@ -13,6 +13,7 @@ import {
 import { enqueue, dispatchPending } from '../../lib/notifications/queue';
 import { loadAnalyticAlertFacts } from '../../lib/notifications/analytics-facts';
 import { invoiceIsPastDue } from '../../lib/notifications/billing';
+import { channelHasProof } from '../../lib/notifications/channel-proof';
 import {
   planDeliveries, type RuleInput, type ChannelInput, type FactInput,
 } from '../../lib/notifications/evaluate';
@@ -63,7 +64,7 @@ async function carregarFatos(tenantId: number, at: Date): Promise<{
     channel: c.channel,
     destination: c.destination,
     active: c.active,
-    verified: c.verified,
+    verified: channelHasProof(c) ? 1 : 0,
   }));
 
   const facts: FactInput[] = [];
