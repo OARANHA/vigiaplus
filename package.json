@@ -12,7 +12,8 @@
     "migrate:check": "node --import tsx scripts/migrate.ts --check",
     "worker:notify": "node --import tsx scripts/workers/notify.ts",
     "worker:dunning": "node --import tsx scripts/workers/dunning.ts",
-    "security:rls-check": "node --import tsx scripts/check-rls.ts"
+    "security:rls-check": "node --import tsx scripts/check-rls.ts",
+    "worker:notify:supervised": "node --import tsx scripts/workers/notify-supervised.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.1",
