@@ -51,3 +51,9 @@ O scheduler de **coleta de fontes** da PR #11 não é o scheduler de **envio de 
 O job `postgres-disposable` usa um serviço PostgreSQL 16 efêmero criado no runner do GitHub; o teste `scripts/tests/alt081-postgres.test.ts` exige explicitamente `ALT081_EPHEMERAL_POSTGRES=1`, host local `127.0.0.1`, database `vigia_alt081_ci` e ausência de `DATABASE_URL`. Dois pools de conexão independentes executam o código real `claimPendingDeliveries` e `finishClaimedDelivery` com o DDL da aplicação. Os cenários incluem claim concorrente, recuperação de lease, fencing, retries, dead-letter e ledger de tentativas.
 
 **Limitação:** pools independentes no mesmo processo de teste não provam recuperação de crash de processo real, múltiplos hosts, segurança do lock órfão ou exactly-once externo. Não ligar Resend nem apontar este teste a Neon de produção.
+
+### ALT-08.1 — isolamento entre processos e queda real (candidato)
+
+O teste `scripts/tests/alt081-postgres.test.ts` passou a criar **dois subprocessos Node independentes** (`scripts/tests/alt081-worker-process.ts`) no PostgreSQL descartável, com pools próprios e concorrência real. O processo que ganha o claim é encerrado com `SIGKILL` antes de registrar a conclusão. O teste confirma o estado `processing` e o ledger persistido, força a expiração do lease, inicia um terceiro processo e exige recuperação com `attempt_count=2` e status final `sent` (aceite simulado sem transporte real).
+
+O cenário verifica crash de processo e isolamento SQL entre conexões/processos no mesmo runner. Não demonstra concorrência entre hosts físicos, terminação de chamada remota, exactly-once no provedor ou segurança de produção. **Só marcar como validado se o job PostgreSQL concluir GREEN no SHA exato.**
