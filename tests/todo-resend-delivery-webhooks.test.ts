@@ -176,3 +176,51 @@ test('ALT-06: webhook órfão reconcilia após aceite HTTP do worker; requeue n�
   assert.equal(state.deliveryState,'delivered');
   assert.ok(state.deliveredAt);
 });
+
+test('ALT-06: rota pública exige assinatura; demo nega, sem segredo falha fechado',async()=>{
+  const {POST}=await import('../app/api/webhooks/resend/route');
+  const {proxy}=await import('../proxy');
+  const {NextRequest}=await import('next/server');
+  const body=JSON.stringify(event('email.delivered','route-unknown-1'));
+  const priorSecret=process.env.RESEND_WEBHOOK_SECRET;
+  const priorDemo=process.env.DEMO_MODE;
+  try {
+    delete process.env.DEMO_MODE;
+    delete process.env.RESEND_WEBHOOK_SECRET;
+    assert.equal((await POST(new Request('https://vigia.test/api/webhooks/resend',{
+      method:'POST',body,headers:signed(body,'msg_route_missing_001'),
+    }))).status,503);
+    process.env.RESEND_WEBHOOK_SECRET=secret;
+    assert.equal((await POST(new Request('https://vigia.test/api/webhooks/resend',{
+      method:'POST',body,headers:new Headers({'content-type':'application/json'}),
+    }))).status,401);
+    assert.equal((await POST(new Request('https://vigia.test/api/webhooks/resend',{
+      method:'POST',body:body+' ',headers:signed(body,'msg_route_tamper_001'),
+    }))).status,401);
+    const headers=signed(body,'msg_route_valid_001');
+    const accepted=await POST(new Request('https://vigia.test/api/webhooks/resend',{
+      method:'POST',body,headers,
+    }));
+    assert.equal(accepted.status,200);
+    const data=await accepted.json() as {ok:boolean;matching:string;duplicate:boolean};
+    assert.equal(data.ok,true);
+    assert.equal(data.matching,'unmatched');
+    assert.equal(data.duplicate,false);
+    const replay=await POST(new Request('https://vigia.test/api/webhooks/resend',{
+      method:'POST',body,headers,
+    }));
+    assert.equal(replay.status,200);
+    assert.equal((await replay.json()).duplicate,true);
+    assert.equal(proxy(new NextRequest('https://vigia.test/api/webhooks/resend',{method:'POST'})).status,200);
+    assert.equal(proxy(new NextRequest('https://vigia.test/api/webhooks/other',{method:'POST'})).status,401);
+    process.env.DEMO_MODE='1';
+    assert.equal((await POST(new Request('https://vigia.test/api/webhooks/resend',{
+      method:'POST',body,headers,
+    }))).status,403);
+  }finally{
+    if(priorSecret===undefined)delete process.env.RESEND_WEBHOOK_SECRET;
+    else process.env.RESEND_WEBHOOK_SECRET=priorSecret;
+    if(priorDemo===undefined)delete process.env.DEMO_MODE;
+    else process.env.DEMO_MODE=priorDemo;
+  }
+});
