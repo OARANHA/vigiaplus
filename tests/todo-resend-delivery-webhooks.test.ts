@@ -4,7 +4,7 @@ import { createHmac } from 'node:crypto';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { and, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { verifyResendWebhook } from '../lib/notifications/resend-signature';
 import { recordResendEvent,parseResendDeliveryEvent } from '../lib/notifications/resend-events';
 
@@ -135,8 +135,6 @@ test('ALT-06: não aplicar evento a tenant/destinatário errado ou provider_id s
   const rows=await db.select().from(notificationDeliveries);
   assert.equal(rows.find(x=>x.id===a.id)!.deliveryState,'bounced');
   assert.equal(rows.find(x=>x.id===b.id)!.deliveryState,'accepted');
-  const [aChannel,bChannel]=await db.select().from(notificationChannels)
-    .where(eq(notificationChannels.channel,'email'));
   assert.equal((await db.select().from(notificationChannels)
     .where(eq(notificationChannels.id,c1.id)))[0].active,0);
   assert.equal((await db.select().from(notificationChannels)
@@ -149,7 +147,7 @@ test('ALT-06: não aplicar evento a tenant/destinatário errado ou provider_id s
 test('ALT-06: webhook órfão reconcilia após aceite HTTP do worker; requeue não reaplica eventos antigos',async()=>{
   const {getDb}=await import('../lib/db');
   const {tenants,notificationChannels,notificationDeliveries}=await import('../lib/db/schema');
-  const {claimPendingDeliveries,finishClaimedDelivery,requeueDeadLetter}=await import('../lib/notifications/queue');
+  const {claimPendingDeliveries,finishClaimedDelivery}=await import('../lib/notifications/queue');
   const db=await getDb();
   const [tenant]=await db.insert(tenants).values({
     name:'ALT06 Precoce',slug:'alt06-precoce',status:'active',
@@ -170,7 +168,7 @@ test('ALT-06: webhook órfão reconcilia após aceite HTTP do worker; requeue n�
   assert.equal(claimed.id,delivery.id);
   assert.equal(await finishClaimedDelivery(db,claimed,'worker_alt06_early',
     {ok:true,detail:'HTTP 200',providerId:'provider-early-1'}),'accepted');
-  let [state]=await db.select().from(notificationDeliveries)
+  const [state]=await db.select().from(notificationDeliveries)
     .where(eq(notificationDeliveries.id,delivery.id));
   assert.equal(state.status,'sent');
   assert.equal(state.deliveryState,'delivered');
