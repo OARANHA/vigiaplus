@@ -13,6 +13,13 @@ import {
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
+  // A autenticação pode atualizar contador e cookie; em demo nenhuma mutação
+  // deve acontecer mesmo se a rota for invocada sem passar pelo proxy.
+  if (isDemoMode()) {
+    return NextResponse.json({ error: 'DEMO_READ_ONLY' }, {
+      status: 403, headers: { 'Cache-Control': 'no-store' },
+    });
+  }
   let body: { email?: unknown; password?: unknown; logout?: boolean; revokeAll?: boolean };
   try {
     const payload = await req.text();
