@@ -263,6 +263,24 @@ export const invitations = pgTable('invitations', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Recuperação de senha: hash apenas, uso único, não cria sessão. */
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: text('token_hash').notNull().unique(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  revokedAt: timestamp('revoked_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Não armazena endereços de e-mail/IP em claro. */
+export const passwordResetRateLimits = pgTable('password_reset_rate_limits', {
+  keyHash: text('key_hash').primaryKey(),
+  nextAllowedAt: timestamp('next_allowed_at', { withTimezone: true }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** Histórico de avisos entregues. dedupeKey garante que uma regra não dispare
  *  duas vezes para o mesmo fato (idempotência do worker-notify). */
 export const notificationDeliveries = pgTable('notification_deliveries', {
