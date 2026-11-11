@@ -334,6 +334,15 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Livro-razão imutável de CADA tentativa de claim, inclusive retries. */
+export const notificationDispatchAttempts = pgTable('notification_dispatch_attempts', {
+  id: serial('id').primaryKey(),
+  tenantId: integer('tenant_id').notNull().references(() => tenants.id, { onDelete:'cascade' }),
+  deliveryId: integer('delivery_id').references(() => notificationDeliveries.id, { onDelete:'set null' }),
+  attemptCount: integer('attempt_count').notNull(),
+  claimedAt: timestamp('claimed_at', { withTimezone:true }).notNull().defaultNow(),
+});
+
 /**
  * Livro-razão imutável de eventos assinados do provedor.
  * UNIQUE(webhook_id) torna o POST idempotente, inclusive em concorrência.
