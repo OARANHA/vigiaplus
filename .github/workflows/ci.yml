@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/todo-alt08-notify-supervisor-20261111
   pull_request:
     branches: [main]
 
