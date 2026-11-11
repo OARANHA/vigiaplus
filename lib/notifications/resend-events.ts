@@ -172,3 +172,30 @@ export async function reconcileAcceptedResendDelivery(
   const canonical=normalizeResendRecipient(recipient);
   if(canonical)await reconcileResendProvider(db,providerMessageId,canonical);
 }
+
+/**
+ * Recupera eventos assinados registrados antes do ID do aceite HTTP ou
+ * interrompidos entre INSERT e conciliação. Executar no worker sem redes
+ * externas, com limite para não ocupar a coleta indefinidamente.
+ */
+export async function reconcileUnmatchedResendEvents(
+  db:DB,limit=25,
+):Promise<number>{
+  if(!Number.isSafeInteger(limit)||limit<1||limit>100)throw new Error('Limite inválido');
+  const pending=await db.execute(sql`
+    SELECT provider_message_id,recipient
+    FROM notification_provider_events
+    WHERE delivery_id IS NULL
+      AND received_at>now()-INTERVAL '30 days'
+    GROUP BY provider_message_id,recipient
+    ORDER BY max(received_at) DESC
+    LIMIT ${limit}
+  `);
+  let matched=0;
+  for(const entry of pending.rows){
+    if(await reconcileResendProvider(db,
+      String(entry.provider_message_id),String(entry.recipient))==='matched')
+      matched++;
+  }
+  return matched;
+}
