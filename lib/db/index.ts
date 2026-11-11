@@ -706,6 +706,23 @@ const DDL = [
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
   `ALTER TABLE invitations ADD COLUMN IF NOT EXISTS revoked_at TIMESTAMPTZ`,
+  `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token_hash TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    revoked_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS password_reset_tokens_user
+    ON password_reset_tokens (user_id, created_at DESC)`,
+  `CREATE TABLE IF NOT EXISTS password_reset_rate_limits (
+    key_hash TEXT PRIMARY KEY,
+    next_allowed_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+
   // Colunas VigiaPlus aditivas nas tabelas existentes
   `ALTER TABLE projects ADD COLUMN IF NOT EXISTS tenant_id INTEGER NOT NULL DEFAULT 1`,
   `ALTER TABLE users ADD COLUMN IF NOT EXISTS global_role TEXT`,
