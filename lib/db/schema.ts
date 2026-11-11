@@ -313,6 +313,11 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   message: text('message').notNull(),
   status: text('status').notNull().default('sent'),
   providerMessageId: text('provider_message_id'),
+  // Fato de aceite pelo provedor é separado do resultado de entrega.
+  deliveryState: text('delivery_state').notNull().default('unconfirmed'),
+  deliveryStateAt: timestamp('delivery_state_at', { withTimezone:true }),
+  deliveredAt: timestamp('delivered_at', { withTimezone:true }),
+  deliveryFailureCode: text('delivery_failure_code'),
   // ALT-02: tentativas, lease e agendamento na própria outbox, sem filas externas.
   attemptCount: integer('attempt_count').notNull().default(0),
   leaseOwner: text('lease_owner'),
@@ -323,6 +328,22 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   error: text('error'),
   sentAt: timestamp('sent_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Livro-razão imutável de eventos assinados do provedor.
+ * UNIQUE(webhook_id) torna o POST idempotente, inclusive em concorrência.
+ * Não salvar payload completo, bounce.message, headers nem credenciais.
+ */
+export const notificationProviderEvents = pgTable('notification_provider_events', {
+  id: serial('id').primaryKey(),
+  webhookId: text('webhook_id').notNull().unique(),
+  providerMessageId: text('provider_message_id').notNull(),
+  recipient: text('recipient').notNull(),
+  eventType: text('event_type').notNull(),
+  occurredAt: timestamp('occurred_at', {withTimezone:true}).notNull(),
+  deliveryId: integer('delivery_id').references(() => notificationDeliveries.id, {onDelete:'set null'}),
+  receivedAt: timestamp('received_at', {withTimezone:true}).notNull().defaultNow(),
 });
 
 // ---------------------------------------------------------------------------
