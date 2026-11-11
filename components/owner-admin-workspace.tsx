@@ -73,6 +73,9 @@ type WorkerOperations = {
     lastFinishedAt:string|null;expectedMaxLagMinutes:number;
     runs:{runId:string;startedAt:string;finishedAt:string;durationMs:number;
       status:string;exitCode:number|null;summary:Record<string,unknown>}[]};
+  simulation:{lastFinishedAt:string|null;simulatedOnly:true;
+    runs:{runId:string;startedAt:string;finishedAt:string;
+      durationMs:number;status:string;exitCode:number|null}[]};
   queue:{pending:number;processing:number;deadLetter:number;delayed:number;
     slaOverdue:number;oldestReadyAt:string|null};
   observedAt:string;
@@ -712,6 +715,9 @@ export function OwnerAdminWorkspace() {
                 <p>Falha definitiva: <strong>{workerOperations.queue.deadLetter}</strong></p>
                 <p>Mais antiga pronta: <strong>{showDate(workerOperations.queue.oldestReadyAt)}</strong></p>
               </div>
+              <p className="vpx-owner-muted">Agendador em simulação: {workerOperations.simulation.runs.length
+                ? 'última passagem em '+showDate(workerOperations.simulation.lastFinishedAt)
+                : 'nenhuma passagem registrada'}. Simulação não comprova entrega de notificações.</p>
               <p className="vpx-owner-muted">Histórico de execução (sem destinatários ou mensagens).</p>
               <div className="vpx-owner-table-wrap"><table className="vpx-owner-table">
                 <thead><tr><th>Concluída em</th><th>Resultado</th><th>Duração</th><th>Saída</th></tr></thead>
