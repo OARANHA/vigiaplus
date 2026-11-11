@@ -160,7 +160,11 @@ async function main(): Promise<void> {
     if (status !== 'success') process.exitCode = 1;
   }
 }
-main().catch(() => {
+main().then(() => {
+  // O processo CLI dry-run terminou suas operações e soltou o lock;
+  // finalizar explicitamente pois PGlite mantém handles de I/O ativos.
+  if (process.env.VIGIA_NOTIFY_DRY_RUN === '1') process.exit(process.exitCode ?? 0);
+}).catch(() => {
   // Falha de infraestrutura sem expor caminho/segredo/PII na saída.
   console.error('notify-supervised: falha de infraestrutura; verifique permissões e estado do agendador');
   process.exitCode = 1;
