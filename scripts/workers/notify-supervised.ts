@@ -4,8 +4,8 @@
  * O lock é local ao host; a outbox/claims SQL é a barreira entre instâncias.
  */
 import { spawn } from 'node:child_process';
-import { mkdir, open, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { mkdir, open, rename, rm, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
 type State = {
