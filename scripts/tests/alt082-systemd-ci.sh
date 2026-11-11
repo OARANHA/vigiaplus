@@ -71,5 +71,6 @@ if sudo systemctl is-active --quiet "$service"; then
   echo "ALT082: service did not finish" >&2
   exit 1
 fi
+sudo chown -R "$(id -u):$(id -g)" "$state_root"
 PGLITE_DIR="$data_dir" node --import tsx "$root/scripts/tests/alt082-verify-systemd.ts"
 echo "ALT082: systemd timer produced 3+ distinct persisted dry-run cycles (no transports)"
