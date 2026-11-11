@@ -70,6 +70,10 @@ jobs:
         run: npm install --no-save --package-lock=false pg
       - name: Executar testes PostgreSQL com pools independentes
         run: node --import tsx --test scripts/tests/alt081-postgres.test.ts
+      - name: "ALT-08.3 RLS adversarial com roles mínimas e dois tenants"
+        env:
+          ALT083_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt083-postgres-rls.test.ts
 
   dryrun-isolated:
     name: ALT-08.2 dry-run isolado
