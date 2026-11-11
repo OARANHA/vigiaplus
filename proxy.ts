@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { SESSION_COOKIE, verifySession } from '@/lib/session';
-import { isDemoReadMethod } from '@/lib/demo-readonly';
+import { isDemoSafeRequest } from '@/lib/demo-readonly';
 
 // Protezione dell'intera app: richiede una sessione utente valida.
 // Esclusi: landing, login, /api/auth, cron (protetto da CRON_SECRET), report
@@ -32,7 +32,7 @@ export function proxy(req: NextRequest) {
   if (process.env.DEMO_MODE === '1') {
     // Gate global, antes de qualquer API, webhook, cron ou Server Action.
     // Métodos inesperados também falham fechados: não confiar só nas rotas.
-    if (!isDemoReadMethod(req.method)) {
+    if (!isDemoSafeRequest(req.method, pathname)) {
       return NextResponse.json({ error: 'DEMO_READ_ONLY',
         message: 'Demonstração disponível somente para leitura' }, {
         status: 403, headers: { 'Cache-Control': 'no-store' },
