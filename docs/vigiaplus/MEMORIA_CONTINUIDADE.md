@@ -83,3 +83,13 @@ Fonte autoritativa de itens, aceite e subchecks: [TODO.md](../../TODO.md), atual
 5. Prosseguir SEC-03, SEC-04/RLS e depois confiabilidade de alertas, sem esquecer QA da experiência do proprietário/cliente.
 
 **Fonte de verdade de produto/estado:** GitHub e CI no HEAD exato; este documento registra histórico, mas precisa de atualização após cada mudança.
+
+
+## Checkpoint complementar — 10/11/2026 · SEC-03 / RLS
+
+- **[PR #28](https://github.com/OARANHA/vigiaplus/pull/28)**: branch `fix/todo-sec03-demo-server-write-guard-20261110`, empilhada sobre PR #27 após CI. Proteção global de demo sem escrita por métodos HTTP, bloqueio cron/webhooks GET, marca de método sobrescrita no proxy e verificação server-side em autenticação/contexto de tenant. Testes cobrem rotas atuais por descoberta dinâmica e snapshot de PGlite inalterado. No SHA de código `e0e81e41cc7e33e41f7202ddca6091553bbc935c`, **CI GREEN 382/382**, [run 42936613997](https://github.com/OARANHA/vigiaplus/actions/runs/42936613997); primeiro run 42936224648 ficou RED (381/382) porque teste legado esperava POST /api/locale permitido em demo, corrigido para negar mutação.
+- Após novos commits de documentação, **verificar HEAD e CI novamente**; resultado do SHA de código anterior não vale para SHA novo.
+- **SEC-03 ainda aberto**: falta E2E HTTP em demo isolada, confirmar que banco demo é distinto do banco real e verificar GETs com efeito colateral.
+- **SEC-04 / PR #14:** inventário schema atual encontrou 17 tabelas `tenant_id` no Drizzle; a candidata `lib/tenant/rls-policy-candidate.ts` cobre 15, mas omite `llm_providers` e `llm_routes` que armazenam modelos/credenciais por escopo. Ambas permitem `tenant_id = NULL` para definição global. Corrigir o gerador com tratamento explícito de globais, sem liberar segredos para tenants, e testar com role restrita em PostgreSQL descartável. Não executar policies nem migrations em banco real sem autorização. PR14 segue DRAFT/preparatória.
+- **Memória ELUS Admin:** tentativa adicional de criar banco `vigiaplus` retornou novamente erro PostgreSQL `could not resize shared memory segment ... No space left on device`. Não foi criado e nenhum checkpoint pôde ser gravado no banco novo; este arquivo é o fallback durável. Banco `vigiaelus` permanece preservado.
+- **Ambiente Windows:** atualização local de PR #28 ainda **não comprovada** neste checkpoint. Último HEAD local confirmado em turn anterior: `f4743fd8...` no preview `D:\VIGIAPLUS`, porta 3199 ativa. Preservar dados e conferir processo antes de fast-forward.
