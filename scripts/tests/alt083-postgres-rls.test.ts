@@ -19,6 +19,7 @@ if (!isCi || process.env.ALT083_EPHEMERAL_RLS !== '1'
 }
 type QueryResult = {rows:Record<string,unknown>[];rowCount:number|null};
 type Client = {
+  connect():Promise<void>;
   query(text:string,params?:unknown[]):Promise<QueryResult>;
   end():Promise<void>;
 };
@@ -40,7 +41,7 @@ const table = sandbox+'.events';
 
 test('ALT-08.3 RLS: roles distintas não conseguem ler ou alterar eventos de outros tenants', async () => {
   let connectedA=false, connectedB=false;
-  await admin.query('SELECT current_database()');
+  await admin.connect();
   try {
     await admin.query('CREATE ROLE '+roleA+' LOGIN PASSWORD '+"'"+passwordA+"'");
     await admin.query('CREATE ROLE '+roleB+' LOGIN PASSWORD '+"'"+passwordB+"'");
@@ -59,8 +60,8 @@ test('ALT-08.3 RLS: roles distintas não conseguem ler ou alterar eventos de out
       FOR ALL USING (${scope}) WITH CHECK (${scope})`);
     await admin.query('GRANT USAGE ON SCHEMA '+sandbox+' TO '+roleA+','+roleB);
     await admin.query('GRANT SELECT,INSERT,UPDATE,DELETE ON '+table+' TO '+roleA+','+roleB);
-    await clientA.query('SELECT 1');connectedA=true;
-    await clientB.query('SELECT 1');connectedB=true;
+    await clientA.connect();connectedA=true;
+    await clientB.connect();connectedB=true;
     for (const [client,expectedId,foreignId] of [
       [clientA,1,2],[clientB,2,1],
     ] as const) {
