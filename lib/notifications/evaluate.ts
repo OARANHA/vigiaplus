@@ -326,6 +326,19 @@ export function planDeliveries(
         ruleId: rule.id, factKind: fact.kind, factId: fact.id, dayUtc: dia,
         channel: canal.channel, destination: canal.destination,
       });
+      // Compatibilidade de migração: PR #34 usava dia UTC no hash. Na
+      // virada UTC/local, evitar reemitir evento já persistido com a chave
+      // antiga, inclusive a primeira versão sem hash (regra/fato/dia).
+      const oldDay=clock.toISOString().slice(0,10);
+      const compatibilityDedupeKeys=oldDay===dia?undefined:[
+        deliveryDedupeKey({
+          ruleId:rule.id,factKind:fact.kind,factId:fact.id,dayUtc:oldDay,
+          channel:canal.channel,destination:canal.destination,
+        }),
+        legacyDeliveryDedupeKey({
+          ruleId:rule.id,factKind:fact.kind,factId:fact.id,dayUtc:oldDay,
+        }),
+      ];
       // Hash inclui canal e destino, portanto esta dedupe local não elimina
       // pessoas distintas e elimina repetições com e-mails capitalizados.
       if (vistos.has(dedupeKey)) continue;
@@ -341,6 +354,7 @@ export function planDeliveries(
         message,
         dedupeKey,
         legacyDedupeKey,
+        compatibilityDedupeKeys,
         eventRef: `${fact.kind}:${fact.id}`,
         sourceProjectId: fact.kind === 'analytics' ? fact.projectId : undefined,
         nextAttemptAt: deferUntil ?? undefined,
