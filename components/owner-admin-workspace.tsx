@@ -58,6 +58,11 @@ const HEADINGS: Record<Section, { title: string; detail: string }> = {
 };
 type ClientInvitation = {id:number;tenantId:number;email:string;role:string;status:string;
   createdAt:string;expiresAt:string};
+type EmailDiag = {keyConfigured:boolean;senderConfigured:boolean;publicUrlHttps:boolean;
+  readyForTest:boolean;providerDomainVerified:null;testRecipient:string|null;
+  lastTest:{createdAt:string;status:string}|null};
+type OwnerChannel = {id:number;channel:string;destination:string;verified:boolean;
+  active:boolean;verifiedAt:string|null};
 type OwnerDelivery = {id:number;eventRef:string|null;sourceProjectId:number|null;
   channel:string;destination:string;status:string;
   attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
@@ -143,6 +148,9 @@ export function OwnerAdminWorkspace() {
   const [newClient,setNewClient]=useState({name:'',slug:'',cnpj:''});
   const [invitations,setInvitations]=useState<ClientInvitation[]>([]);
   const [deliveries,setDeliveries]=useState<OwnerDelivery[]>([]);
+  const [emailDiag,setEmailDiag]=useState<EmailDiag|null>(null);
+  const [channels,setChannels]=useState<OwnerChannel[]>([]);
+  const [newAlertEmail,setNewAlertEmail]=useState('');
   const [deliveryReason,setDeliveryReason]=useState('');
   const [deliveriesLoading,setDeliveriesLoading]=useState(false);
   const [inviteEmail,setInviteEmail]=useState('');
@@ -203,6 +211,17 @@ export function OwnerAdminWorkspace() {
     void api<{invitations:ClientInvitation[]}>('/api/console/invitations?tenant_id='+selectedTenant)
       .then(data=>setInvitations(data.invitations))
       .catch(e=>setError('Convites indisponíveis: '+String(e)));
+  },[section,selectedTenant]);
+  useEffect(()=>{
+    if(section!=='crises')return;
+    void api<EmailDiag>('/api/console/notifications/email-diagnostics')
+      .then(setEmailDiag).catch(e=>setError('Diagnóstico de e-mail indisponível: '+String(e)));
+  },[section]);
+  useEffect(()=>{
+    if(section!=='crises'||!selectedTenant)return;
+    void api<{channels:OwnerChannel[]}>('/api/notifications/channels?tenant_id='+selectedTenant)
+      .then(x=>setChannels(x.channels))
+      .catch(e=>{setChannels([]);setError('Destinatários indisponíveis: '+String(e));});
   },[section,selectedTenant]);
   useEffect(()=>{
     if(section!=='crises'||!selectedTenant)return;
@@ -283,6 +302,46 @@ export function OwnerAdminWorkspace() {
         '/api/console/invitations?tenant_id='+selectedTenant);
       setInvitations(updated.invitations);setMessage('Convite revogado sem alterar outras contas.');
     }catch(e){setError(String(e));}finally{setBusy(false);}
+  }
+  async function refreshChannels(){
+    if(!selectedTenant)return;
+    const updated=await api<{channels:OwnerChannel[]}>(
+      '/api/notifications/channels?tenant_id='+selectedTenant);
+    setChannels(updated.channels);
+  }
+  async function createAlertEmail(){
+    if(!selectedTenant||!newAlertEmail.trim())return;
+    setBusy(true);setError('');setMessage('');
+    try{
+      await api('/api/notifications/channels?tenant_id='+selectedTenant,
+        json({channel:'email',destination:newAlertEmail.trim()}));
+      setNewAlertEmail('');
+      await refreshChannels();
+      setMessage('Destinatário adicionado sem permissão para receber alertas. Solicite sua confirmação.');
+    }catch(e){setError(String(e));}
+    finally{setBusy(false);}
+  }
+  async function requestEmailProof(channelId:number){
+    if(!selectedTenant)return;
+    setBusy(true);setError('');setMessage('');
+    try{
+      const response=await api<{message:string}>(
+        '/api/notifications/channels/verify/request?tenant_id='+selectedTenant,
+        json({channelId}));
+      setMessage(response.message);
+      await refreshChannels();
+    }catch(e){setError(String(e));}
+    finally{setBusy(false);}
+  }
+  async function runEmailDiagnostic(){
+    setBusy(true);setError('');setMessage('');
+    try{
+      const result=await api<{message:string}>('/api/console/notifications/email-diagnostics',
+        json({confirm:'ENVIAR_TESTE_PARA_MINHA_CONTA'}));
+      setMessage(result.message);
+      setEmailDiag(await api<EmailDiag>('/api/console/notifications/email-diagnostics'));
+    }catch(e){setError(String(e));}
+    finally{setBusy(false);}
   }
   async function refreshDeliveries(){
     if(!selectedTenant)return;
@@ -553,6 +612,37 @@ export function OwnerAdminWorkspace() {
           {label:'Agendamento por cliente',description:'Integração e homologação do scheduler de 15 minutos ainda pendentes.',pending:true},
         ]}/></SubPanel>}
         {section==='crises'&&<>
+          <SubPanel title="Resend — estado do envio de e-mails">
+            <p className="vpx-owner-muted">O diagnóstico não mostra credenciais e não afirma domínio verificado. O teste só pode ser enviado ao e-mail da conta do proprietário, mediante clique.</p>
+            <p>{emailDiag?.readyForTest?'Configurado para teste (entrega não verificada)':'Não configurado para testes externos'}</p>
+            <p className="vpx-owner-muted">Chave: {emailDiag?.keyConfigured?'presente':'ausente'} · Remetente: {emailDiag?.senderConfigured?'informado':'ausente'} · URL pública HTTPS: {emailDiag?.publicUrlHttps?'configurada':'ausente'}</p>
+            <p>Destinatário permitido: {emailDiag?.testRecipient??'conta não identificada'}</p>
+            {emailDiag?.lastTest&&<p>Último teste: {showDate(emailDiag.lastTest.createdAt)} · {emailDiag.lastTest.status==='accepted_by_provider'?'Aceito pelo provedor, entrega não confirmada':'Falha / não comprovado'}</p>}
+            <button type="button" className="vpx-owner-button" disabled={busy||!emailDiag?.readyForTest||!emailDiag.testRecipient}
+              onClick={()=>{void runEmailDiagnostic();}}>Enviar teste somente para minha conta</button>
+          </SubPanel>
+          <SubPanel title="Destinatários de alertas por organização">
+            <p className="vpx-owner-muted">Novos e-mails começam bloqueados. Um link temporário é enviado ao destinatário, que precisa confirmar sua posse. Canais antigos sem prova ficam bloqueados.</p>
+            <div className="vpx-owner-formgrid">
+              <label>E-mail de destino
+                <input type="email" value={newAlertEmail} maxLength={254}
+                  onChange={e=>setNewAlertEmail(e.target.value)} placeholder="responsavel@cliente.com.br"/>
+              </label>
+            </div>
+            <button type="button" className="vpx-owner-button" disabled={busy||!selectedTenant||!newAlertEmail.includes('@')}
+              onClick={()=>{void createAlertEmail();}}>Adicionar e-mail bloqueado</button>
+            <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
+              <thead><tr><th>Canal</th><th>Destino</th><th>Prova de posse</th><th>Ação</th></tr></thead>
+              <tbody>{channels.map(ch=><tr key={ch.id}>
+                <td>{ch.channel}</td><td>{ch.destination}</td>
+                <td>{ch.verified?'Verificado':'Não comprovado'}{!ch.active?' · inativo':''}</td>
+                <td>{ch.channel==='email'&&!ch.verified
+                  ?<button type="button" disabled={busy||!emailDiag?.readyForTest}
+                     onClick={()=>{void requestEmailProof(ch.id);}}>Enviar link de confirmação</button>:'—'}</td>
+              </tr>)}
+              {channels.length===0&&<tr><td colSpan={4}>Nenhum destinatário cadastrado ou acesso indisponível.</td></tr>}
+              </tbody></table></div>
+          </SubPanel>
           <SubPanel title="Fila de notificações por cliente">
             <p className="vpx-owner-muted">Envios com HTTP 2xx aparecem como aceitos pelo transporte, não entregues. Retries dependem da próxima execução do worker. Nenhuma atualização automática é feita nesta tela.</p>
             <div className="vpx-owner-formgrid">
