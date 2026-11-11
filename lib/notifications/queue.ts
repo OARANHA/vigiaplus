@@ -237,19 +237,36 @@ export async function dispatchPending(
   return report;
 }
 
-/** Serviço privilegiado: somente chamar após RBAC owner + auditoria. */
+/**
+ * Reprocessamento manual SOMENTE após RBAC do proprietário. Reabertura da
+ * dead letter e evento de auditoria no MESMO SQL, sem risco de reabrir sem
+ * trilha; preserva dedupe_key e jamais cria outra entrega no histórico.
+ */
 export async function requeueDeadLetter(
-  db: DB, tenantId: number, deliveryId: number,
+  db: DB, input: {tenantId:number;deliveryId:number;actor:string;reason:string},
 ): Promise<boolean> {
-  if (![tenantId, deliveryId].every(x => Number.isSafeInteger(x) && x > 0))
+  if (![input.tenantId, input.deliveryId].every(x => Number.isSafeInteger(x) && x > 0))
     throw new Error('Identificadores inválidos');
+  if (!input.actor.trim() || input.actor.length > 120 ||
+      input.reason.trim().length < 5 || input.reason.length > 300)
+    throw new Error('Autor e justificativa de reprocessamento obrigatórios');
   const result = await db.execute(sql`
-    UPDATE notification_deliveries
-       SET status='queued', attempt_count=0,
-           lease_owner=NULL, lease_expires_at=NULL, next_attempt_at=NULL,
-           error=NULL, sent_at=NULL
-     WHERE id=${deliveryId} AND tenant_id=${tenantId} AND status='dead_letter'
-     RETURNING id
+    WITH restored AS (
+      UPDATE notification_deliveries
+         SET status='queued', attempt_count=0,
+             lease_owner=NULL, lease_expires_at=NULL, next_attempt_at=NULL,
+             error=NULL, sent_at=NULL
+       WHERE id=${input.deliveryId} AND tenant_id=${input.tenantId}
+         AND status='dead_letter'
+       RETURNING id,tenant_id
+    ), recorded AS (
+      INSERT INTO audit_events(actor,tenant_id,action,target,reason)
+      SELECT ${input.actor.trim()},tenant_id,'NOTIFICATION_REQUEUED',
+        'notification_delivery:' || id::text,${input.reason.trim()}
+      FROM restored
+      RETURNING id
+    )
+    SELECT restored.id FROM restored CROSS JOIN recorded
   `);
   return result.rows.length === 1;
 }
