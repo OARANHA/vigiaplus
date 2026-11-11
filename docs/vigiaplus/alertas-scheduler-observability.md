@@ -133,3 +133,13 @@ O job `authenticated-http-ephemeral` executa `scripts/tests/alt083-http-ci.sh` s
 Este é teste de **autorização de endpoint e isolamento de dados via HTTP**, não certificação de políticas de Row Level Security. O driver atual de produção (`neon-http`) não oferece `SET LOCAL` transacional para ligar a identidade de tenant a múltiplas queries, e `scripts/check-rls.ts` mantém o gate RLS NO-GO; qualquer homologação RLS precisa arquitetura transacional real e role mínima, em banco descartável, antes de afirmar isolamento na camada SQL. Também não comprova reboot de host físico nem instalação do scheduler Windows/VPS.
 
 **Gate:** 5/5 jobs no SHA atual (build, PostgreSQL, dry-run, systemd e HTTP). Nenhuma tarefa instalada em host operacional, nenhum merge/deploy/envio.
+
+### ALT-08.3 — RLS adversarial de PostgreSQL descartável e restart do timer (candidato)
+
+Acrescentado `scripts/tests/alt083-postgres-rls.test.ts` ao job existente de PostgreSQL 16 descartável, após a resiliência ALT-08.1. O teste exige `CI=true`, `GITHUB_ACTIONS=true`, `ALT083_EPHEMERAL_RLS=1`, host `127.0.0.1`, DB `vigia_alt081_ci`, usuário `vigia_ci` e `DATABASE_URL` vazio. Cria somente o esquema temporário `alt083_rls_ci`, duas roles LOGIN sem `SUPERUSER`, `BYPASSRLS` ou `CREATEROLE`, políticas `ENABLE/FORCE ROW LEVEL SECURITY` baseadas em `current_user` e registros isolados de tenants sintéticos 101/202. Verifica leitura cruzada vazia, UPDATE/DELETE cruzados com 0 linhas, INSERT em outro tenant rejeitado por RLS, tentativa de `SET ROLE` adversária rejeitada e integridade das duas linhas. O banco/schema/roles são descartáveis e limpos após teste.
+
+**Limite técnico:** este teste comprova o funcionamento de um **modelo experimental de RLS baseado em roles PostgreSQL**, não ativa RLS das tabelas reais nem integra as roles ao driver `neon-http` existente. O produto segue **RLS NO-GO** até políticas efetivas nas tabelas multi-tenant, binding de identidade seguro no runtime e testes com a role exata da aplicação. Não há migração nem escrita em banco remoto.
+
+Também foi estendido `scripts/tests/alt082-systemd-ci.sh`: após observar três disparos automáticos `notify_dry_run`, reinicia explicitamente **apenas o timer transitório** via `systemctl restart` e exige um `runId` adicional. Isso testa retomada do scheduler após restart da unidade, **não** reboot do kernel/host real. O timer não fica instalado no boot, e todos os ciclos usam banco PGlite isolado sem envios.
+
+**Gate CI:** cinco jobs no SHA final, incluindo a etapa de RLS no job PostgreSQL e o reinício do timer no job systemd; não concluir GREEN a partir de commit anterior.
