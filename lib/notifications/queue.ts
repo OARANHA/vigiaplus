@@ -170,7 +170,7 @@ export async function claimPendingDeliveries(
         AND (
           r.id IS NULL OR r.silencio_de IS NULL OR r.silencio_ate IS NULL
           OR (t.critical_bypass_silence=1
-            AND lower(d.severity) IN ('critica','critico','critical'))
+            AND lower(d.severity) IN ('critica','critico','critical','grave','4'))
           OR CASE WHEN r.silencio_de<=r.silencio_ate THEN
             to_char(now() AT TIME ZONE t.time_zone,'HH24:MI') NOT BETWEEN
               r.silencio_de AND r.silencio_ate
@@ -187,9 +187,9 @@ export async function claimPendingDeliveries(
             AND done.claimed_at >= date_trunc('hour',now())
         ) < t.alert_rate_limit_per_hour
       ORDER BY CASE WHEN lower(d.severity) IN
-           ('critica','critico','critical') THEN 0
-         WHEN lower(d.severity) IN ('alta','high') THEN 1
-         WHEN lower(d.severity) IN ('media','medio','medium') THEN 2
+           ('critica','critico','critical','grave','4') THEN 0
+         WHEN lower(d.severity) IN ('alta','high','3') THEN 1
+         WHEN lower(d.severity) IN ('media','medio','moderada','moderate','medium','2') THEN 2
          ELSE 3 END,
         d.sla_due_at ASC NULLS LAST,d.created_at ASC,d.id ASC
       LIMIT 1
