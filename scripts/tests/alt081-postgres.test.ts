@@ -10,7 +10,7 @@ import { randomUUID } from 'node:crypto';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import * as schema from '../../lib/db/schema';
-import { ensureSchema } from '../../lib/db';
+import { ensureSchema, type DB } from '../../lib/db';
 import {
   claimPendingDeliveries, finishClaimedDelivery, DELIVERY_MAX_ATTEMPTS,
 } from '../../lib/notifications/queue';
@@ -33,8 +33,8 @@ const options = {
 };
 const poolA = new Pool(options);
 const poolB = new Pool(options);
-const dbA = drizzle(poolA as never,{schema}) as never;
-const dbB = drizzle(poolB as never,{schema}) as never;
+const dbA = drizzle(poolA as never,{schema}) as unknown as DB;
+const dbB = drizzle(poolB as never,{schema}) as unknown as DB;
 const suffix = randomUUID().slice(0, 8);
 
 test('ALT-08.1 PostgreSQL: dois processos/conexões disputam item, crash+lease e dead-letter', async () => {
