@@ -41,7 +41,7 @@ export function proxy(req: NextRequest) {
     return nextWithPath();
   }
   if (pathname.startsWith('/landing') || pathname.startsWith('/login') || pathname.startsWith('/convite') || pathname.startsWith('/recuperar') || pathname.startsWith('/redefinir')
-    || pathname.startsWith('/api/auth') || pathname.startsWith('/api/cron/')
+    || pathname.startsWith('/api/auth') || pathname === '/api/notifications/channels/verify/confirm' || pathname.startsWith('/api/cron/')
     || pathname.startsWith('/api/health')
     || pathname.startsWith('/share/') || pathname.startsWith('/api/mcp')) {
     return nextWithPath();
