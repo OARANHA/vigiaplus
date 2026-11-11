@@ -6,7 +6,7 @@ import { resolveTenantContext, appendAudit } from '@/lib/tenant/context';
 import { requireOwner } from '@/lib/tenant/rbac';
 import { AppError } from '@/lib/tenant/errors';
 import { isDemoMode } from '@/lib/session';
-import { minuteFromHHmm,validTenantTimeZone } from '@/lib/notifications/tenant-time';
+import { validateQuietWindow,validTenantTimeZone } from '@/lib/notifications/tenant-time';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -26,12 +26,6 @@ function flag(value:unknown):0|1{
   if(value===1||value===true)return 1;
   if(value===0||value===false)return 0;
   throw AppError.badRequest('Flag inválido');
-}
-function hhmm(value:unknown):string|null{
-  if(value===null)return null;
-  if(typeof value!=='string'||minuteFromHHmm(value)===null)
-    throw AppError.badRequest('Horário deve usar HH:mm');
-  return value;
 }
 function failure(e:unknown){
   if(e instanceof AppError)return NextResponse.json({error:e.code,message:e.message},
@@ -98,10 +92,10 @@ export async function PATCH(request:Request){
     }
     if(body.scope==='rule'){
       const ruleId=idOf(body.ruleId);
-      const start=hhmm(body.silencioDe);
-      const end=hhmm(body.silencioAte);
-      if((start===null)!==(end===null))
-        throw AppError.badRequest('Informe ambos os horários ou remova ambos');
+      let quiet:{start:string|null;end:string|null};
+      try{quiet=validateQuietWindow(body.silencioDe,body.silencioAte);}
+      catch{throw AppError.badRequest('Silêncio exige horários HH:mm válidos e uma janela com liberação');}
+      const {start,end}=quiet;
       const sla=Number(body.slaMinutes);
       if(!Number.isSafeInteger(sla)||sla<1||sla>10080)
         throw AppError.badRequest('SLA de 1 a 10080 minutos');
