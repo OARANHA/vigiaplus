@@ -1,7 +1,9 @@
 // TenantContext: a UNICA fonte de verdade para "de quem e este dado".
 // Tudo que chega do request (header, query, body) e considerado hostil.
 // O tenant_id vem da SESSAO autenticada, nunca do cliente.
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { isDemoMode } from '@/lib/session';
+import { isDemoReadMethod } from '@/lib/demo-readonly';
 import { eq, and } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
 import { users, memberships, tenants, auditEvents } from '@/lib/db/schema';
@@ -37,6 +39,13 @@ export async function resolveTenantContext(opts: {
   ip?: string | null;
 } = {}): Promise<TenantContext> {
   const surface = opts.surface ?? 'app';
+  if (isDemoMode()) {
+    // Defesa independente da camada de proxy e da identidade demo de proprietário.
+    const method = (await headers()).get('x-vigia-request-method');
+    if (!isDemoReadMethod(method)) {
+      throw AppError.forbidden('Demonstração somente leitura');
+    }
+  }
   const user = await getCurrentUser();
   if (!user) throw AppError.unauthenticated();
 
