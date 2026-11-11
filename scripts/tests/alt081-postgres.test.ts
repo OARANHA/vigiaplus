@@ -3,7 +3,7 @@
  * Executar SOMENTE em CI com ALT081_EPHEMERAL_POSTGRES=1.
  * Nenhuma chamada HTTP, envio externo, migração em banco remoto ou dados reais.
  */
-import test from 'node:test';
+import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
@@ -38,9 +38,10 @@ const poolB = new Pool(options);
 const dbA = drizzle(poolA as never,{schema}) as unknown as DB;
 const dbB = drizzle(poolB as never,{schema}) as unknown as DB;
 const suffix = randomUUID().slice(0, 8);
+after(async () => { await Promise.all([poolA.end(),poolB.end()]); });
 
 test('ALT-08.1 PostgreSQL: dois processos/conexões disputam item, crash+lease e dead-letter', async () => {
-  try {
+  {
     await ensureSchema(dbA);
     const [tenant] = await dbA.insert(schema.tenants).values({
       name:'ALT081 PostgreSQL CI', slug:'alt081-pg-'+suffix,
@@ -94,8 +95,6 @@ test('ALT-08.1 PostgreSQL: dois processos/conexões disputam item, crash+lease e
       .where(eq(schema.notificationDispatchAttempts.deliveryId,delivery.id))).length,
       DELIVERY_MAX_ATTEMPTS);
     assert.equal((await claimPendingDeliveries(dbB,1,'worker_alt081_pg_DONE')).length,0);
-  } finally {
-    await Promise.all([poolA.end(),poolB.end()]);
   }
 });
 
@@ -156,5 +155,4 @@ test('ALT-08.1: concorrência entre processos Node e SIGKILL real preservam leas
   assert.equal(final.attemptCount,2);
   assert.equal((await dbA.select().from(schema.notificationDispatchAttempts)
     .where(eq(schema.notificationDispatchAttempts.deliveryId,delivery.id))).length,2);
-  await Promise.all([poolA.end(),poolB.end()]);
 });
