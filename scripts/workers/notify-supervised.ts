@@ -4,7 +4,7 @@
  * O lock é local ao host; a outbox/claims SQL é a barreira entre instâncias.
  */
 import { spawn } from 'node:child_process';
-import { mkdir, open, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, open, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 
@@ -35,6 +35,44 @@ async function writeState(state: State) {
   await rename(temp, statePath);
 }
 
+const orphanThresholdMs = 5 * 60_000;
+
+/**
+ * Recuperação somente para SIMULAÇÃO. Em operação real um lock órfão
+ * permanece bloqueado até intervenção administrativa explícita.
+ * O PID é revalidado e nenhum lock recente ou de processo ativo é removido.
+ */
+async function recoverDryRunOrphan(): Promise<boolean> {
+  if (process.env.VIGIA_NOTIFY_DRY_RUN !== '1') return false;
+  let original: string;
+  let inode: number;
+  try {
+    const file = await stat(lockPath);
+    inode = file.ino;
+    original = await readFile(lockPath, 'utf8');
+  } catch { return false; }
+  let entry: unknown;
+  try { entry = JSON.parse(original); } catch { return false; }
+  if (!entry || typeof entry !== 'object') return false;
+  const { pid, startedAt } = entry as Record<string, unknown>;
+  if (!Number.isSafeInteger(pid) || Number(pid) <= 0 || typeof startedAt !== 'string') return false;
+  const timestamp = Date.parse(startedAt);
+  if (!Number.isFinite(timestamp) || Date.now() - timestamp < orphanThresholdMs) return false;
+  // PID ativo, inacessível ou reutilizado: fail closed.
+  try { process.kill(Number(pid), 0); return false; }
+  catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ESRCH') return false;
+  }
+  // Proteção best-effort de troca entre leitura e remoção. Lock permanece
+  // fail-closed se houver discrepância; sem claims no dry-run.
+  try {
+    const latest = await stat(lockPath);
+    if (latest.ino !== inode || await readFile(lockPath, 'utf8') !== original) return false;
+    await rm(lockPath);
+    return true;
+  } catch { return false; }
+}
+
 async function lock(): Promise<() => Promise<void>> {
   await mkdir(folder, { recursive: true, mode: 0o700 });
   // Exclusividade local, não distribuída. Um lock órfão exige supervisão.
@@ -61,11 +99,22 @@ async function main(): Promise<void> {
     unlock = await lock();
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === 'EEXIST') {
-      console.error('notify-supervised: outra execução ou lock órfão; nenhuma nova execução iniciada');
-      process.exitCode = 3;
-      return;
-    }
-    throw error;
+      if (await recoverDryRunOrphan()) {
+        // Segunda tentativa atômica; se outra execução ganhou, EEXIST
+        // permanece um resultado seguro, sem trabalho duplo.
+        try { unlock = await lock(); }
+        catch (retryError) {
+          if ((retryError as NodeJS.ErrnoException).code !== 'EEXIST') throw retryError;
+          console.error('notify-supervised: lock readquirido por outra execução');
+          process.exitCode = 3;
+          return;
+        }
+      } else {
+        console.error('notify-supervised: outra execução ou lock não recuperável; nenhuma execução iniciada');
+        process.exitCode = 3;
+        return;
+      }
+    } else throw error;
   }
 
   // Dry-run testa o ciclo do agendador e a persistência, SEM ler fila ou chamar transportes.
