@@ -1,0 +1,17 @@
+[Unit]
+Description=VigiaPlus notification dry-run supervisor (never sends)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=vigiaplus
+WorkingDirectory=/opt/vigiaplus
+Environment=VIGIA_NOTIFY_SCHEDULER=1
+Environment=VIGIA_NOTIFY_DRY_RUN=1
+Environment=DEMO_MODE=0
+Environment=DATABASE_URL=
+ExecStart=/usr/bin/npm run worker:notify:supervised
+TimeoutStartSec=240
+NoNewPrivileges=true
+PrivateTmp=true
