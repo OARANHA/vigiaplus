@@ -658,9 +658,23 @@ const DDL = [
     channel TEXT NOT NULL,
     destination TEXT NOT NULL,
     verified INTEGER NOT NULL DEFAULT 0,
+    verified_at TIMESTAMPTZ,
     active INTEGER NOT NULL DEFAULT 1,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE notification_channels ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ`,
+  `CREATE TABLE IF NOT EXISTS notification_channel_proofs (
+    id SERIAL PRIMARY KEY,
+    tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    channel_id INTEGER NOT NULL UNIQUE REFERENCES notification_channels(id) ON DELETE CASCADE,
+    destination TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    requested_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    revoked_at TIMESTAMPTZ
+  )`,
+  `CREATE INDEX IF NOT EXISTS notification_channel_proofs_tenant ON notification_channel_proofs (tenant_id, channel_id)`,
   `CREATE TABLE IF NOT EXISTS alert_rules (
     id SERIAL PRIMARY KEY,
     tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -767,6 +781,7 @@ const DDL = [
     title TEXT NOT NULL,
     message TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'sent',
+    provider_message_id TEXT,
     attempt_count INTEGER NOT NULL DEFAULT 0,
     lease_owner TEXT,
     lease_expires_at TIMESTAMPTZ,
@@ -777,6 +792,7 @@ const DDL = [
     sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS provider_message_id TEXT`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS event_ref TEXT`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS source_project_id INTEGER`,
   `CREATE INDEX IF NOT EXISTS notification_deliveries_event_lookup ON notification_deliveries (tenant_id, event_ref)`,
