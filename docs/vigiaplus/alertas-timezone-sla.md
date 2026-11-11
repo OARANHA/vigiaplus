@@ -14,7 +14,7 @@
 - A janela de regra `silencio_de`/ `silencio_ate` usa `HH:mm` no timezone da organização; cobre intervalos comuns e aqueles que atravessam a meia-noite. Os extremos são inclusivos, conforme o comportamento legado. Deve-se informar ambos ou remover ambos. As APIs de criação/edição **rejeitam** horários parciais, iguais e bloqueio integral 00:00–23:59. Uma regra legada já existente que mantenha silêncio integral conserva a fila bloqueada até correção, sem derrubar o worker.
 - Ao detectar um fato em silêncio, o **planejador não descarta a notificação**: enfileira-a com `next_attempt_at` no primeiro minuto permitido. A busca respeita os ajustes IANA de horário de verão, incluindo horas inexistentes/repetidas, limitando o avanço a 48 horas.
 - O claim da outbox consulta novamente o silêncio da regra e a política atual. Assim, uma janela adicionada depois do enqueue também impede novo disparo indevido. Não se cancelam nem eliminam linhas históricas.
-- A data usada para deduplicar incidentes, reputação e faturas passa a ser a **data civil local do tenant**. Eventos analíticos imutáveis permanecem vinculados ao dia UTC de criação do evento para preservar a identidade estável das PRs anteriores.
+- A data usada para deduplicar incidentes, reputação e faturas passa a ser a **data civil local do tenant**. A fila reconhece também as chaves **v2 e v1 anteriores calculadas em UTC** quando o dia UTC difere do local, evitando reenvio de alertas já registrados durante o upgrade. A compatibilidade preserva destinos distintos. Eventos analíticos imutáveis permanecem vinculados ao dia UTC de criação.
 
 ## Frequência segura, prioridade e reação
 
