@@ -15,11 +15,20 @@ Esta primeira entrega **não** ativa cron, envio nem deploy. Separa o worker de 
 
 Use Task Scheduler com: **não iniciar nova instância se já estiver executando**; repetir a cada 5 minutos; executar mesmo sem login; configurar usuário de serviço, diretório de trabalho da aplicação e variáveis seguras no ambiente do serviço. Programa: `npm.cmd`; argumentos: `run worker:notify:supervised`; diretório inicial: `D:\\VIGIAPLUS`. A ativação depende do proprietário.
 
+## Observabilidade implementada nesta candidata
+
+- Tabela aditiva `notification_worker_runs` contém ID idempotente da execução, timestamps, resultado, código de saída e apenas resumo numérico permitido. A migração local é criada por `ensureSchema`; banco remoto permanece sem alteração até aprovação.
+- Ao fim do supervisor, o relatório é persistido no banco. Falha na gravação produz código de saída não zero e o checkpoint local permanece para diagnóstico.
+- Endpoint `GET /api/console/notifications/operations` exige sessão owner e fornece últimas 20 execuções e contagens globais de pendências, processamento, dead-letter, atraso >10 min, SLA ultrapassado e item mais antigo pronto.
+- Interface `Admin → Alertas e crises` mostra saúde, horário da última execução, métricas e histórico. Consulta apenas ao abrir seção (sem polling). Não declara agendador instalado e trata ausência de execução como `not_observed`.
+- O estado `healthy` significa **apenas** último registro de sucesso com menos de 10 min; não comprova serviço ativo após a consulta, capacidade externa de envio ou entrega ao destinatário.
+- Teste PGlite do ledger, unicidade por run ID e contagens da fila. Necessário validar CI antes de considerá-lo aprovado.
+
 ## Gates ainda abertos
 
 1. Tests, lint, tsc, build e CI GREEN no HEAD da PR candidata.
 2. Integração PGlite/Neon descartável com duas instâncias e simulação de falha/lease; demonstrar recuperação da fila.
-3. Ledger de execuções no banco + dashboard restrito owner, métricas de backlog e atraso; checkpoint local sozinho **não satisfaz** observabilidade profissional.
+3. Ledger em banco, endpoint e dashboard owner implementados como candidatos; **pendente** validar banco descartável remoto, segurança/RLS, métricas end-to-end e comportamento de crash.
 4. Provar que o scheduler permanece ativo sem terminal e gera histórico após múltiplas execuções, em ambiente autorizado.
 5. QA 3199 e E2E owner; cron e transporte **desativados** durante o QA sem homologação.
 
