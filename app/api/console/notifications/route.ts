@@ -41,6 +41,8 @@ export async function GET(request:Request) {
     const db=await getDb();
     const rows=await db.select({
       id:notificationDeliveries.id,
+      eventRef:notificationDeliveries.eventRef,
+      sourceProjectId:notificationDeliveries.sourceProjectId,
       channel:notificationDeliveries.channel,
       destination:notificationDeliveries.destination,
       status:notificationDeliveries.status,

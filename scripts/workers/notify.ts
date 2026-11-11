@@ -11,6 +11,8 @@ import {
   tenants, alertRules, notificationChannels, incidents, reputationTargets, invoices,
 } from '../../lib/db/schema';
 import { enqueue, dispatchPending } from '../../lib/notifications/queue';
+import { loadAnalyticAlertFacts } from '../../lib/notifications/analytics-facts';
+import { invoiceIsPastDue } from '../../lib/notifications/billing';
 import {
   planDeliveries, type RuleInput, type ChannelInput, type FactInput,
 } from '../../lib/notifications/evaluate';
@@ -92,9 +94,11 @@ async function carregarFatos(tenantId: number, at: Date): Promise<{
     });
   }
 
-  // Faturas em aberto/vencidas alimentam regras 'fatura_vencida'.
+  // Faturas só geram alerta depois da data de vencimento; status 'open'
+  // antes do vencimento não significa inadimplência.
+  // UTC é provisório; fuso por cliente continua pendente no ALT-07.
   for (const inv of invoiceRows) {
-    if (inv.status !== 'open' && inv.status !== 'overdue') continue;
+    if (!invoiceIsPastDue(inv.status, inv.dueAt, at)) continue;
     facts.push({
       kind: 'billing',
       id: inv.id,
@@ -105,6 +109,9 @@ async function carregarFatos(tenantId: number, at: Date): Promise<{
     });
   }
 
+  // ALT-03: ler SOMENTE anomalias analíticas persistidas e com projeto do
+  // tenant. Não cria anomalias, não roda IA, não mistura clientes.
+  facts.push(...await loadAnalyticAlertFacts(db, tenantId, at));
   return { rules, channels, facts };
 }
 

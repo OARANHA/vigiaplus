@@ -58,7 +58,8 @@ const HEADINGS: Record<Section, { title: string; detail: string }> = {
 };
 type ClientInvitation = {id:number;tenantId:number;email:string;role:string;status:string;
   createdAt:string;expiresAt:string};
-type OwnerDelivery = {id:number;channel:string;destination:string;status:string;
+type OwnerDelivery = {id:number;eventRef:string|null;sourceProjectId:number|null;
+  channel:string;destination:string;status:string;
   attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
   error:string|null;createdAt:string;sentAt:string|null};
 const DELIVERY_LABELS:Record<string,string>={
@@ -571,9 +572,11 @@ export function OwnerAdminWorkspace() {
               {deliveriesLoading?'Consultando…':'Atualizar fila'}
             </button>
             <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
-              <thead><tr><th>Destino</th><th>Estado</th><th>Tentativas</th><th>Próximo evento</th><th>Ação</th></tr></thead>
+              <thead><tr><th>Origem</th><th>Destino</th><th>Estado</th><th>Tentativas</th><th>Próximo evento</th><th>Ação</th></tr></thead>
               <tbody>
                 {deliveries.map(d=><tr key={d.id}>
+                  <td>{d.eventRef??'Registro anterior'}
+                    {d.sourceProjectId&&<p className="vpx-owner-muted">Projeto #{d.sourceProjectId}</p>}</td>
                   <td>{d.channel}: {d.destination}</td>
                   <td>{DELIVERY_LABELS[d.status]??d.status}
                     {d.error&&<p className="vpx-owner-muted">{d.error}</p>}</td>
@@ -585,7 +588,7 @@ export function OwnerAdminWorkspace() {
                     ?<button type="button" disabled={busy||deliveryReason.trim().length<5}
                       onClick={()=>{void requeueDelivery(d.id);}}>Reprocessar</button>:'—'}</td>
                 </tr>)}
-                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={5}>Sem entregas registradas para a organização.</td></tr>}
+                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={6}>Sem entregas registradas para a organização.</td></tr>}
               </tbody>
             </table></div>
           </SubPanel>

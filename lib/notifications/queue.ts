@@ -17,6 +17,9 @@ export type EnqueueInput = {
   channel: string;
   destination: string;
   kind: string;
+  /** Correlação auditável com alerta, incidente, alvo ou fatura de origem. */
+  eventRef?: string;
+  sourceProjectId?: number;
   severity?: string;
   title: string;
   message: string;
@@ -53,6 +56,8 @@ export async function enqueue(input: EnqueueInput): Promise<boolean> {
     channel: input.channel,
     destination: input.destination,
     kind: input.kind,
+    eventRef: input.eventRef ?? null,
+    sourceProjectId: input.sourceProjectId ?? null,
     severity: input.severity ?? 'info',
     title: input.title,
     message: input.message,

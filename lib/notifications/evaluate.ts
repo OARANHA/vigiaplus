@@ -33,7 +33,7 @@ export type ChannelInput = {
 
 /** Um fato pontual, ja transformado pelo worker a partir das tabelas. */
 export type FactInput = {
-  kind: 'incident' | 'reputation' | 'billing';
+  kind: 'incident' | 'reputation' | 'billing' | 'analytics';
   id: number | string;
   title: string;
   severity: string;
@@ -41,6 +41,13 @@ export type FactInput = {
   delta?: number;
   source?: string;
   ocorridoEm?: Date;
+  // ALT-03: alerta de análise realmente persistido (nunca inferido pela fila).
+  anomalyType?: 'volume_spike' | 'sentiment_drop';
+  projectId?: number;
+  last24?: number;
+  avgDaily?: number;
+  avg24?: number;
+  avgPrev?: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -48,7 +55,9 @@ export type FactInput = {
 // ---------------------------------------------------------------------------
 
 /** Tipos de regra que ruleMatches/planDeliveries entendem. */
-export const RULE_TYPES: readonly string[] = ['crise_aberta', 'score_queda', 'fatura_vencida'];
+export const RULE_TYPES: readonly string[] = [
+  'crise_aberta', 'score_queda', 'fatura_vencida', 'volume_pico', 'sentimento_queda',
+];
 
 /** Canais aceitos por lib/notifications/transport.ts. */
 export const KNOWN_CHANNELS: readonly string[] = [
@@ -103,7 +112,7 @@ function pontos(n: number): string { return Math.abs(n) === 1 ? 'ponto' : 'ponto
 function minutos(n: number): string { return n === 1 ? 'minuto' : 'minutos'; }
 
 const KIND_LABELS: Record<FactInput['kind'], string> = {
-  incident: 'Incidente', reputation: 'Reputacao', billing: 'Fatura',
+  incident: 'Incidente', reputation: 'Reputacao', billing: 'Fatura', analytics: 'Anomalia',
 };
 
 /** Origem sempre explicita: o dado-base do fato ou, na falta, o registro. */
@@ -166,6 +175,17 @@ export function ruleMatches(rule: RuleInput, fact: FactInput): boolean {
     }
     case 'fatura_vencida':
       return fact.kind === 'billing';
+    case 'volume_pico':
+      return fact.kind === 'analytics' && fact.anomalyType === 'volume_spike'
+        && typeof fact.last24 === 'number' && Number.isFinite(fact.last24)
+        && typeof fact.avgDaily === 'number' && Number.isFinite(fact.avgDaily)
+        && severityRank(fact.severity) >= severityRank(th.severity);
+    case 'sentimento_queda':
+      return fact.kind === 'analytics' && fact.anomalyType === 'sentiment_drop'
+        && typeof fact.avg24 === 'number' && Number.isFinite(fact.avg24)
+        && typeof fact.avgPrev === 'number' && Number.isFinite(fact.avgPrev)
+        && fact.avg24 < fact.avgPrev
+        && severityRank(fact.severity) >= severityRank(th.severity);
     default:
       return false;
   }
@@ -222,6 +242,16 @@ export function buildMessage(rule: RuleInput, fact: FactInput): {
       title = `Incidente #${fact.id} em severidade ${fact.severity}`;
       break;
     }
+    case 'volume_pico': {
+      corpo = `Pico de volume registrado no alerta #${fact.id} do projeto #${fact.projectId ?? 'sem referência'}: ${fmt(fact.last24 ?? 0)} menções em 24 horas, comparadas à média diária anterior de ${fmt(fact.avgDaily ?? 0)} menções`;
+      title = `Pico de menções no projeto ${fact.title}`;
+      break;
+    }
+    case 'sentimento_queda': {
+      corpo = `Queda de sentimento registrada no alerta #${fact.id} do projeto #${fact.projectId ?? 'sem referência'}: média de ${fmt(fact.avg24 ?? 0)} nas últimas 24 horas versus ${fmt(fact.avgPrev ?? 0)} na linha de base anterior`;
+      title = `Queda de sentimento no projeto ${fact.title}`;
+      break;
+    }
     case 'fatura_vencida': {
       corpo = `Fatura #${fact.id} "${fact.title}" em situacao vencida, `
         + `diferente de "em dia" (severidade ${fact.severity}); `
@@ -261,7 +291,11 @@ export function planDeliveries(
   at: Date,
   tenantId = 0,
 ): EnqueueInput[] {
-  const dia = at.toISOString().slice(0, 10); // YYYY-MM-DD (UTC), estavel por dia
+  // Uma anomalia é um evento imutável: fixar o dia na criação do alerta
+  // evita reaviso ao cruzar meia-noite enquanto ele ainda está nas últimas 24h.
+  const clock = fact.kind === 'analytics' && fact.ocorridoEm instanceof Date
+    && !Number.isNaN(fact.ocorridoEm.getTime()) ? fact.ocorridoEm : at;
+  const dia = clock.toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
   const ativos = channels.filter((c) => isOn(c.active) && isOn(c.verified));
   const itens: EnqueueInput[] = [];
   const vistos = new Set<string>();
@@ -297,6 +331,8 @@ export function planDeliveries(
         message,
         dedupeKey,
         legacyDedupeKey,
+        eventRef: `${fact.kind}:${fact.id}`,
+        sourceProjectId: fact.kind === 'analytics' ? fact.projectId : undefined,
       });
     }
   }
