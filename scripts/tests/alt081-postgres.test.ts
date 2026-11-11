@@ -7,6 +7,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { randomUUID } from 'node:crypto';
+import { spawn } from 'node:child_process';
+import { resolve } from 'node:path';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { eq } from 'drizzle-orm';
 import * as schema from '../../lib/db/schema';
@@ -95,4 +97,64 @@ test('ALT-08.1 PostgreSQL: dois processos/conexões disputam item, crash+lease e
   } finally {
     await Promise.all([poolA.end(),poolB.end()]);
   }
+});
+
+type ChildResult = { code:number|null; signal:NodeJS.Signals|null; stdout:string };
+function subprocess(mode:'crash-after-claim'|'recover-and-finish'):Promise<ChildResult> {
+  return new Promise((resolveResult,reject)=>{
+    const child=spawn(process.execPath,['--import','tsx',
+      resolve('scripts/tests/alt081-worker-process.ts'),mode],{
+      env:{...process.env},stdio:['ignore','pipe','pipe'],shell:false,
+    });
+    let stdout='';let stderr='';
+    child.stdout.on('data',(chunk:Buffer)=>{stdout+=chunk.toString('utf8').slice(0,500);});
+    child.stderr.on('data',(chunk:Buffer)=>{stderr+=chunk.toString('utf8').slice(0,500);});
+    const timer=setTimeout(()=>{child.kill('SIGKILL');reject(new Error('Subprocesso excedeu 20s'));},20_000);
+    child.once('error',e=>{clearTimeout(timer);reject(e);});
+    child.once('close',(code,signal)=>{
+      clearTimeout(timer);
+      if(code!==0 && signal!=='SIGKILL')reject(new Error('Subprocesso falhou: '+stderr));
+      else resolveResult({code,signal,stdout});
+    });
+  });
+}
+
+test('ALT-08.1: concorrência entre processos Node e SIGKILL real preservam lease recuperável',async()=>{
+  const [tenant]=await dbA.insert(schema.tenants).values({
+    name:'ALT081 subprocess CI',slug:'alt081-process-'+suffix,
+    status:'active',alertRateLimitPerHour:100,
+  }).returning();
+  const [delivery]=await dbA.insert(schema.notificationDeliveries).values({
+    tenantId:tenant.id,channel:'ledger',destination:'internal',
+    kind:'incident',title:'Crash de processo',message:'Sem transporte externo',
+    dedupeKey:'alt081-process-'+suffix,status:'queued',
+  }).returning();
+  // Dois processos Node, cada um abre o próprio pool PostgreSQL.
+  // O vencedor sofre SIGKILL após confirmar o claim; o perdedor não faz envio.
+  const [a,b]=await Promise.all([
+    subprocess('crash-after-claim'),
+    subprocess('crash-after-claim'),
+  ]);
+  assert.equal([a,b].filter(r=>r.signal==='SIGKILL').length,1,
+    'exatamente um processo assumiu e caiu com SIGKILL');
+  assert.equal([a,b].filter(r=>r.code===0).length,1);
+  const [afterCrash]=await dbA.select().from(schema.notificationDeliveries)
+    .where(eq(schema.notificationDeliveries.id,delivery.id));
+  assert.equal(afterCrash.status,'processing');
+  assert.equal(afterCrash.attemptCount,1);
+  assert.equal((await dbA.select().from(schema.notificationDispatchAttempts)
+    .where(eq(schema.notificationDispatchAttempts.deliveryId,delivery.id))).length,1);
+  await dbA.update(schema.notificationDeliveries)
+    .set({leaseExpiresAt:new Date('2020-01-01T00:00:00Z')})
+    .where(eq(schema.notificationDeliveries.id,delivery.id));
+  const recovered=await subprocess('recover-and-finish');
+  assert.equal(recovered.code,0);
+  assert.match(recovered.stdout,/accepted/);
+  const [final]=await dbA.select().from(schema.notificationDeliveries)
+    .where(eq(schema.notificationDeliveries.id,delivery.id));
+  assert.equal(final.status,'sent');
+  assert.equal(final.attemptCount,2);
+  assert.equal((await dbA.select().from(schema.notificationDispatchAttempts)
+    .where(eq(schema.notificationDispatchAttempts.deliveryId,delivery.id))).length,2);
+  await Promise.all([poolA.end(),poolB.end()]);
 });
