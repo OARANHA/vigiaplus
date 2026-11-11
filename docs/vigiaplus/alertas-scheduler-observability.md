@@ -120,3 +120,16 @@ O endpoint `GET /api/console/notifications/operations` já exige contexto autent
 Os testes `tests/todo-alt083-operations-security.test.ts` cobrem a função de saúde (inclusive tolerância zero a clock futuro), a sanitização, os papéis owner/analyst/client_admin/client_viewer e um contrato estático que confirma `requireOwner` antes da primeira consulta. Esses testes de papel e contrato **não substituem** uma chamada HTTP autenticada ponta a ponta. A certificação da RLS entre tenants requer banco descartável e uma matriz de identidades com privilégios reais; não alegar conformidade sem esse teste.
 
 **Gates ALT-08.3 restantes:** CI GREEN no novo HEAD; E2E HTTP com sessões owner/client/analyst e matriz de responses 200/403; teste RLS PostgreSQL descartável com identidade mínima; reinicialização de host de teste (sem infraestrutura produtiva) e aferição do heartbeat. Não aprovar merge/deploy nem ativar transporte de alertas antes da autorização.
+
+### ALT-08.3 — HTTP E2E autenticado, com dois tenants (candidato)
+
+O job `authenticated-http-ephemeral` executa `scripts/tests/alt083-http-ci.sh` somente num runner GitHub efêmero, verificando `CI`, `GITHUB_ACTIONS`, caminho de workspace e ausência de `DATABASE_URL`. Cria PGlite em diretório temporário, inicia Next.js em `127.0.0.1:3199`, usa um `SESSION_SECRET` exclusivo de CI e remove o servidor/arquivos no `trap`. `scripts/tests/alt083-http-fixture.ts` inicializa quatro usuários fictícios (owner, analyst, cliente A, cliente B) e dois tenants, além de um run real simulado com segredo sintético no `summary` e duas entregas de teste que nunca são despachadas.
+
+`scripts/tests/alt083-http-verify.ts` usa `fetch` HTTP e cookies assinados na mesma versão persistida no DB, exercitando o `proxy` e a rota real:
+- Sem cookie ou cookie adulterado: `401`.
+- Analyst e clientes A/B, incluindo tentativa de selecionar outro tenant pelo header `x-tenant-id`: `403`.
+- Owner com sessão válida: `200`, `Cache-Control: no-store`, visão agregada da fila de dois tenants; nunca expõe conteúdo de mensagem, destinatário nem campos arbitrários do `summary`.
+
+Este é teste de **autorização de endpoint e isolamento de dados via HTTP**, não certificação de políticas de Row Level Security. O driver atual de produção (`neon-http`) não oferece `SET LOCAL` transacional para ligar a identidade de tenant a múltiplas queries, e `scripts/check-rls.ts` mantém o gate RLS NO-GO; qualquer homologação RLS precisa arquitetura transacional real e role mínima, em banco descartável, antes de afirmar isolamento na camada SQL. Também não comprova reboot de host físico nem instalação do scheduler Windows/VPS.
+
+**Gate:** 5/5 jobs no SHA atual (build, PostgreSQL, dry-run, systemd e HTTP). Nenhuma tarefa instalada em host operacional, nenhum merge/deploy/envio.
