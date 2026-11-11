@@ -129,8 +129,8 @@ export async function claimPendingDeliveries(
            OR (status='processing' AND lease_expires_at<=now())
          )
        ORDER BY created_at ASC, id ASC
-       FOR UPDATE SKIP LOCKED
        LIMIT ${limit}
+       FOR UPDATE SKIP LOCKED
     )
     UPDATE notification_deliveries AS d
        SET status='processing',
