@@ -57,3 +57,28 @@ O job `postgres-disposable` usa um serviço PostgreSQL 16 efêmero criado no run
 O teste `scripts/tests/alt081-postgres.test.ts` passou a criar **dois subprocessos Node independentes** (`scripts/tests/alt081-worker-process.ts`) no PostgreSQL descartável, com pools próprios e concorrência real. O processo que ganha o claim é encerrado com `SIGKILL` antes de registrar a conclusão. O teste confirma o estado `processing` e o ledger persistido, força a expiração do lease, inicia um terceiro processo e exige recuperação com `attempt_count=2` e status final `sent` (aceite simulado sem transporte real).
 
 O cenário verifica crash de processo e isolamento SQL entre conexões/processos no mesmo runner. Não demonstra concorrência entre hosts físicos, terminação de chamada remota, exactly-once no provedor ou segurança de produção. **Só marcar como validado se o job PostgreSQL concluir GREEN no SHA exato.**
+
+## ALT-08.2 — Agendamento autônomo em modo simulado (candidato)
+
+O supervisor reconhece `VIGIA_NOTIFY_DRY_RUN=1` **junto com** `VIGIA_NOTIFY_SCHEDULER=1`. Nesta configuração não executa `notify.ts`, não lê fila, não chama canais de transporte e registra `worker=notify_dry_run` separadamente de `worker=notify`. O endpoint owner apresenta o último dry-run sem declarar o worker real saudável. O teste `tests/todo-alt082-scheduler-dryrun.test.ts` executa duas passadas independentes num PGlite temporário, confere o livro-razão e ausência de entregas.
+
+### Windows Task Scheduler (instalação não executada)
+
+1. Fazer checkout da PR #36 em uma **cópia de teste**, preservando `.env.local`, `.data` e a instância da porta 3199; não instalar tarefa em máquina que esteja processando clientes.
+2. Conferir Node.js 22 e `npm ci`, sem banco remoto no ambiente. O teste usa `PGLITE_DIR` local, `DATABASE_URL` removida pelo script.
+3. Registrar voluntariamente, na pasta da cópia de teste: `powershell -NoProfile -File scripts/ops/install-notify-dryrun-task.ps1 -Install`. A tarefa `VigiaPlus-Notify-DryRun` tenta iniciar a cada cinco minutos, sem terminal aberto, com `MultipleInstances IgnoreNew`.
+4. Inspecionar no Task Scheduler o resultado e histórico por **mais de duas janelas**; confirmar `notification_worker_runs.worker='notify_dry_run'` e ausência de `notify`. Para desinstalar: `powershell -NoProfile -File scripts/ops/install-notify-dryrun-task.ps1 -Remove`.
+5. O registro padrão pode depender de sessão do usuário. Executar **sem usuário logado** exige configurar manualmente conta de serviço e credenciais/permissões adequadas, nunca embutir senha no script. **Não foi homologado ainda.**
+
+### Linux systemd (templates não instalados)
+
+Os arquivos `deploy/systemd/vigiaplus-notify-dryrun.service` e `.timer` usam intervalo de cinco minutos, `Type=oneshot` e conta `vigiaplus`. Paths e usuário são **exemplos**; sua instalação/revisão por administrador é explícita, não executada por esta PR. Verificar `systemctl list-timers`, histórico no journal e estado no banco após múltiplos ciclos. Nenhum `systemctl enable --now` autorizado.
+
+### Critérios ainda abertos
+
+- Provar execução independente do terminal na máquina-alvo e consistência do heartbeat por múltiplas janelas.
+- Avaliar lock órfão, reinicialização e observabilidade de job não disparado. O lock local não é distribuído.
+- Dry-run não equivale a entrega real; autorização separada para qualquer ativação de transporte.
+- E2E owner e QA visual da página em 3199; políticas RLS/Neon descartável.
+
+Não instalar tarefas, não fazer merge/deploy, não enviar mensagens e não alterar banco remoto sem autorização explícita.
