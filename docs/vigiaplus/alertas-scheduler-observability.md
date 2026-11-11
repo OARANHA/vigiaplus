@@ -33,3 +33,15 @@ Use Task Scheduler com: **não iniciar nova instância se já estiver executando
 5. QA 3199 e E2E owner; cron e transporte **desativados** durante o QA sem homologação.
 
 O scheduler de **coleta de fontes** da PR #11 não é o scheduler de **envio de notificações** ALT-08.
+
+## ALT-08.1 — Matriz de resiliência (candidata, sem homologação)
+
+| Cenário | Evidência em código | Limitação |
+| --- | --- | --- |
+| Dois consumidores disputam item | PGlite, claim SQL concorrente e ledger | Validar em PostgreSQL com conexões/processos distintos |
+| Worker morre após claim | Lease forçado a expirar e reclaim por outro worker | Crash real do processo e queda durante chamada externa ainda não simulados |
+| Worker anterior conclui atrasado | `lost_lease` esperado e CAS por lease_owner + attempt_count | Não impede efeito externo se provedor já aceitou envio antes de crash |
+| Falha transitória | Retry com `next_attempt_at` futuro e backoff | Sem chamadas externas; verificar provedor homologado posteriormente |
+| Falha definitiva | Quinta tentativa vira `dead_letter`; sem claim posterior | Reprocessamento manual exige owner e auditoria |
+
+**Protocolo:** nenhuma mensagem real; testes usam canal interno `ledger` e PGlite temporário. A existência dos testes não representa aprovação; validar CI específico do commit e reproduzir em banco descartável real antes de classificar ALT-08.1 como concluída.
