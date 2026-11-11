@@ -42,7 +42,7 @@ export async function send(d: Delivery): Promise<SendResult> {
       const from = process.env.ALERT_EMAIL_FROM?.trim();
       // Não fingir que existe um remetente verificado: nunca usar fallback.
       if (!key || !from) return { ok: false, detail: 'EMAIL_NOT_CONFIGURED' };
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(d.destination.trim())) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(d.destination.trim())) {
         return { ok: false, detail: 'EMAIL_DESTINATION_INVALID' };
       }
       const headers: Record<string,string> = {
