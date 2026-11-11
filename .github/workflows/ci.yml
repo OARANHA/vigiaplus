@@ -103,3 +103,21 @@ jobs:
       - run: npm ci
       - name: Verificar timer systemd real com três disparos automáticos
         run: bash scripts/tests/alt082-systemd-ci.sh
+
+  authenticated-http-ephemeral:
+    name: ALT-08.3 HTTP autenticado (PGlite descartável)
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ""
+      DEMO_MODE: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Autenticação HTTP real: owner, analyst, clientes A/B e proteção de PII
+        run: bash scripts/tests/alt083-http-ci.sh
