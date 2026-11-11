@@ -58,6 +58,19 @@ const HEADINGS: Record<Section, { title: string; detail: string }> = {
 };
 type ClientInvitation = {id:number;tenantId:number;email:string;role:string;status:string;
   createdAt:string;expiresAt:string};
+type OwnerDelivery = {id:number;channel:string;destination:string;status:string;
+  attemptCount:number;nextAttemptAt:string|null;leaseExpiresAt:string|null;
+  error:string|null;createdAt:string;sentAt:string|null};
+const DELIVERY_LABELS:Record<string,string>={
+  queued:'Na fila',processing:'Em processamento',retry:'Aguardando tentativa',
+  dead_letter:'Falha definitiva',sent:'Aceito pelo transporte',
+  failed:'Falha antiga',
+};
+function showDate(value:string|null|undefined):string {
+  if(!value)return '—';
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?'—':date.toLocaleString('pt-BR');
+}
 type Feature = { key: string; label: string; group: string; enabled?: boolean; reason?: string; source?: string; plan?: string };
 type Plan = { key: string; label: string; priceBrl: number|null; aiQuotaBrl: number;
   mentionsLimit: number; retentionMonths: number; features: string[]; inUse: boolean };
@@ -128,6 +141,9 @@ export function OwnerAdminWorkspace() {
   const [manualApproval,setManualApproval]=useState(false);
   const [newClient,setNewClient]=useState({name:'',slug:'',cnpj:''});
   const [invitations,setInvitations]=useState<ClientInvitation[]>([]);
+  const [deliveries,setDeliveries]=useState<OwnerDelivery[]>([]);
+  const [deliveryReason,setDeliveryReason]=useState('');
+  const [deliveriesLoading,setDeliveriesLoading]=useState(false);
   const [inviteEmail,setInviteEmail]=useState('');
   const [inviteRole,setInviteRole]=useState<'client_admin'|'client_viewer'>('client_admin');
   const [inviteReason,setInviteReason]=useState('');
@@ -186,6 +202,14 @@ export function OwnerAdminWorkspace() {
     void api<{invitations:ClientInvitation[]}>('/api/console/invitations?tenant_id='+selectedTenant)
       .then(data=>setInvitations(data.invitations))
       .catch(e=>setError('Convites indisponíveis: '+String(e)));
+  },[section,selectedTenant]);
+  useEffect(()=>{
+    if(section!=='crises'||!selectedTenant)return;
+    setDeliveriesLoading(true);
+    void api<{deliveries:OwnerDelivery[]}>('/api/console/notifications?tenant_id='+selectedTenant)
+      .then(data=>setDeliveries(data.deliveries))
+      .catch(e=>{setDeliveries([]);setError('Fila de alertas indisponível: '+String(e));})
+      .finally(()=>setDeliveriesLoading(false));
   },[section,selectedTenant]);
   useEffect(()=>{
     if(!selectedTenant){setFeatures(null);return;}
@@ -258,6 +282,30 @@ export function OwnerAdminWorkspace() {
         '/api/console/invitations?tenant_id='+selectedTenant);
       setInvitations(updated.invitations);setMessage('Convite revogado sem alterar outras contas.');
     }catch(e){setError(String(e));}finally{setBusy(false);}
+  }
+  async function refreshDeliveries(){
+    if(!selectedTenant)return;
+    setDeliveriesLoading(true);setError('');
+    try{
+      const data=await api<{deliveries:OwnerDelivery[]}>(
+        '/api/console/notifications?tenant_id='+selectedTenant);
+      setDeliveries(data.deliveries);
+    }catch(e){setError('Fila de alertas indisponível: '+String(e));}
+    finally{setDeliveriesLoading(false);}
+  }
+  async function requeueDelivery(deliveryId:number){
+    if(!selectedTenant||deliveryReason.trim().length<5)return;
+    setBusy(true);setError('');setMessage('');
+    try{
+      await api('/api/console/notifications',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({tenantId:selectedTenant,deliveryId,reason:deliveryReason}),
+      });
+      setDeliveryReason('');
+      setMessage('Entrega devolvida à fila com auditoria. O próximo worker tentará o envio.');
+      await refreshDeliveries();
+    }catch(e){setError('Reprocessamento não autorizado ou indisponível: '+String(e));}
+    finally{setBusy(false);}
   }
   async function changeFeature(f:Feature) {
     if(!selectedTenant)return;
@@ -503,10 +551,49 @@ export function OwnerAdminWorkspace() {
           {label:'Operação da carteira',href:'/console?tab=operacao',description:'Fila de atenção e histórico de coleta no painel proprietário.'},
           {label:'Agendamento por cliente',description:'Integração e homologação do scheduler de 15 minutos ainda pendentes.',pending:true},
         ]}/></SubPanel>}
-        {section==='crises'&&<SubPanel title="Gestão de crises"><Destinations items={[
-          {label:'Alertas e ocorrências',href:'/alerts',description:'Alertas registrados na aplicação.'},
-          {label:'Regras por contrato e escalonamento',description:'Limiares, destinatários e simulação de crise ainda pendentes.',pending:true},
-        ]}/></SubPanel>}
+        {section==='crises'&&<>
+          <SubPanel title="Fila de notificações por cliente">
+            <p className="vpx-owner-muted">Envios com HTTP 2xx aparecem como aceitos pelo transporte, não entregues. Retries dependem da próxima execução do worker. Nenhuma atualização automática é feita nesta tela.</p>
+            <div className="vpx-owner-formgrid">
+              <label>Organização
+                <select value={selectedTenant??''} onChange={e=>setSelectedTenant(Number(e.target.value))}>
+                  {clients.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+              </label>
+              <label>Justificativa de reprocessamento
+                <input value={deliveryReason} maxLength={300}
+                  onChange={e=>setDeliveryReason(e.target.value)}
+                  placeholder="Ex.: falha do provedor resolvida"/>
+              </label>
+            </div>
+            <button type="button" className="vpx-owner-button"
+              disabled={!selectedTenant||deliveriesLoading} onClick={()=>{void refreshDeliveries();}}>
+              {deliveriesLoading?'Consultando…':'Atualizar fila'}
+            </button>
+            <div className="vpx-owner-table-scroll"><table className="vpx-data-table">
+              <thead><tr><th>Destino</th><th>Estado</th><th>Tentativas</th><th>Próximo evento</th><th>Ação</th></tr></thead>
+              <tbody>
+                {deliveries.map(d=><tr key={d.id}>
+                  <td>{d.channel}: {d.destination}</td>
+                  <td>{DELIVERY_LABELS[d.status]??d.status}
+                    {d.error&&<p className="vpx-owner-muted">{d.error}</p>}</td>
+                  <td>{d.attemptCount}/5</td>
+                  <td>{d.status==='retry'?showDate(d.nextAttemptAt):
+                    d.status==='processing'?showDate(d.leaseExpiresAt):
+                    d.status==='sent'?showDate(d.sentAt):showDate(d.createdAt)}</td>
+                  <td>{d.status==='dead_letter'
+                    ?<button type="button" disabled={busy||deliveryReason.trim().length<5}
+                      onClick={()=>{void requeueDelivery(d.id);}}>Reprocessar</button>:'—'}</td>
+                </tr>)}
+                {!deliveriesLoading&&deliveries.length===0&&<tr><td colSpan={5}>Sem entregas registradas para a organização.</td></tr>}
+              </tbody>
+            </table></div>
+          </SubPanel>
+          <SubPanel title="Gestão de crises"><Destinations items={[
+            {label:'Alertas e ocorrências',href:'/alerts',description:'Alertas e menções registrados na aplicação.'},
+            {label:'Regras por contrato e escalonamento',description:'Simulação, confirmação real da entrega e escalonamento ainda dependem de homologação.',pending:true},
+          ]}/></SubPanel>
+        </>}
         {section==='relatorios'&&<SubPanel title="Relatórios e entregas"><Destinations items={[
           {label:'Relatórios disponíveis',href:'/report',description:'Geração e consulta dos relatórios existentes.'},
           {label:'Periodicidade e entrega automática',description:'Gestão da entrega por plano e cliente ainda pendente.',pending:true},
