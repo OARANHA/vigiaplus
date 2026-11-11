@@ -7,7 +7,7 @@ export const TENANT_RLS_TABLES = [
   'tenants', 'memberships', 'tenant_features', 'reputation_targets',
   'incidents', 'incident_actions', 'projects', 'subscriptions', 'invoices',
   'payment_events', 'notification_channels', 'alert_rules',
-  'notification_deliveries', 'llm_usage', 'mcp_tokens', 'invitations', 'audit_events',
+  'notification_deliveries', 'llm_providers', 'llm_routes', 'llm_usage', 'mcp_tokens', 'invitations', 'audit_events',
 ] as const;
 
 export type RlsRoleInfo = { role: string; superuser: boolean; bypassRls: boolean };
