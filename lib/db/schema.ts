@@ -290,6 +290,8 @@ export const notificationDeliveries = pgTable('notification_deliveries', {
   channel: text('channel').notNull(),
   destination: text('destination').notNull(),
   kind: text('kind').notNull(),
+  eventRef: text('event_ref'),
+  sourceProjectId: integer('source_project_id'),
   severity: text('severity').notNull().default('info'),
   title: text('title').notNull(),
   message: text('message').notNull(),
