@@ -71,5 +71,8 @@ export function nextQuietEnd(
     const candidate=new Date(t);
     if(!inQuietHours(from,until,candidate,timeZone))return candidate;
   }
-  throw new Error('Não foi possível calcular o fim do silêncio');
+  // Configuração legada de silêncio integral (00:00–23:59) não tem
+  // instante liberado: manter a notificação na fila e deixar o claim SQL
+  // bloquear até que o proprietário corrija a política.
+  return null;
 }
