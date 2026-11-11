@@ -4,6 +4,7 @@ import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { eq } from 'drizzle-orm';
+import { normalizeRecoveryEmail, isValidRecoveryToken, passwordForRecovery } from '../lib/password-recovery';
 
 process.env.PGLITE_DIR = mkdtempSync(join(tmpdir(), 'vpx-reset-test-'));
 delete process.env.DATABASE_URL;
@@ -76,24 +77,11 @@ test('CL-02: expiração e revogação impedem reset sem tocar na senha',async()
 });
 
 test('CL-02: formato de token e senha forte, com rota neutra contra enumeração',()=>{
-  const service=requireOrNot();
-  assert.equal(service.normalizeRecoveryEmail(' Teste@Exemplo.COM '),'teste@exemplo.com');
-  assert.equal(service.normalizeRecoveryEmail('invalido'),null);
-  assert.equal(service.isValidRecoveryToken('a'.repeat(43)),true);
-  assert.equal(service.isValidRecoveryToken('a'.repeat(42)),false);
-  assert.throws(()=>service.passwordForRecovery('1234'));
-  assert.equal(service.passwordForRecovery('Senha suficientemente forte'), 'Senha suficientemente forte');
+  assert.equal(normalizeRecoveryEmail(' Teste@Exemplo.COM '),'teste@exemplo.com');
+  assert.equal(normalizeRecoveryEmail('invalido'),null);
+  assert.equal(isValidRecoveryToken('a'.repeat(43)),true);
+  assert.equal(isValidRecoveryToken('a'.repeat(42)),false);
+  assert.throws(()=>passwordForRecovery('1234'));
+  assert.equal(passwordForRecovery('Senha suficientemente forte'), 'Senha suficientemente forte');
 });
 
-function requireOrNot(){
-  // O módulo de política não depende de Next/headers, podendo ser testado offline.
-  return {
-    normalizeRecoveryEmail:(v:unknown)=>
-      typeof v==='string'&&v.trim().toLowerCase()==='teste@exemplo.com'?'teste@exemplo.com':null,
-    isValidRecoveryToken:(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_-]{43}$/.test(v),
-    passwordForRecovery:(v:unknown)=>{
-      if(typeof v!=='string'||v.length<12||v.length>128)throw Error('Senha inválida');
-      return v;
-    },
-  };
-}
