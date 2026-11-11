@@ -761,6 +761,8 @@ const DDL = [
     channel TEXT NOT NULL,
     destination TEXT NOT NULL,
     kind TEXT NOT NULL,
+    event_ref TEXT,
+    source_project_id INTEGER,
     severity TEXT NOT NULL DEFAULT 'info',
     title TEXT NOT NULL,
     message TEXT NOT NULL,
@@ -775,6 +777,9 @@ const DDL = [
     sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS event_ref TEXT`,
+  `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS source_project_id INTEGER`,
+  `CREATE INDEX IF NOT EXISTS notification_deliveries_event_lookup ON notification_deliveries (tenant_id, event_ref)`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS attempt_count INTEGER NOT NULL DEFAULT 0`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS lease_owner TEXT`,
   `ALTER TABLE notification_deliveries ADD COLUMN IF NOT EXISTS lease_expires_at TIMESTAMPTZ`,
