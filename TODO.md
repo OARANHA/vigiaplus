@@ -1,12 +1,33 @@
 # VIGIAPLUS — TODO mestre de produto, segurança e operação
 
-**Atualizado:** 2026-11-10 · **Repositório:** `OARANHA/vigiaplus` · **Dono da decisão de merge/deploy:** proprietário  
+**Atualizado:** 2026-11-12 (reconciliação dos gates) · **Repositório:** `OARANHA/vigiaplus` · **Dono da decisão de merge/deploy:** proprietário  
 **Estado comercial:** **NÃO HOMOLOGADO para clientes externos**  
-**Base verificada antes deste TODO:** PR #24 DRAFT, commit `57b82de9497ade909b8f6e222df5d8f3af66081f`, empilhada sobre #23; `main` em `d2d9eafe7667b21a4badc14a3161501f5c72513d`.  
+**Histórico da criação deste TODO (não é o HEAD atual):** PR #24 DRAFT, commit `57b82de9497ade909b8f6e222df5d8f3af66081f`, empilhada sobre #23; `main` em `d2d9eafe7667b21a4badc14a3161501f5c72513d`.  
 **Ambiente de prévia:** `D:\VIGIAPLUS`, porta **3199**. Porta **3100 encerrada** (antigo `D:\CRISE_APP`).  
 **Auditoria de origem:** 2026-11-10, proprietário + cliente + notificações + segurança. Este documento é o backlog executável dessa auditoria.
 
 > **Regra operacional:** nenhuma tarefa pode ser marcada `[x]` somente porque existe código, tela, PR ou CI de outro SHA. Fechar apenas após evidência do critério de aceite. Não executar merge, deploy, migrações de banco remoto, cobrança real nem exclusão de dados sem autorização explícita do proprietário.
+
+## Checkpoint consolidado — 2026-11-12
+
+**PR corrente:** [#36](https://github.com/OARANHA/vigiaplus/pull/36) DRAFT, branch `feat/todo-alt08-notify-supervisor-20261111`, base encadeada ALT-07. **SHA CERTIFICADO ANTES desta atualização de documentação:** `9ec57ea09252f21e439c0d9731a32857c52c1707`. CI [43229064782](https://github.com/OARANHA/vigiaplus/actions/runs/43229064782) GREEN 5/5 e homologação manual Neon [43230539688](https://github.com/OARANHA/vigiaplus/actions/runs/43230539688) GREEN; steps ALT-08.7, ALT-08.8, ALT-08.9 realmente executados. **NÃO atribuir esses runs aos commits novos deste lote.**
+
+- **Validação técnica confirmada:** cookies HMAC no harness HTTP Node, sessão revogável, membership/entitlement sintéticos no mesmo staging, RLS WebSocket A/B e rollback completo 0/0/0.
+- **Não homologado:** autenticação da aplicação Next.js operacional no mesmo banco, schema integral, sessão/identidade dos papéis internos owner/analyst/worker/webhook, E2E completo dos clientes, QA visual, entrega de alertas real e autorização de produção.
+- **Próxima etapa:** ALT-08.10; antes disso, arquitetura, protocolo e agentes em `AGENTS.md`, `docs/architecture/README.md`, `docs/engineering/CHANGE_PROTOCOL.md`, ADR-0001. Documentação viva exige revisão em cada alteração; não afirmar sincronização automática ainda.
+- **Gate comercial:** GO-01 a GO-07 **abertos**; produção NO-GO. PR #36 DRAFT, sem merge/deploy.
+
+### Estado dos gates e natureza da prova
+
+| Gate | Estado da prova | Status da implantação |
+|---|---|---|
+| ALT-08.3/08.4 | CI Neon/PGlite e HTTP experimental GREEN no SHA certificado | não operacional |
+| ALT-08.5/08.6 | Contratos de RLS e matriz de papéis, testes descartáveis | não operacional |
+| ALT-08.7 | Neon WS staging + rollback sintético GREEN | produção NO-GO |
+| ALT-08.8 | memberships/entitlements + quatro tabelas sintéticas no mesmo staging GREEN | produção NO-GO |
+| ALT-08.9 | HTTP Node real, cookie assinado/revogação e staging Neon em schema sintético GREEN | rota Next operacional pendente |
+| ALT-08.10 | **a implementar**: rota Next real, usuários, planos e papéis de serviço no mesmo staging | pendente |
+
 
 ## Legenda e rotina de acompanhamento
 
@@ -147,7 +168,7 @@ Merge/deploy: não autorizado
 - [x] Piloto **desativado por padrão** em `/api/app/evidence`: rota preserva o caminho atual, opt-in apenas com `VIGIA_ALT084_EVIDENCE_MODE=ci-read-only` e guardas de CI/não-produção; no piloto não existe fallback para consultas sem RLS.
 - [x] SQL de leitura com projeção fixa e LIMIT parametrizado em `lib/tenant/rls-evidence.ts` e políticas SELECT-only, ENABLE/FORCE RLS em `projects` / `mentions`, com rollback explícito em `lib/tenant/rls-evidence-policies.ts`.
 - [x] Suíte unitária `tests/todo-alt084-rls-evidence.test.ts` e prova adversarial em schema real no PostgreSQL descartável `scripts/tests/alt084-evidence-rls.test.ts`, integrada a `postgres-disposable`.
-- [ ] Confirmar CI completo no SHA exato atual, verificando logs do novo teste (somente conclusão de todos os jobs permite GREEN).
+- [x] CI principal GREEN 5/5 no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707` (run 43229064782; **evidência histórica, não válida para novos commits**).
 - [ ] Homologar HTTP real do caminho opt-in usando banco Neon descartável, incluindo autenticação e feature gate.
 - [ ] Projetar políticas/grants e fluxo de rollback para as demais tabelas operacionais; homologar owner/analyst/worker e migração por etapa antes de ativar em produção.
 
@@ -160,7 +181,7 @@ Merge/deploy: não autorizado
 - [x] Workflow manual `alt083-neon-e2e.yml` na branch da PR passa a executar também o HTTP experimental (arquivo já registrado na `main`, porém versão atualizada apenas na branch).
 - [x] Leitura `selectRlsEvidence` falha fechada se `FORCE RLS`, políticas SELECT exatas ou role sem bypass não forem comprovadas; testes unitários da barreira adicionados.
 - [ ] Confirmar CI normal GREEN no SHA atual.
-- [ ] Disparar workflow manual na branch `feat/todo-alt08-notify-supervisor-20261111` e conferir log do teste `ALT084 HTTP Neon WS` e cleanup no SHA exato.
+- [x] Workflow manual 43230539688 no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`: ALT084 HTTP Neon WS e limpeza verificados nos logs.
 - [ ] Reavaliar arquitetura de identidade/entitlements em banco comum antes de implantação operacional.
 
 **Produção segue NO-GO:** sem merge, sem deploy, sem alteração de policies/tabelas reais e sem troca do driver `getDb()`.
@@ -198,19 +219,19 @@ Merge/deploy: não autorizado
 - [x] Executar transação SQL real sob role restrita: `set_config('app.tenant_id', ..., true)` e reset confirmado em consulta independente.
 - [x] Guard + teste Neon WebSocket `scripts/tests/alt087-staging-ws-preflight.ts` com checagem do DB exato, role exata, commit/rollback/contexto isolado e recusas de produção.
 - [x] Conectar passo opcional ao workflow manual `alt083-neon-e2e.yml`; executa somente após configurar secret `VIGIA_ALT087_STAGING_URL`.
-- [ ] Configurar URL privada do banco/role no GitHub Actions secret dedicado, sem expor em logs; disparar o workflow manual e verificar execução no SHA atual.
+- [x] Secrets dedicados reader/migrator configurados e testados sem exposição; workflow manual 43230539688 executou etapas ALT-08.7 com sucesso no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
 - [ ] Migrar schema operacional e autenticação no **mesmo staging**; verificar policies A/B, papéis, HTTP WebSocket E2E, reversão de cada tabela e restauração de grants/ACLs/policies.
 - [ ] Fazer aprovação de staging e autorização específica antes de qualquer efeito em produção.
 
-Status real: **staging provisionado e SQL transacional básico verificado; homologação WebSocket + rollback operacional no staging ainda NÃO executados.** Ver `docs/vigiaplus/alt087-isolated-staging.md`.
+Status atualizado: **staging sintético, WebSocket e rollback 0/0/0 certificados no run 43230539688; migração de schema operacional preexistente não certificada.** Ver `docs/vigiaplus/alt087-isolated-staging.md`.
 
 ### ALT-08.7B — ensaio de migração reversível no staging Neon dedicado
 
 - [x] Implementar `scripts/tests/alt087-staging-reversible-e2e.ts`: guards DB/role/host, schema sintético exclusivo, RLS real para A/B, grants de SELECT por coluna, leitura PII e escrita negadas, transações WebSocket 771→882→771, rollback de transação e remoção física de schema/policies/grants em finally.
 - [x] Adicionar passo opcional ao workflow manual `alt083-neon-e2e.yml` condicionado a credenciais exclusivas de reader `VIGIA_ALT087_STAGING_URL` e migrator `VIGIA_ALT087_STAGING_MIGRATOR_URL`; migrator ausente produz RED (não um GREEN enganoso).
 - [x] Documentar contratos, cleanup e separação total do staging operacional em `docs/vigiaplus/alt087-isolated-staging.md`.
-- [ ] Validar CI completo do HEAD exato (incluindo TypeScript) após a implementação.
-- [ ] Configurar os dois secrets de staging de forma privada; disparar workflow manual e inspecionar os logs dos passos ALT-08.7.
+- [x] CI 5/5 concluído com sucesso no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707` (run 43229064782); novo HEAD exige novo CI.
+- [x] Dois secrets dedicados configurados; passos ALT-08.7 executados e GREEN no run 43230539688, SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
 - [ ] Certificar staging de verdade com schema operacional/memberships/entitlements/HTTP no mesmo banco: o ensaio sintético NÃO satisfaz esse gate.
 - [ ] Migrar cada tabela operacional em staging sob baseline completo de ACL/policies e rollback comprovado; nenhum deploy sem autorização.
 
@@ -220,7 +241,7 @@ Status real: **staging provisionado e SQL transacional básico verificado; homol
 - [x] Migração real transacional: schema+tabela sintética, grants de SELECT por coluna, FORCE RLS e policy de tenant para reader sem BYPASSRLS.
 - [x] Testes SQL reais reader: sem tenant zero; tenant 771 somente A; tenant 882 somente B; sem escopo após transação zero; `private_payload` e `UPDATE` negados com SQLSTATE 42501.
 - [x] Rollback físico real transacional: policy, flags de RLS, grants, tabela e schema removidos; baseline 0/0/0 restaurado.
-- [ ] Configurar secrets de staging WS e executar prova pelo driver Node + workflow manual.
+- [x] Driver Node WS e workflow manual staging executados com sucesso no run 43230539688 e SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
 - [ ] Autenticação HTTP, memberships, entitlement e dados operacionais no mesmo staging; incluir owner/analyst/worker sob papéis operacionais separados.
 
 ### ALT-08.8 — contratos operacionais sintéticos no mesmo Neon staging
@@ -230,7 +251,7 @@ Status real: **staging provisionado e SQL transacional básico verificado; homol
 - [x] Ensaiar rollback SQL por tabela em `finally` e exigir catálogo final 0/0/0.
 - [x] Adicionar etapa explícita ALT-08.8 ao workflow manual Neon staging atrás dos mesmos dois secrets.
 - [x] Documentar limites em `docs/vigiaplus/alt088-operational-staging-gate.md`.
-- [ ] CI GREEN no SHA exato e execução real da etapa ALT-08.8 no workflow manual (não confundir etapas puladas).
+- [x] CI run 43229064782 GREEN 5/5 e etapa ALT-08.8 realmente executada e GREEN no workflow manual 43230539688, ambos SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
 - [ ] Homologar autenticação HTTP verdadeira + memberships e entitlements no próprio banco operacional de staging (não fixture/consulta privilegiada).
 - [ ] Positivar papéis internos owner/analyst/worker/webhook com roles e privilégios separados, e proteger ambientes com roles herdadas/PUBLIC.
 - [ ] Validar schema integral, múltiplos vínculos, assinaturas vencidas/revogadas, rollback preservando ACL/policies preexistentes e aprovação explícita antes de qualquer deploy.
@@ -244,8 +265,8 @@ Produção **NO-GO**, PR #36 DRAFT, nenhum merge ou deploy.
 - [x] Operar exclusivamente em namespace `alt089_http_ci` com sete tabelas sintéticas, migração e rollback integral reversível `0/0/0`, nunca em `public`.
 - [x] Exigir URL/host/role/banco exatos, CI manual, flags específicas e dois secrets de staging; adicionar passo no workflow `alt083-neon-e2e.yml`.
 - [x] Documentar restrições em `docs/vigiaplus/alt089-staging-http-auth-gate.md`.
-- [ ] CI GREEN no SHA exato da ALT-08.9.
-- [ ] Executar workflow manual com ALT-08.9 realmente executada e certificar logs de revogação HTTP e cleanup no SHA.
+- [x] CI do SHA `9ec57ea09252f21e439c0d9731a32857c52c1707` GREEN 5/5 (run 43229064782); não reutilizar para SHA posterior.
+- [x] Workflow 43230539688 executou passo ALT-08.9 (GREEN): cookie assinado + session revocation + memberships + entitlements + RLS A/B e rollback `0/0/0`, no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
 - [ ] Homologar rota Next real com `resolveTenantContext`/`authenticateSession`/entitlements apontando para **mesmo banco**, schema integral e papéis internos positivos com identidades separadas.
 - [ ] Certificar múltiplos memberships, revogação simultânea, expiração de planos e políticas reais com snapshot/rollback preservando ACLs preexistentes.
 
