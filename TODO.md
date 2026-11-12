@@ -403,3 +403,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Provisionar roles migradora/runtime/reader em staging isolado **somente após autorização específica**, com restauração verificável e E2E Next positivo e negativo.
 
 **Estado:** proposta codificada para CI efêmero, sem alteração Neon/produção; PR DRAFT, produção NO-GO.
+
+### ALT-08.10C.8 — bootstrap integral PostgreSQL 16 em namespace isolado
+
+- [x] Criado ensaio `scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts` com os 186 comandos SQL estáticos no PostgreSQL 16 descartável, dentro de `BEGIN` + `SET LOCAL search_path`, seguido de `ROLLBACK` e comparação de dados/ACL/roles/policies/índices/constraints preexistentes.
+- [x] Valida contagem 62 tabelas operacionais, sete tabelas centrais de identidade/billing e RLS ainda ausente no bootstrap legado; nunca declara readiness produtiva.
+- [x] Etapa ALT-08.10C.8 adicionada ao job PostgreSQL 16 CI.
+- [ ] Confirmar 5/5 jobs GREEN no HEAD deste incremento e investigar logs se RED.
+- [ ] Validar contratos operacionais completos com migrações e seeds revisados, banco com schema existente, constraints RLS/entitlements, roles separadas e autorização explícita para qualquer staging real.
+- [ ] Produção segue NO-GO. PR DRAFT, sem merge/deploy e sem escrita no Neon.
