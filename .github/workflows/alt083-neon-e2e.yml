@@ -38,3 +38,7 @@ jobs:
       - run: npm ci
       - name: Neon WebSocket E2E real com RLS em banco exclusivo descartável
         run: node --import tsx --test scripts/tests/alt083-neon-ws-e2e.test.ts
+      - name: ALT-08.4 HTTP autenticado no Neon WebSocket (CI descartável)
+        env:
+          VIGIA_ALT084_EVIDENCE_MODE: ci-read-only
+        run: bash scripts/tests/alt084-http-ci.sh
