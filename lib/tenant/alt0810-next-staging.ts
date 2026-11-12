@@ -18,10 +18,10 @@ const DB='vigia_alt086_staging_20261112';
 const ROLE='vigia_alt087_staging_reader';
 export const ALT0810_FLAG='VIGIA_ALT0810_NEXT_STAGING_MODE';
 
-export function alt0810StagingRequested(env:NodeJS.ProcessEnv):boolean{
+export function alt0810StagingRequested(env:Readonly<Record<string,string|undefined>>):boolean{
  return env[ALT0810_FLAG]!==undefined;
 }
-export function assertAlt0810StagingEnvironment(env:NodeJS.ProcessEnv):void{
+export function assertAlt0810StagingEnvironment(env:Readonly<Record<string,string|undefined>>):void{
  if(env[ALT0810_FLAG]!=='isolated-next-auth'||
     env.CI!=='true'||env.GITHUB_ACTIONS!=='true'||env.NODE_ENV==='production'||
     env.DEMO_MODE==='1'||env.DATABASE_URL||
