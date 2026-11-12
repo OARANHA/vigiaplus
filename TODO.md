@@ -369,3 +369,14 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Remover bootstrap de produção somente por migração planejada, ADR, compatibilidade, homologação e aprovação explícita.
 
 **Status:** implementação de guardas feita, CI do novo HEAD pendente, produção NO-GO. Nenhum merge/deploy ou escrita Neon operacional.
+
+### ALT-08.10C.5 — inventário de dependências do bootstrap (candidato)
+
+- [x] Criado inventário offline em `lib/db/bootstrap-dependencies.ts` com 186 comandos classificados por CREATE TABLE / ALTER TABLE / CREATE INDEX / UPDATE, FKs explícitas, hash e referência à tabela já existente; `readyForMigration=false` obrigatório.
+- [x] Testes adversariais em `tests/todo-alt0810c-bootstrap-dependencies.test.ts` e etapa CI, incluindo suporte a índices GIN.
+- [x] Documentado contrato lógico de roles distintas migrador/runtime/reader/worker (não provisionadas).
+- [ ] Comprovar CI GREEN nos cinco jobs para o SHA exato.
+- [ ] Gerar e certificar snapshot de ACL/policies/ownership/constraints, plano reversível por objeto e teste PostgreSQL 16 descartável com falha pós-commit.
+- [ ] E2E real por credenciais e papéis distintos em staging autorizado antes de qualquer operação de migração.
+
+**Não é migração executável:** snapshot e inventário são inertes; PR DRAFT, sem merge/deploy/banco operacional, produção NO-GO.
