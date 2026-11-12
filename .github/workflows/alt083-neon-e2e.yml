@@ -78,3 +78,17 @@ jobs:
             exit 1
           fi
           node --import tsx scripts/tests/alt088-staging-operational-rls-e2e.ts
+
+      - name: ALT-08.9 staging HTTP assinado revogacao e entitlements (harness isolado)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT089_STAGING_CONFIRM: SIGNED_HTTP_SYNTHETIC_ONLY
+          SESSION_SECRET: ALT089_STAGING_2026_Strong_Only_Experimental
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT089 NO-GO: migrator secret absent" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt089-staging-http-auth-e2e.ts
