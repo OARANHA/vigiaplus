@@ -176,3 +176,17 @@ Merge/deploy: não autorizado
 - [ ] Preparar rollback de staging que restaure **baseline real**, não aplique rollback CI em bases já protegidas, e ensaio completo antes de autorização de produção.
 
 **Gate final: NO-GO para RLS operacional/produção; nenhum merge/deploy e nenhuma tabela real foi alterada.**
+
+### ALT-08.6 — gate de homologação em pré-produção (sem ativação operacional)
+
+- [x] Matriz declarativa de papéis: clientes `client_admin`/`client_viewer` somente leitura; `owner`/`analyst`/`worker`/`webhook` explicitamente NO-GO em `lib/tenant/rls-preproduction-gate.ts`.
+- [x] Regressão fail-closed de superfície, tenant autenticado, sessão do cliente e URLs de banco proibidas: `tests/todo-alt086-preproduction-gate.test.ts`.
+- [x] Testes do contrato de pool pinado: BEGIN, SET LOCAL, COMMIT, ROLLBACK, release, falhas injetadas e tenant inválido em `tests/todo-alt086-transaction-contract.test.ts`.
+- [x] Protocolo detalhado de snapshot, preflight, rollout e rollback **por tabela** e homologação E2E real: `docs/vigiaplus/alt086-preproduction-rls-gate.md`.
+- [ ] Verificar CI completo no SHA exato, sem aprovar um SHA anterior.
+- [ ] Provisionar e identificar staging realmente isolado (somente após autorização); não usar Neon operacional nem outros projetos.
+- [ ] Executar migração reversível e restaurar policies/ACLs a partir de baseline capturado no staging real.
+- [ ] Homologar `owner`, `analyst`, serviços `worker`/`webhook`, escopos múltiplos e transação WebSocket com runtime de auth+billing+entitlements no mesmo domínio de dados.
+- [ ] Obter autorização explícita antes de deploy/merge/ativação de RLS operacional.
+
+**Produção: NO-GO. Contratos de CI NÃO equivalem a homologação em staging.**
