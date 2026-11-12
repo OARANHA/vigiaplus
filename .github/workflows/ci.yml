@@ -30,6 +30,9 @@ jobs:
       - name: ALT-08.10C manifesto offline de migrações (sem banco)
         run: node --import tsx scripts/schema-manifest-check.ts
 
+      - name: ALT-08.10C.3 snapshot DDL de bootstrap (sem banco)
+        run: node --import tsx scripts/bootstrap-snapshot-check.ts
+
       - name: Test
         run: node --import tsx --test tests/*.test.ts
 
