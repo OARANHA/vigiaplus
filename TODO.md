@@ -271,3 +271,17 @@ Produção **NO-GO**, PR #36 DRAFT, nenhum merge ou deploy.
 - [ ] Certificar múltiplos memberships, revogação simultânea, expiração de planos e políticas reais com snapshot/rollback preservando ACLs preexistentes.
 
 O harness não substitui a autenticação Next operacional. **Produção NO-GO; sem merge/deploy.**
+
+### ALT-08.10 — Next.js operacional, memberships e papéis de serviço (em andamento)
+
+- [x] Auditar `lib/auth.ts`, `lib/session-auth.ts`, `lib/db/index.ts`, `lib/tenant/context.ts`, `entitlements.ts` e `app/api/app/evidence/route.ts`: Next autentica cookie no banco `getDb()`; a leitura Neon WebSocket em staging permanece apenas no piloto/CI, ainda fora da transação de auth operacional.
+- [x] ALT-08.10A: criar `lib/tenant/authorized-membership.ts` e integrar na **rota real** de `resolveTenantContext()`: nunca escolher primeira membership arbitrária; múltiplos vínculos exigem seleção explícita conferida contra memberships; negar duplicidade/role estranha/cliente sem vínculo; preservar auditoria de spoof para usuário com apenas um vínculo.
+- [x] Testes adversariais `tests/todo-alt0810-authorized-membership.test.ts`: zero/um/múltiplos vínculos, seleção legítima, spoof, duplicidade, role interna e IDs inseguros.
+- [ ] Confirmar CI GREEN no **SHA exato** após commits ALT-08.10; não reutilizar run 43232263465 do SHA histórico `1f8c6af...`.
+- [ ] Executar **servidor Next real**, com autenticação, membership e entitlement no **mesmo banco operacional de staging**: atualmente `getDb()` ainda usa PGlite/neon-http e esquema local/operacional diferente da fixture Neon do ALT-08.9.
+- [ ] Implementar e certificar seleção de tenant multi-membership na UI/contrato HTTP; testar todas as rotas e exports.
+- [ ] Testar owner/analyst/worker/webhook positivamente com identidades e roles PostgreSQL distintas; sem usar role DB owner para leitura RLS.
+- [ ] Snapshot/rollback restaurando ACL/policies preexistentes do schema operacional completo, dois tenants reais de teste, sessão revogada e assinatura vencida.
+- [ ] Homologar em staging e obter aprovação explícita antes de merge/deploy ou política RLS operacional.
+
+Referência: `docs/vigiaplus/alt0810-next-operational-auth-gate.md`. **Status: implementação parcial; produção NO-GO.**
