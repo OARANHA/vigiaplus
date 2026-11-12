@@ -213,3 +213,12 @@ Status real: **staging provisionado e SQL transacional básico verificado; homol
 - [ ] Configurar os dois secrets de staging de forma privada; disparar workflow manual e inspecionar os logs dos passos ALT-08.7.
 - [ ] Certificar staging de verdade com schema operacional/memberships/entitlements/HTTP no mesmo banco: o ensaio sintético NÃO satisfaz esse gate.
 - [ ] Migrar cada tabela operacional em staging sob baseline completo de ACL/policies e rollback comprovado; nenhum deploy sem autorização.
+
+### ALT-08.7C — prova real de rollback RLS no staging (somente objetos sintéticos)
+
+- [x] Em banco Neon staging isolado, antes de DDL: schema `alt087_staging_e2e` inexistente, zero policies/tabelas.
+- [x] Migração real transacional: schema+tabela sintética, grants de SELECT por coluna, FORCE RLS e policy de tenant para reader sem BYPASSRLS.
+- [x] Testes SQL reais reader: sem tenant zero; tenant 771 somente A; tenant 882 somente B; sem escopo após transação zero; `private_payload` e `UPDATE` negados com SQLSTATE 42501.
+- [x] Rollback físico real transacional: policy, flags de RLS, grants, tabela e schema removidos; baseline 0/0/0 restaurado.
+- [ ] Configurar secrets de staging WS e executar prova pelo driver Node + workflow manual.
+- [ ] Autenticação HTTP, memberships, entitlement e dados operacionais no mesmo staging; incluir owner/analyst/worker sob papéis operacionais separados.
