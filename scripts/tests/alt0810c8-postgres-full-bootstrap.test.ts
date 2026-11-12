@@ -13,6 +13,7 @@ import {extractStaticBootstrapDdl,verifyBootstrapSnapshot,
  type BootstrapSnapshotManifest} from '../../lib/db/bootstrap-snapshot';
 import {inspectBootstrapDependencies} from '../../lib/db/bootstrap-dependencies';
 import {snapshotDisposableCatalog} from '../../lib/db/disposable-catalog-snapshot';
+import {assessOperationalReadiness} from '../../lib/db/operational-readiness';
 
 const e=process.env;
 if(e.CI!=='true'||e.GITHUB_ACTIONS!=='true'||e.ALT0810C8_EPHEMERAL!=='1'||
@@ -84,6 +85,14 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
       JOIN pg_class c ON c.oid=(quote_ident(t.schemaname)||'.'||quote_ident(t.tablename))::regclass
       WHERE t.schemaname=$1 AND t.tablename <> 'preexisting' AND c.relrowsecurity=false`,[ns]);
     assert.ok(Number(missing.rows[0].n)>0,'legacy snapshot unexpectedly had full RLS');
+    const readiness=assessOperationalReadiness(await snapshotDisposableCatalog(client,ns,[role]));
+    assert.deepEqual(readiness.missingTables,[]);
+    assert.equal(readiness.unprotectedTables.length,7);
+    assert.equal(readiness.missingMigrationLedger,true);
+    assert.equal(readiness.missingTenantIsolationEvidence,true);
+    assert.equal(readiness.readyForOperationalAuth,false);
+    assert.equal(readiness.migrationAllowed,false);
+    assert.equal(readiness.productionAllowed,false);
     await client.query('ROLLBACK');tx=false;
     assert.deepEqual(await snapshotDisposableCatalog(client,ns,[role]),before,
       'catalog ACL/RLS/indexes/constraints/roles changed after rollback');
