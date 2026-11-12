@@ -164,3 +164,15 @@ Merge/deploy: não autorizado
 - [ ] Reavaliar arquitetura de identidade/entitlements em banco comum antes de implantação operacional.
 
 **Produção segue NO-GO:** sem merge, sem deploy, sem alteração de policies/tabelas reais e sem troca do driver `getDb()`.
+
+### ALT-08.5 — preparação da migração RLS operacional (NÃO ativada)
+
+- [x] Inventário e matriz de superfícies `docs/vigiaplus/alt085-operational-rls-migration.md`, distinguindo tenant direto, relacionamento por projeto e tabelas globais/sensíveis.
+- [x] Catálogo **inerte** `lib/tenant/rls-operational-wave1.ts` com role CI somente leitura, `GRANT SELECT`, `ENABLE/FORCE RLS`, `CREATE POLICY`, `DROP POLICY`, `REVOKE SELECT` e reversão individual para `reputation_targets`, `incidents`, `notification_channels`, `invoices`.
+- [x] Prova adversarial integrada ao job PostgreSQL efêmero `scripts/tests/alt085-operational-wave1-rls.test.ts`: baseline, role sem bypass, tenants sintéticos A/B, ausência de escopo, SELECT só do tenant, UPDATE negado, sem vazamento de SET LOCAL, rollback e remoção de grants por tabela.
+- [ ] Confirmar CI GREEN no HEAD exato, especialmente o passo ALT-08.5 no runner PostgreSQL.
+- [ ] Revisar query/colunas PII e política específica de cada rota real; não liberar SELECT indiscriminado em dados sensíveis.
+- [ ] Planejar papéis separados para owner/analyst/worker/webhook e integração com auth+billing+entitlements em Neon no mesmo contexto de confiança.
+- [ ] Preparar rollback de staging que restaure **baseline real**, não aplique rollback CI em bases já protegidas, e ensaio completo antes de autorização de produção.
+
+**Gate final: NO-GO para RLS operacional/produção; nenhum merge/deploy e nenhuma tabela real foi alterada.**
