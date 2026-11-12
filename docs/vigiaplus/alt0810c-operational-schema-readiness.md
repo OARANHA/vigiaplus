@@ -41,3 +41,16 @@ Inspeção dos arquivos:
 - Essa etapa **não é migração**: o `getDb()` operacional e o comando legado `migrate:check` continuam com bootstrap implícito e seguem proibidos como preflight remoto. A separação do migrador e um manifesto integral com rollback permanecem abertas.
 
 Critério de aceite: CI do HEAD exato e execução manual real exibindo `ALT0810C: NO DDL, NO BOOTSTRAP, NO DB WRITES VERIFIED` e contagens verificadas, sem confundir inventário com homologação operacional.
+
+
+## ALT-08.10C.2 — manifesto SQL versionado e separação do check
+
+**Artefatos implementados**:
+- `migrations/manifest.json`: inventário versionado de 4 arquivos SQL legados com seus identificadores Git blob SHA-1. Declara explicitamente `authoritativeOperationalSchema=false` e `bootstrapSeparated=false`: **não** certifica DDL completo.
+- `lib/db/migration-manifest.ts`: valida lista exata de arquivos, hashes Git blob, nomes e unicidade; calcula SHA-256 para conferência sem conexão ao banco.
+- `scripts/schema-manifest-check.ts`: somente leitura de arquivos locais e checksum; nenhuma conexão, `getDb()`, DDL ou seeds.
+- `tests/todo-alt0810c-migration-manifest.test.ts`: adulteração, duplicações, divergência de arquivos e alegação falsa de readiness.
+- CI principal agora executa etapa `ALT-08.10C manifesto offline de migrações (sem banco)` após TypeScript.
+- `scripts/migrate.ts --check` deixou de chamar `getDb()`: valida primeiro o manifesto e executa consultas diretas de `schema_migrations` em `BEGIN READ ONLY`, com `ROLLBACK`, sem bootstrap/seeds. Requer `DATABASE_URL` existente; sem URL falha fechado, sem criar banco PGlite local. Ainda não substitui o preflight de staging por role fixa e portanto **não deve ser usado para certificar o staging**.
+
+**Limitação crítica:** `npm run migrate` (sem `--check`) ainda usa o fluxo legado `getDb()`, `ensureSchema()` e seeds por compatibilidade; NÃO EXECUTAR em staging operacional nem produção sem revisão e autorização. Inventário versionado desses quatro arquivos **não contém** as ~62 criações e ~78 alterações implementadas pelo bootstrap em `lib/db/index.ts`. A migração completa, plano de rollback e papéis operacionais permanecem pendentes.
