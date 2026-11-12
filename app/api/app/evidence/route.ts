@@ -7,6 +7,9 @@ import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction, requireSurface } from '@/lib/tenant/rbac';
 import { requireFeature } from '@/lib/tenant/entitlements';
 import { AppError } from '@/lib/tenant/errors';
+import { isAlt084EvidencePilotEnabled, selectRlsEvidence } from '@/lib/tenant/rls-evidence';
+import { withNeonRlsPool } from '@/lib/tenant/neon-rls-adapter';
+import { withAuthenticatedClientRls } from '@/lib/tenant/rls-runtime';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,6 +49,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.code, message: error.message }, { status: error.status });
     }
     throw error;
+  }
+  // ALT-08.4: opt-in exclusivo de CI — sem fallback ao driver sem RLS
+  // se a verificação do banco experimental falhar. Nunca habilitar em prod.
+  if (isAlt084EvidencePilotEnabled(process.env)) {
+    const items = await withNeonRlsPool(process.env, pool =>
+      withAuthenticatedClientRls(ctx, pool, query => selectRlsEvidence(query)));
+    return NextResponse.json({
+      tenantId: ctx.tenantId,
+      items: items.map(m => ({
+        ...m,
+        url: safePublicHttpUrl(m.url),
+        publishedAt: m.publishedAt == null ? null : new Date(m.publishedAt).toISOString(),
+      })),
+    }, { headers: { 'Cache-Control': 'no-store' } });
   }
   const db = await getDb();
   const items = await listTenantEvidence(db, ctx.tenantId);
