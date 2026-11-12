@@ -164,6 +164,12 @@ async function serve(owner:TenantSqlPool,reader:TenantSqlPool){
   assert.equal((await request(104)).status,401);
   assert.equal((await request(105)).status,401);
   assert.equal((await request(103)).status,200);
+  // Revoking membership invalidates an otherwise valid signed cookie.
+  const membershipAdmin=await owner.connect();
+  try{
+   await membershipAdmin.query(`DELETE FROM ${SCHEMA}.memberships WHERE user_id=103`);
+  }finally{membershipAdmin.release()}
+  assert.equal((await request(103)).status,401,'removed membership must deny');
   // Revoke a valid signature by incrementing session_version in the same DB.
   const admin=await owner.connect();
   try{
