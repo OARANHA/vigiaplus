@@ -8,6 +8,8 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { randomBytes } from 'node:crypto';
 import { withTenantRlsTransaction, type TenantSqlPool } from '../../lib/tenant/rls-transaction';
+import { withAuthenticatedClientRls } from '../../lib/tenant/rls-runtime';
+import type { TenantContext } from '../../lib/tenant/context';
 
 if(process.env.CI!=='true'||process.env.GITHUB_ACTIONS!=='true'
   ||process.env.ALT083_EPHEMERAL_RLS!=='1'
@@ -74,6 +76,18 @@ test('ALT-08.3: SET LOCAL mantém isolamento por transação e não vaza entre c
       return rows.rows;
     });
     assert.deepEqual(b.map(r=>r.message),['ALT083_TX_B']);
+    const trusted:TenantContext={
+      userId:101,userName:'CI client A',role:'client_viewer',tenantId:ta,
+      system:false,surface:'app',density:'basico',vocabulary:'leigo',
+      ip:null,requestId:'alt083-ci',
+    };
+    const bridged=await withAuthenticatedClientRls(trusted,scopedPool,
+      async query=>(await query(`SELECT message FROM ${table}
+        WHERE tenant_id IN ($1,$2)`,[ta,tb])).rows);
+    assert.deepEqual(bridged.map(r=>r.message),['ALT083_TX_A']);
+    await assert.rejects(withAuthenticatedClientRls(
+      {...trusted,system:true},scopedPool,async()=>null),/RLS_CLIENT_CONTEXT_REQUIRED/);
+
     const appAfter=await scopedPool.connect();
     const after=await appAfter.query(`SELECT tenant_id FROM ${table}
       WHERE tenant_id IN ($1,$2)`,[ta,tb]);
