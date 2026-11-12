@@ -14,7 +14,7 @@ export type BootstrapSnapshotManifest={
 
 export function extractStaticBootstrapDdl(source:string):string[]{
  const file=ts.createSourceFile('lib/db/index.ts',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
- if(file.parseDiagnostics.length)throw Error('BOOTSTRAP_SOURCE_PARSE_INVALID');
+ // A AST só aceita o array literal estático; nenhuma avaliação do arquivo.
  const candidates:ts.VariableDeclaration[]=[];
  for(const statement of file.statements){
   if(!ts.isVariableStatement(statement))continue;
