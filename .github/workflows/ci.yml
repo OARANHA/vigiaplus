@@ -39,6 +39,13 @@ jobs:
           RLS_DATABASE_URL: ""
         run: node --import tsx scripts/tests/alt0810c-bootstrap-disposable.test.ts
 
+      - name: ALT-08.10C.4 rollback preserva ACL e policies preexistentes (PGlite)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+          PGLITE_DIR: ""
+        run: node --import tsx scripts/tests/alt0810c-preexisting-rollback.test.ts
+
       - name: Test
         run: node --import tsx --test tests/*.test.ts
 
