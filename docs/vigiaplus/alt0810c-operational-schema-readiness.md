@@ -136,3 +136,17 @@ Próximo gate: confirmar CI GREEN incluindo teste de regressão PostgreSQL; ensa
 - Etapa incluída no job `postgres-disposable` de CI. **Somente marcar GREEN após verificar conclusão do SHA exato.**
 
 **Limites:** teste de cenário sintético conhecido, não gerador automático de rollback nem backup. Não cobre falhas de energia/crash, mudanças externas concorrentes, dados operacionais reais, extensão do esquema completo, RESTORE físico ou credenciais migradoras Neon. Migração operacional e produção permanecem NO-GO; nenhuma alteração em staging foi autorizada ou realizada.
+
+## ALT-08.10C.8 — ensaio integral do bootstrap em PostgreSQL 16 descartável
+
+Candidato implementado em `scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts`, com etapa própria no job `postgres-disposable` do GitHub Actions. O teste **não** aplica migrações no Neon nem habilita o snapshot como migrador da aplicação.
+
+1. Valida manifesto e hash do snapshot antes de conectar; confere os 186 comandos e o inventário de dependências.
+2. Usa apenas PostgreSQL 16 local do runner (`127.0.0.1:5432`, DB `vigia_alt081_ci`), com guarda explícito de CI, senha descartável e ausência de `DATABASE_URL`/`RLS_DATABASE_URL`.
+3. Recusa colisões de namespace/role; cria `alt0810c6_fullschema` isolado com tabela, linha, grants por coluna, role e policy FORCE RLS **preexistentes**.
+4. Captura baseline de catálogo e dados, entra em transação `BEGIN` com `SET LOCAL search_path`, aplica na ordem os **186** comandos estáticos, verifica **62 tabelas operacionais**, mais o sentinela, e presença de `users`, `memberships`, `tenants`, `subscriptions`, `plans`, `plan_features`, `tenant_features`.
+5. Verifica que o DDL legado não configura RLS operacional integral e **não** representa prontidão de autenticação/entitlements. Faz `ROLLBACK` e exige recuperação exata do baseline de catálogo, ACL/policy e dados.
+
+**Condição de aceite:** cinco jobs GREEN no SHA exato, inclusive passo ALT-08.10C.8. Sem GREEN no novo HEAD, tratar apenas como implementação candidata.
+
+**Limites:** ensaio PostgreSQL local não comprova bootstrap seguro em base com schema operacional existente, grants/propriedade em Neon, seeds, contrato Drizzle completo, migrações de billing nem restauração operacional após `COMMIT` dos 186 comandos. O futuro staging operacional exige plano versionado/diff, autorização humana e credencial migradora separada. **Produção NO-GO.**
