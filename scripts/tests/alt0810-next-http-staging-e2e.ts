@@ -94,13 +94,13 @@ async function prepare(pool:TenantSqlPool){
    for(const sql of cmds)await c.query(sql);
    await c.query('COMMIT');
   }catch(error){await c.query('ROLLBACK');throw error}
-  assert.deepEqual(await catalog(c.query.bind(c)),[1,9,1]);
+  assert.deepEqual(await catalog(c.query.bind(c)),[1,8,1]);
  }finally{c.release()}
 }
 async function cleanup(pool:TenantSqlPool){
  const c=await pool.connect();
  try{
-  assert.deepEqual(await catalog(c.query.bind(c)),[1,9,1],'unexpected changes in reserved schema');
+  assert.deepEqual(await catalog(c.query.bind(c)),[1,8,1],'unexpected changes in reserved schema');
   await c.query('BEGIN');
   try{
    const cmds=[
