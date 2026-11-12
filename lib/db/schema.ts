@@ -12,6 +12,15 @@ import {
 // ===========================================================================
 
 /** Um cliente. Cada um tem seu espaco isolado; ninguem ve o do outro. */
+/** Limitador de login persistente e compartilhado entre instâncias. Chaves em HMAC. */
+export const authLoginLimits = pgTable('auth_login_limits', {
+  keyHash: text('key_hash').primaryKey(),
+  failedCount: integer('failed_count').notNull().default(0),
+  windowStart: timestamp('window_start', { withTimezone: true }).notNull().defaultNow(),
+  lockedUntil: timestamp('locked_until', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const tenants = pgTable('tenants', {
   id: serial('id').primaryKey(),
   name: text('name').notNull(),
@@ -144,6 +153,7 @@ export const paymentEvents = pgTable('payment_events', {
   amountBrl: real('amount_brl').notNull().default(0),
   gateway: text('gateway').notNull(),
   rawHash: text('raw_hash').notNull(),
+  processedAt: timestamp('processed_at', { withTimezone: true }),
   receivedAt: timestamp('received_at', { withTimezone: true }).notNull().defaultNow(),
 });
 

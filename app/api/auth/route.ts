@@ -5,11 +5,26 @@ import { users } from '@/lib/db/schema';
 import { verifyPasswordHash } from '@/lib/password';
 import { revokeAllSessions } from '@/lib/session-auth';
 import { SESSION_COOKIE, isDemoMode, signSession } from '@/lib/session';
+import {
+  loginLimitKeys, loginBlockRemainingSeconds, recordFailedLogin, clearSuccessfulLogin,
+  loginTooManyResponseHeaders,
+} from '@/lib/auth-rate-limit';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
-  const body = await req.json() as { email?: string; password?: string; logout?: boolean; revokeAll?: boolean };
+  let body: { email?: unknown; password?: unknown; logout?: boolean; revokeAll?: boolean };
+  try {
+    const payload = await req.text();
+    if (payload.length > 16_384) {
+      return NextResponse.json({ error: 'requisição muito grande' }, { status: 413 });
+    }
+    const parsed: unknown = JSON.parse(payload);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('JSON inválido');
+    body = parsed as typeof body;
+  } catch {
+    return NextResponse.json({ error: 'JSON inválido' }, { status: 400 });
+  }
 
   // Logout: cancella il cookie di sessione
   if (body.logout) {
@@ -45,22 +60,32 @@ export async function POST(req: Request) {
     return res;
   }
 
-  // Piccola attesa fissa: rallenta il brute force
-  await new Promise((r) => setTimeout(r, 400));
-
-  const email = String(body.email ?? '').trim().toLowerCase();
-  // trim(): elimina spazi/newline accidentali da copia-incolla della password temporanea.
-  const password = String(body.password ?? '').trim();
-  if (!email || !password) {
-    return NextResponse.json({ error: 'missing credentials' }, { status: 400 });
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const password = typeof body.password === 'string' ? body.password.trim() : '';
+  if (!email || !password || email.length > 320 || password.length > 4096) {
+    return NextResponse.json({ error: 'credenciais inválidas' }, { status: 400 });
+  }
+  const db = await getDb();
+  const limits = loginLimitKeys(email, req.headers);
+  const remaining = await loginBlockRemainingSeconds(db, limits);
+  if (remaining > 0) {
+    return NextResponse.json({ error: 'muitas tentativas; tente novamente mais tarde' }, {
+      status: 429, headers: loginTooManyResponseHeaders(remaining),
+    });
   }
 
-  const db = await getDb();
   const [user] = await db.select().from(users).where(eq(users.email, email));
   if (!user || !verifyPasswordHash(password, user.passwordHash)) {
-    return NextResponse.json({ error: 'incorrect email or password' }, { status: 401 });
+    await recordFailedLogin(db, limits);
+    const blocked = await loginBlockRemainingSeconds(db, limits);
+    if (blocked > 0) {
+      return NextResponse.json({ error: 'muitas tentativas; tente novamente mais tarde' }, {
+        status: 429, headers: loginTooManyResponseHeaders(blocked),
+      });
+    }
+    return NextResponse.json({ error: 'email ou senha incorretos' }, { status: 401 });
   }
-
+  await clearSuccessfulLogin(db, email);
   const res = NextResponse.json({ ok: true, mustChangePassword: user.mustChangePassword === 1 });
   res.cookies.set(SESSION_COOKIE, signSession(user.id, user.sessionVersion ?? 0), {
     httpOnly: true,

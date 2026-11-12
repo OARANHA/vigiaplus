@@ -1,12 +1,12 @@
 /**
- * Aplicacao idempotente de um evento de pagamento no banco real.
- * E a unica porta por onde um gateway muda o estado do contrato.
+ * Conciliação de eventos de pagamento. NUNCA correlacionar faturas por valor.
+ * Chave segura: (gateway, id do evento) para replay; (gateway, id da cobrança)
+ * para autorizar a alteração de fatura e assinatura, com verificação de valor.
+ * Eventos pendentes podem ser reprocessados quando o gateway repetir entrega.
  */
 import { and, eq } from 'drizzle-orm';
 import { getDb } from '@/lib/db';
-import {
-  paymentEvents, invoices, subscriptions, auditEvents,
-} from '@/lib/db/schema';
+import { paymentEvents, invoices, subscriptions, auditEvents } from '@/lib/db/schema';
 import { rawHash, type CanonicalPaymentEvent } from './events';
 
 export type ProcessResult = {
@@ -17,102 +17,90 @@ export type ProcessResult = {
   status: string;
 };
 
-function addDays(days: number): Date {
-  return new Date(Date.now() + days * 24 * 3600_000);
+function addDays(date: Date, days: number): Date {
+  return new Date(date.getTime() + days * 86_400_000);
 }
 
 export async function processPaymentEvent(
   event: CanonicalPaymentEvent,
   raw: string,
 ): Promise<ProcessResult> {
-  if (!event.id) throw new Error('Evento de pagamento sem id');
+  if (!event.id || !['stripe', 'pix'].includes(event.gateway)) {
+    throw new Error('Evento sem identificador de gateway válido');
+  }
+  // Eventos sem alteração financeira não autorizam assinatura.
+  if (event.type !== 'payment.succeeded' && event.type !== 'payment.failed') {
+    return { duplicate: false, applied: false, tenantId: null, invoiceId: null, status: 'ignored' };
+  }
+  if (!event.invoiceGatewayId) {
+    return { duplicate: false, applied: false, tenantId: null, invoiceId: null, status: 'unmatched' };
+  }
 
   const db = await getDb();
-
-  // A8: chave de idempotencia = id do evento do gateway.
-  const seen = await db.select({ id: paymentEvents.id })
-    .from(paymentEvents).where(eq(paymentEvents.id, event.id)).limit(1);
-  if (seen.length > 0) {
-    return {
-      duplicate: true, applied: false, tenantId: event.tenantId,
-      invoiceId: null, status: 'duplicate',
-    };
+  const [inv] = await db.select().from(invoices).where(and(
+    eq(invoices.gateway, event.gateway), eq(invoices.gatewayId, event.invoiceGatewayId),
+  )).limit(1);
+  if (!inv || (event.tenantId != null && inv.tenantId !== event.tenantId)) {
+    return { duplicate: false, applied: false, tenantId: null, invoiceId: null, status: 'unmatched' };
+  }
+  // Não confiar em IDs/tenant ou valor enviados pelo body de um gateway sem
+  // confirmar a cobrança persistida anteriormente no banco.
+  if (event.type === 'payment.succeeded' &&
+      Math.round(inv.amountBrl * 100) !== Math.round(event.amountBrl * 100)) {
+    return { duplicate: false, applied: false, tenantId: inv.tenantId, invoiceId: inv.id, status: 'amount_mismatch' };
   }
 
-  let tenantId = event.tenantId;
-  let invoiceId: number | null = null;
-
-  // Se o gateway nao mandou metadata, resolve pela fatura vinculada.
-  if (event.invoiceGatewayId) {
-    const [inv] = await db.select().from(invoices)
-      .where(eq(invoices.gatewayId, event.invoiceGatewayId)).limit(1);
-    if (inv) {
-      invoiceId = inv.id;
-      tenantId = tenantId ?? inv.tenantId;
-    }
+  const key = `${event.gateway}:${event.id}`;
+  const [known] = await db.select({ processedAt: paymentEvents.processedAt })
+    .from(paymentEvents).where(eq(paymentEvents.id, key)).limit(1);
+  if (known?.processedAt) {
+    return { duplicate: true, applied: false, tenantId: inv.tenantId, invoiceId: inv.id, status: 'duplicate' };
   }
-  if (tenantId == null && event.amountBrl > 0) {
-    const [inv] = await db.select().from(invoices)
-      .where(and(eq(invoices.amountBrl, event.amountBrl), eq(invoices.status, 'open')))
-      .limit(1);
-    if (inv) {
-      invoiceId = inv.id;
-      tenantId = inv.tenantId;
-    }
-  }
-
   await db.insert(paymentEvents).values({
-    id: event.id,
-    tenantId,
-    type: event.type,
-    amountBrl: event.amountBrl,
-    gateway: event.gateway,
-    rawHash: rawHash(raw),
-  });
-
-  const succeeded = event.type === 'payment.succeeded';
-  const failed = event.type === 'payment.failed';
-
-  if (invoiceId != null) {
-    await db.update(invoices).set(
-      succeeded
-        ? { status: 'paid', paidAt: new Date(), paymentLink: null }
-        : { status: failed ? 'overdue' : 'processing' },
-    ).where(eq(invoices.id, invoiceId));
-  }
+    id: key, tenantId: inv.tenantId, type: event.type,
+    amountBrl: event.amountBrl, gateway: event.gateway, rawHash: rawHash(raw),
+  }).onConflictDoNothing();
 
   let status = 'event_recorded';
-  if (tenantId != null) {
+  if (event.type === 'payment.succeeded') {
+    const paidAt = inv.paidAt ?? new Date();
+    await db.update(invoices).set({
+      status: 'paid', paidAt, paymentLink: null,
+    }).where(eq(invoices.id, inv.id));
     const [sub] = await db.select().from(subscriptions)
-      .where(eq(subscriptions.tenantId, tenantId)).limit(1);
+      .where(eq(subscriptions.tenantId, inv.tenantId)).limit(1);
     if (sub) {
-      if (succeeded) {
-        await db.update(subscriptions).set({
-          status: 'active',
-          graceUntil: null,
-          vigenciaAte: addDays(30),
-          updatedAt: new Date(),
-        }).where(eq(subscriptions.id, sub.id));
-        status = 'subscription_active';
-      } else if (failed) {
-        await db.update(subscriptions).set({
-          status: 'past_due',
-          graceUntil: addDays(3),
-          updatedAt: new Date(),
-        }).where(eq(subscriptions.id, sub.id));
-        status = 'subscription_past_due';
-      }
+      await db.update(subscriptions).set({
+        status: 'active', graceUntil: null,
+        vigenciaAte: addDays(paidAt, 30), updatedAt: new Date(),
+      }).where(eq(subscriptions.id, sub.id));
+      status = 'subscription_active';
+    } else {
+      status = 'invoice_paid_without_subscription';
     }
+  } else if (inv.status !== 'paid') {
+    await db.update(invoices).set({ status: 'overdue' }).where(eq(invoices.id, inv.id));
+    const [sub] = await db.select().from(subscriptions)
+      .where(eq(subscriptions.tenantId, inv.tenantId)).limit(1);
+    if (sub) {
+      await db.update(subscriptions).set({
+        status: 'past_due', graceUntil: addDays(new Date(), 3), updatedAt: new Date(),
+      }).where(eq(subscriptions.id, sub.id));
+      status = 'subscription_past_due';
+    }
+  } else {
+    status = 'ignored_already_paid';
   }
 
   await db.insert(auditEvents).values({
-    actor: `gateway:${event.gateway}`,
-    tenantId,
-    action: 'PAYMENT_EVENT',
-    target: `event:${event.id}`,
+    actor: `gateway:${event.gateway}`, tenantId: inv.tenantId,
+    action: 'PAYMENT_EVENT', target: `event:${key}`,
     reason: `${event.gateway} · ${event.type} · R$ ${event.amountBrl.toFixed(2)}`,
-    meta: { invoiceId, status },
+    meta: { invoiceId: inv.id, status },
   });
+  // Marcar somente após as escritas. Falha intermediária permite que reentrega
+  // reprocese sem prorrogação em cascata da vigência (paidAt é estável).
+  await db.update(paymentEvents).set({ processedAt: new Date() }).where(eq(paymentEvents.id, key));
 
-  return { duplicate: false, applied: true, tenantId, invoiceId, status };
+  return { duplicate: false, applied: true, tenantId: inv.tenantId, invoiceId: inv.id, status };
 }

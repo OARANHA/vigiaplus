@@ -12,7 +12,7 @@ export async function GET() {
 
   const [active, available, registry] = await Promise.all([
     resolveActiveProvider({ ctx }),
-    llmAvailable(),
+    llmAvailable(ctx),
     listProviders(ctx),
   ]);
 

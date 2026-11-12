@@ -29,7 +29,7 @@ type Reputation = {
     comments: number;
     sources: number;
     window_days: number;
-    updated_at: string;
+    updated_at: string | null;
     note: string;
   };
   confidence?: { level: string; note: string } | null;
@@ -52,7 +52,7 @@ type SummaryData = {
   work_evidence?: {
     sources_monitored?: number;
     comments_analyzed?: number;
-    detection_minutes?: number;
+    detection_minutes?: number | null;
     subjects_tracked?: number;
   };
   reputations?: Reputation[];
@@ -162,11 +162,13 @@ export default function AppPortal() {
             {/* Evidencia de trabalho: "as vezes o pouco e muito" */}
             <div className="bg-white rounded-xl border p-4">
               <div className="flex gap-6 text-sm text-gray-500 flex-wrap">
-                <span>{data.work_evidence?.sources_monitored ?? 0} fontes monitoradas</span>
+                <span>{data.work_evidence?.sources_monitored ?? 0} fontes com menções no período</span>
                 {!isBasico && (
                   <>
-                    <span>{data.work_evidence?.comments_analyzed ?? 0} comentarios analisados</span>
-                    <span>deteccao em {data.work_evidence?.detection_minutes ?? 0} min</span>
+                    <span>{data.work_evidence?.comments_analyzed ?? 0} menções analisadas</span>
+                    <span>{data.work_evidence?.detection_minutes == null
+                      ? 'Tempo de detecção não aferido'
+                      : `Detecção em ${data.work_evidence.detection_minutes} min`}</span>
                   </>
                 )}
                 <span>{data.work_evidence?.subjects_tracked ?? 0} assuntos acompanhados</span>
@@ -185,7 +187,7 @@ export default function AppPortal() {
               <p className="text-lg font-semibold">
                 {openIncidents > 0
                   ? `${openIncidents} incidente(s) em acompanhamento`
-                  : 'Nenhuma crise ativa'}
+                  : 'Nenhum incidente ativo registrado'}
               </p>
               {data.incidents?.map((i: Incident) => (
                 <div key={i.id} className="mt-3 text-sm">
@@ -252,11 +254,11 @@ function ReputationCard({ r, isLeigo, isBasico }: { r: Reputation; isLeigo: bool
       ? `Brand Health ${r.score}/100` +
         (delta != null ? ` · Δ ${reference} ${delta > 0 ? '+' : ''}${delta}` : '') +
         ` · n=${fmtBR(prov.comments)} · janela ${prov.window_days}d`
-      : 'Sem amostra suficiente no período.';
+      : 'Pontuação indisponível: sem metodologia validada para este alvo.';
 
   const provenanceLine = isLeigo
     ? prov.note
-    : `n=${fmtBR(prov.comments)} · ${prov.sources} sources · ${prov.window_days}d · atualizado em ${new Date(prov.updated_at).toLocaleString('pt-BR')}`;
+    : `n=${fmtBR(prov.comments)} · ${prov.sources} fontes · ${prov.window_days} dias · última coleta: ${prov.updated_at ? new Date(prov.updated_at).toLocaleString('pt-BR') : 'indisponível'}`;
 
   return (
     <div className="bg-white rounded-xl border p-6">
@@ -269,7 +271,7 @@ function ReputationCard({ r, isLeigo, isBasico }: { r: Reputation; isLeigo: bool
           <span className={`shrink-0 rounded-full px-2 py-1 text-xs ${
             r.confidence.level === 'consolidado' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
           }`}>
-            {r.confidence.level === 'consolidado' ? 'Base consolidada' : 'Resultado preliminar'}
+            {r.confidence.level === 'consolidado' ? 'Base consolidada' : r.confidence.level === 'sem_dados' ? 'Sem dados' : 'Resultado preliminar'}
           </span>
         )}
       </div>

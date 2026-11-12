@@ -1,28 +1,20 @@
 import { NextResponse } from 'next/server';
-import { verifyWebhook, PixAdapter } from '@/lib/billing/events';
+import { verifyAsaasWebhookToken, PixAdapter } from '@/lib/billing/events';
 import { processPaymentEvent } from '@/lib/billing/process';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
-/**
- * Webhook Pix (Asaas / Mercado Pago / Pagar.me).
- * Assinatura HMAC-SHA256 sobre o corpo cru, em tempo constante.
- * O tenant vem de `externalReference`, que nos mesmos gravamos no checkout.
- */
+/** Asaas: autenticação pela credencial dedicada do webhook (asaas-access-token). */
 export async function POST(req: Request) {
-  const secret = process.env.PIX_WEBHOOK_SECRET?.trim();
-  if (!secret) {
+  const secret = process.env.ASAAS_WEBHOOK_AUTH_TOKEN?.trim();
+  if (!secret || secret.length < 32) {
     return NextResponse.json({ error: 'webhook_nao_configurado' }, { status: 503 });
   }
-
-  const raw = await req.text();
-  const signature = req.headers.get('x-webhook-signature')
-    ?? req.headers.get('x-asaas-signature')
-    ?? req.headers.get('x-hub-signature');
-  if (!verifyWebhook(raw, signature, secret)) {
+  if (!verifyAsaasWebhookToken(req.headers.get('asaas-access-token'), secret)) {
     return NextResponse.json({ error: 'assinatura_invalida' }, { status: 401 });
   }
+  const raw = await req.text();
 
   let body: Record<string, unknown>;
   try {
@@ -37,13 +29,14 @@ export async function POST(req: Request) {
   }
 
   const result = await processPaymentEvent(event, raw);
-  return NextResponse.json({ received: true, ...result });
+  return NextResponse.json({ received: result.status !== 'unmatched' && result.status !== 'amount_mismatch', ...result },
+    { status: result.status === 'unmatched' || result.status === 'amount_mismatch' ? 503 : 200 });
 }
 
 export async function GET() {
   return NextResponse.json({
     gateway: 'pix',
-    configurado: Boolean(process.env.PIX_WEBHOOK_SECRET),
+    configurado: Boolean(process.env.ASAAS_WEBHOOK_AUTH_TOKEN && process.env.ASAAS_WEBHOOK_AUTH_TOKEN.length >= 32),
     evento: 'POST / confirmacoes de pagamento',
   });
 }

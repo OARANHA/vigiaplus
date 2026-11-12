@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { SOURCE_META } from '@/lib/connectors';
+import { SOURCE_META } from '@/lib/connectors/source-meta';
 
 type Node = {
   name: string;
