@@ -354,3 +354,17 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Release/merge/deploy condicionado à autorização do proprietário.
 
 **Estado:** snapshot técnico versionado e ensaio descartável em implementação/validação, ALT-08.10C ainda aberta, produção NO-GO.
+
+
+### ALT-08.10C.4 — separação do bootstrap em runtime (candidato)
+
+- [x] CI ALT-08.10C.3 no SHA `6ce456c6b0480d2131654725bc8a2feb93c3d244` GREEN 5/5 ([run 43252707174](https://github.com/OARANHA/vigiaplus/actions/runs/43252707174)). Snapshot AST e ensaio dos 186 DDL com rollback em PGlite confirmados.
+- [x] Adicionar `lib/db/bootstrap-mode.ts` com modo opt-in `preprovisioned-staging-ci`, somente CI/GitHub Actions, Neon staging exato, reader sem privilégio de DDL, sem modo DEMO/produção e confirmação explícita.
+- [x] Integrar `resolveDbBootstrapMode` em `lib/db/index.ts`: modo CI pré-provisionado não executa `ensureSchema`, seedDemo/seedUsers/seedVigiaPlus, catálogo comercial ou índices; apenas `to_regclass` dos contratos fundamentais, retornando conexão sem escrita ou falhando fechado.
+- [x] Preservar comportamento `legacy-bootstrap` por padrão em instalações existentes (sem alteração global de produção).
+- [x] Testes adversariais em `tests/todo-alt0810c-bootstrap-mode.test.ts`.
+- [ ] Verificar CI GREEN no SHA exato atual; testes de integração comprovando ausência de DDL no novo modo ainda não executados no Neon.
+- [ ] Manifesto operacional completo com dependências/constraints e autenticação separada por role PostgreSQL, snapshot/rollback preservando baseline e integração das rotas.
+- [ ] Remover bootstrap de produção somente por migração planejada, ADR, compatibilidade, homologação e aprovação explícita.
+
+**Status:** implementação de guardas feita, CI do novo HEAD pendente, produção NO-GO. Nenhum merge/deploy ou escrita Neon operacional.
