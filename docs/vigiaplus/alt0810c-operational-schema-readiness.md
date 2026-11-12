@@ -1,0 +1,32 @@
+# ALT-08.10C — pré-migração operacional segura no staging
+
+**Data:** 2026-11-12. **Status:** inventário e plano, sem migração operacional executada.
+
+## Evidência verificada
+
+O Neon isolado (`still-heart-81001946`, branch `br-super-star-bbc317wq`, banco `vigia_alt086_staging_20261112`) apresenta **zero tabelas no schema `public`**. ALT-08.10B com Next.js real sobre fixture em namespace `alt0810_next_ci` foi GREEN (SHA `ef0730e086e6e5e8107f873bd151be9dd6b45b76`; CI 43237972979; manual 43239412881; rollback 0/0/0). Isto **não** certifica schema operacional.
+
+## Risco de migração identificado na base
+
+Inspeção dos arquivos:
+- `lib/db/index.ts`: `getDb()` realiza `init()`, que invoca `ensureSchema()` antes da primeira consulta, executando sequência de DDL de `CREATE TABLE IF NOT EXISTS` e `ALTER TABLE ... ADD COLUMN IF NOT EXISTS`. Também aciona `seedUsers`, `seedVigiaPlus`, catálogo inicial de planos e índices comerciais. Não é um mecanismo *somente leitura*.
+- `scripts/migrate.ts`: migrações versionadas com checksum SHA-256, mas chama `getDb()` inicialmente e cria `schema_migrations`. Usar `npm run migrate:check` em banco remoto **também abre `getDb()` e pode disparar DDL/bootstrap previamente**, logo não é preflight de leitura segura.
+- `lib/db/schema.ts`: contratos Drizzle de identidade, memberships, billing, observabilidade, crises e fontes; não é sinônimo de uma migração versionada integral.
+
+**Decisão de segurança:** não executar `getDb()`, `npm run migrate`, `npm run migrate:check` nem inicializar o Next operacional apontado diretamente ao banco Neon staging enquanto o bootstrap implícito não estiver isolado e revisado. Essa precaução evita escrever em ambiente que ainda não recebeu snapshot/manifest de migração.
+
+## Critérios para uma migração executável
+
+1. Criar um **manifesto versionado do schema operacional**, somente com SQL revisado, checksums e dependências.
+2. Registrar baseline prévio de `pg_namespace`, `pg_class`, `pg_policy`, `pg_roles`, `information_schema.role_table_grants`, constraints, índices e extensões; confirmar alvo com banco, branch, papel e assinatura de confirmação exclusiva.
+3. Separar *migrador* do runtime de autenticação: somente credencial de DDL pode alterar objetos; sessões nunca usam role proprietária nem BYPASSRLS.
+4. Desabilitar `ensureSchema`/seed implícito apenas por desenho aprovado e coberto por teste de produção/staging. Evitar alteração global ad hoc em `getDb()`.
+5. Executar migração para staging em duas etapas: dry-run de diff/DDL e aplicação com checkpoint transacional e rollback por objeto, preservando grants/policies preexistentes.
+6. Testar **rotas Next reais** com duas identidades, múltiplas memberships, revogação, tenant suspenso, assinatura vencida/carência, limites e UI owner/analyst/worker/webhook em identidades distintas.
+7. Exigir CI e workflow staging GREEN no SHA exato, restauração do baseline e aprovação humana antes de qualquer instalação operacional.
+
+## Estado de liberação
+
+- ALT-08.10B: GREEN para rota Next sobre fixture em staging.
+- ALT-08.10C: **BLOQUEADO pela ausência de schema operacional e pelo bootstrap automático atual**.
+- Produção: **NO-GO**; PR DRAFT; sem merge, deploy ou migração operacional.
