@@ -222,3 +222,17 @@ Status real: **staging provisionado e SQL transacional básico verificado; homol
 - [x] Rollback físico real transacional: policy, flags de RLS, grants, tabela e schema removidos; baseline 0/0/0 restaurado.
 - [ ] Configurar secrets de staging WS e executar prova pelo driver Node + workflow manual.
 - [ ] Autenticação HTTP, memberships, entitlement e dados operacionais no mesmo staging; incluir owner/analyst/worker sob papéis operacionais separados.
+
+### ALT-08.8 — contratos operacionais sintéticos no mesmo Neon staging
+
+- [x] Revisão de `lib/db/schema.ts`: distinguir auth `users/memberships`, comercial `plans/subscriptions/tenant_features` e Wave 1 `reputation_targets/incidents/notification_channels/invoices`.
+- [x] Criar `scripts/tests/alt088-staging-operational-rls-e2e.ts`: ambiente CI protegido, URL/role staging exatas, onze tabelas sintéticas no namespace `alt088_operational_ci`, role reader mínima, validação de membership+entitlement A/B no mesmo banco e leitura RLS das quatro tabelas.
+- [x] Ensaiar rollback SQL por tabela em `finally` e exigir catálogo final 0/0/0.
+- [x] Adicionar etapa explícita ALT-08.8 ao workflow manual Neon staging atrás dos mesmos dois secrets.
+- [x] Documentar limites em `docs/vigiaplus/alt088-operational-staging-gate.md`.
+- [ ] CI GREEN no SHA exato e execução real da etapa ALT-08.8 no workflow manual (não confundir etapas puladas).
+- [ ] Homologar autenticação HTTP verdadeira + memberships e entitlements no próprio banco operacional de staging (não fixture/consulta privilegiada).
+- [ ] Positivar papéis internos owner/analyst/worker/webhook com roles e privilégios separados, e proteger ambientes com roles herdadas/PUBLIC.
+- [ ] Validar schema integral, múltiplos vínculos, assinaturas vencidas/revogadas, rollback preservando ACL/policies preexistentes e aprovação explícita antes de qualquer deploy.
+
+Produção **NO-GO**, PR #36 DRAFT, nenhum merge ou deploy.
