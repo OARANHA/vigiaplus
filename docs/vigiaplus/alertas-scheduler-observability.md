@@ -143,3 +143,13 @@ Acrescentado `scripts/tests/alt083-postgres-rls.test.ts` ao job existente de Pos
 Também foi estendido `scripts/tests/alt082-systemd-ci.sh`: após observar três disparos automáticos `notify_dry_run`, reinicia explicitamente **apenas o timer transitório** via `systemctl restart` e exige um `runId` adicional. Isso testa retomada do scheduler após restart da unidade, **não** reboot do kernel/host real. O timer não fica instalado no boot, e todos os ciclos usam banco PGlite isolado sem envios.
 
 **Gate CI:** cinco jobs no SHA final, incluindo a etapa de RLS no job PostgreSQL e o reinício do timer no job systemd; não concluir GREEN a partir de commit anterior.
+
+### ALT-08.3 — prova adicional na tabela real `notification_deliveries` (candidato)
+
+Arquivo `scripts/tests/alt083-operational-rls.test.ts`, executado **apenas** no job `postgres-disposable` após o `ensureSchema` da ALT-08.1. Utiliza a tabela **real** `public.notification_deliveries` criada no PostgreSQL descartável da CI. Cadastra dois tenants e duas entregas sintéticas sem transporte, cria duas roles temporárias LOGIN sem superuser, BYPASSRLS ou CREATEROLE; cada cliente autentica diretamente sob sua própria role. Habilita ENABLE+FORCE RLS na tabela descartável com uma política restrita ao par `(tenant_id, current_user)`.
+
+Os casos adversariais verificam: visibilidade só do seu tenant; UPDATE e DELETE cruzados afetam zero registros; INSERT cruzado é rejeitado; não é permitido SET ROLE da outra identidade; falsificar `app.tenant_id` com `set_config` não amplia acesso porque a política se baseia na role de autenticação. O teste desabilita e remove a política descartável e limpa as roles. **O teste não deve ser executado contra um banco não efêmero**.
+
+**Limites de segurança:** esta prova mostra que o schema operacional comporta uma política role-bound de RLS, **não que a aplicação esteja usando políticas RLS hoje**. No runtime de produção o acesso continua via `drizzle-orm/neon-http`, sem transação interativa para propagação confiável do contexto. É indispensável decidir e implementar ligação confiável de tenant a papel de conexão ou contexto transacional verificável, políticas efetivas por tabela, funções/visões seguras de owner, e execução adversarial sob a role operacional exata antes de homologar. Não habilitar RLS diretamente nas tabelas existentes antes de migrar os fluxos dependentes e auditar riscos de interrupção.
+
+**Gate:** CI 5/5 com o novo teste no SHA exato; RLS de produção NO-GO e reboot real do host não homologado.
