@@ -190,3 +190,16 @@ Merge/deploy: não autorizado
 - [ ] Obter autorização explícita antes de deploy/merge/ativação de RLS operacional.
 
 **Produção: NO-GO. Contratos de CI NÃO equivalem a homologação em staging.**
+
+### ALT-08.7 — Staging Neon isolado real (integração WebSocket pendente)
+
+- [x] Provisionar branch Neon isolada `br-super-star-bbc317wq`, banco `vigia_alt086_staging_20261112` (0 tabelas/policies na criação), sem acessar bases de produção.
+- [x] Criar role dedicada `vigia_alt087_staging_reader` (`rolsuper=false`, `rolbypassrls=false`). O owner do banco tem BYPASSRLS e não pode certificar isolamento.
+- [x] Executar transação SQL real sob role restrita: `set_config('app.tenant_id', ..., true)` e reset confirmado em consulta independente.
+- [x] Guard + teste Neon WebSocket `scripts/tests/alt087-staging-ws-preflight.ts` com checagem do DB exato, role exata, commit/rollback/contexto isolado e recusas de produção.
+- [x] Conectar passo opcional ao workflow manual `alt083-neon-e2e.yml`; executa somente após configurar secret `VIGIA_ALT087_STAGING_URL`.
+- [ ] Configurar URL privada do banco/role no GitHub Actions secret dedicado, sem expor em logs; disparar o workflow manual e verificar execução no SHA atual.
+- [ ] Migrar schema operacional e autenticação no **mesmo staging**; verificar policies A/B, papéis, HTTP WebSocket E2E, reversão de cada tabela e restauração de grants/ACLs/policies.
+- [ ] Fazer aprovação de staging e autorização específica antes de qualquer efeito em produção.
+
+Status real: **staging provisionado e SQL transacional básico verificado; homologação WebSocket + rollback operacional no staging ainda NÃO executados.** Ver `docs/vigiaplus/alt087-isolated-staging.md`.
