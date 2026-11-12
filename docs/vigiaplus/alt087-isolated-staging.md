@@ -56,3 +56,21 @@ O workflow `alt083-neon-e2e.yml` permanece `workflow_dispatch` manual. Se o read
 As credenciais nunca devem ser incluídas em commits, logs, PR ou ELUS Memory Admin. O workflow só será considerado homologado quando houver run com esses passos executados e aprovados no SHA exato.
 
 **Revisão de segurança pendente:** role migradora é owner com BYPASSRLS, portanto pode fazer DDL **somente neste banco sintético**; isolamento deve sempre ser testado pela role de leitura restrita. Staging continua NO-GO para deploy.
+
+## 2026-11-12 — Prova adicional REAL de migração/rollback no Neon staging (sem HTTP/WebSocket do Node)
+
+Execução feita diretamente no PostgreSQL Neon da branch exclusiva `br-super-star-bbc317wq`, DB `vigia_alt086_staging_20261112`. Preflight de `alt087_staging_e2e`: zero schemas/tabelas/policies.
+
+Sob a role owner **somente para DDL sintética**, uma transação criou `alt087_staging_e2e.evidence` com exatamente dois registros sintéticos (tenant 771 e 882), concedeu apenas `USAGE` de schema e `SELECT(id,label)` à role `vigia_alt087_staging_reader`, instalou `ENABLE/FORCE RLS` e policy `SELECT` por `app.tenant_id`. O catálogo passou a 1 schema/1 tabela/1 policy.
+
+**Provas executadas sob a role sem BYPASSRLS**:
+- Sem tenant: `SELECT id,label` retornou 0 linhas.
+- Em transação `set_config('app.tenant_id','771',true)`: somente `id=101,label=A`.
+- Em transação independente `set_config('app.tenant_id','882',true)`: somente `id=202,label=B`.
+- Sem tenant após ambas as transações: 0 linhas, sem vazamento de escopo.
+- `SELECT private_payload`: recusado pelo PostgreSQL `SQLSTATE 42501`.
+- `UPDATE` da tabela: recusado pelo PostgreSQL `SQLSTATE 42501`.
+
+**Rollback físico concluído** sob a role migradora, em transação: `DROP POLICY`, `NO FORCE/DISABLE RLS`, `REVOKE SELECT(id,label)`, `REVOKE USAGE`, `DROP TABLE`, `DROP SCHEMA`. Consulta final confirmou exatamente **0 schemas/0 tabelas/0 policies** no namespace reservado. Nada operacional foi modificado. Conclusão: **migração sintética, isolamento RLS A/B e rollback no PostgreSQL de staging comprovados**.
+
+**Não está homologado:** teste da aplicação via `@neondatabase/serverless` Pool WebSocket com credencial GitHub, autenticação/entitlements no mesmo DB, schema operacional real, escopos owner/analyst/worker e migração das quatro tabelas operacionais. O acesso acima foi através do conector de SQL, não pelo runtime Node; portanto não declarar WebSocket GREEN. Produção permanece NO-GO.
