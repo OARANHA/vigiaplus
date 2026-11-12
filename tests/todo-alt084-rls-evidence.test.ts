@@ -19,6 +19,7 @@ test('ALT-08.4: default off, production impossible, no client-controlled flags',
 test('ALT-08.4: query fixa, LIMIT parametrizado e sem PII',async()=>{
   let capturedSql='',capturedArgs:readonly unknown[]=[];
   const rows=await selectRlsEvidence(async(s,p)=>{
+    if(s.includes('pg_policies'))return {rows:[{db:'vigia_alt083_ci_test',privileged:false,protected_count:2,policy_count:2}],rowCount:1};
     capturedSql=s;capturedArgs=p??[];
     return {rows:[{id:1,title:'Teste',url:'https://example.com',source:'rss',
       publishedAt:'2026-11-12T00:00:00.000Z',projectName:'Projeto A'}],rowCount:1};
@@ -36,4 +37,16 @@ test('ALT-08.4: política SELECT-only para projects e mentions, rollback explíc
   assert.ok(ALT084_EVIDENCE_POLICY_SQL.every(s=>!s.includes('FOR ALL')));
   assert.ok(ALT084_EVIDENCE_POLICY_SQL.some(s=>s.includes('EXISTS')));
   assert.ok(ALT084_EVIDENCE_POLICY_SQL.some(s=>s.includes('app.tenant_id')));
+});
+
+test('ALT-08.4: sem FORCE RLS ou role privilegiada a leitura falha fechada',async()=>{
+  for(const unsafe of [
+    {privileged:true,protected_count:2,policy_count:2},
+    {privileged:false,protected_count:1,policy_count:2},
+    {privileged:false,protected_count:2,policy_count:1},
+  ]){
+    await assert.rejects(selectRlsEvidence(async()=>{
+      return {rows:[unsafe],rowCount:1};
+    }),/RLS_EVIDENCE_POLICIES_NOT_ENFORCED/);
+  }
 });
