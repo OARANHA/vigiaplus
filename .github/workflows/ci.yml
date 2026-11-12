@@ -86,6 +86,10 @@ jobs:
         env:
           ALT084_EPHEMERAL_RLS: "1"
         run: node --import tsx --test scripts/tests/alt084-evidence-rls.test.ts
+      - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
+        env:
+          ALT085_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt085-operational-wave1-rls.test.ts
 
   dryrun-isolated:
     name: ALT-08.2 dry-run isolado
