@@ -391,3 +391,15 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Homologar roles distintas migrator/runtime/reader e papéis internos na mesma base de staging com aprovação explícita.
 
 **Status:** apenas ensaio descartável e snapshot de catálogo; PR DRAFT; sem merge/deploy/migração operacional; produção NO-GO.
+
+### ALT-08.10C.7 — compensação pós-COMMIT (candidato)
+
+- [x] Script `scripts/tests/alt0810c7-postcommit-restore.test.ts` com fixture descartável: três roles NOLOGIN, tenant A/B, ownership, ACL de coluna, políticas FORCE RLS, constraints, índice e dados.
+- [x] Teste executa COMMIT real após mudanças sintéticas e uma segunda transação de compensação com COMMIT, comparando snapshot de catálogo e linhas preexistentes.
+- [x] Negativas de privilégio do reader e isolamento de atualização do runtime incluídas.
+- [x] Etapa `ALT-08.10C.7` adicionada ao workflow `postgres-disposable`.
+- [ ] Confirmar CI GREEN no SHA exato, inclusive novo teste e cinco jobs do workflow.
+- [ ] Homologar plano versionado de migração/rollback com backups físicos, drift, crash e dependências do schema operacional integral.
+- [ ] Provisionar roles migradora/runtime/reader em staging isolado **somente após autorização específica**, com restauração verificável e E2E Next positivo e negativo.
+
+**Estado:** proposta codificada para CI efêmero, sem alteração Neon/produção; PR DRAFT, produção NO-GO.
