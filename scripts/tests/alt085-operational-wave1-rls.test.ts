@@ -101,11 +101,12 @@ test('ALT-08.5: cada tabela preserva isolamento, privilégio mínimo e rollback 
           withTenantRlsTransaction(reader,a,query=>query(
             `UPDATE public.${table} SET tenant_id=$1 WHERE id=$2`,[b,rows[0]])),
           /permission denied|42501/i,'SELECT-only role must refuse UPDATE');
-        const policy=await admin.query(`SELECT cmd,roles FROM pg_policies
-          WHERE schemaname='public' AND tablename=$1`,[table]);
+        const policy=await admin.query(`SELECT cmd,array_to_string(roles, ',') AS roles_csv
+          FROM pg_policies WHERE schemaname='public' AND tablename=$1`,[table]);
         assert.equal(policy.rows.length,1);
         assert.equal(policy.rows[0].cmd,'SELECT');
-        assert.deepEqual(policy.rows[0].roles,[ALT085_READER_ROLE]);
+        assert.equal(policy.rows[0].roles_csv,ALT085_READER_ROLE,
+          'policy must target exactly the dedicated reader role');
       }finally{
         for(const statement of alt085RollbackSql(table))await admin.query(statement);
       }
