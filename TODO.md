@@ -292,10 +292,21 @@ Referência: `docs/vigiaplus/alt0810-next-operational-auth-gate.md`. **Status: i
 - [x] Conectar piloto à **rota Next real** `app/api/app/evidence/route.ts`, sem alterar fluxo padrão nem usar fallback quando o piloto é solicitado de forma incorreta.
 - [x] Criar `scripts/tests/alt0810-next-http-staging-e2e.ts` com **servidor Next real** e HTTP cookies A/B, spoof, multi-membership, owner/analyst negados, senha temporária, revogação de sessão e membership, assinatura cancelada e override negativo, mais reversão integral 0/0/0 do schema sintético reservado `alt0810_next_ci`.
 - [x] Criar `tests/todo-alt0810-next-staging-gate.test.ts` para ambiente fail-closed; anexar passo manual isolado ao workflow Neon.
-- [ ] Confirmar CI do SHA atual; **não** usar resultado de SHA antigo.
-- [ ] Despachar workflow manual e confirmar que o passo ALT-08.10 foi **executado**, incluindo logs HTTP e rollback.
+- [x] CI principal do SHA `ef0730e086e6e5e8107f873bd151be9dd6b45b76` aprovado 5/5 ([run 43237972979](https://github.com/OARANHA/vigiaplus/actions/runs/43237972979)); resultado histórico, não reutilizar em novos commits.
+- [x] Workflow manual [43239412881](https://github.com/OARANHA/vigiaplus/actions/runs/43239412881) no mesmo SHA: ALT-08.10 Next real HTTP, auth/entitlements/RLS A/B e revogações VERIFIED; rollback sintético 0/0/0 VERIFIED.
 - [ ] Substituir fixture por schema operacional completo em staging, com snapshot/restore de ACLs/policies preexistentes, e integrar `getCurrentUser/resolveTenantContext/requireFeature` em unidade de confiança no banco real (não apenas piloto).
 - [ ] Homologar papéis internos positivos owner/analyst/worker/webhook com credenciais e roles SQL distintas. Cobrir múltiplos vínculos, expiração, carência e cobrança integral.
 - [ ] Obter autorização do proprietário antes de migração de produção/merge/deploy.
 
 O piloto usa **rota Next real + banco staging isolado**, mas a autorização/DDL ainda operam sobre **schema sintético**. **Produção NO-GO.**
+
+### ALT-08.10C — staging com schema integral: preflight e homologação pendentes
+
+- [x] Inspeção **somente leitura** do catálogo Neon staging `vigia_alt086_staging_20261112`: schema `public` possui **zero tabelas**, logo não é um banco operacional migrado.
+- [x] ALT-08.10B certificado no SHA histórico `ef0730e086e6e5e8107f873bd151be9dd6b45b76`: CI 5/5 e workflow manual 43239412881 GREEN (passo Next realmente executado).
+- [ ] Elaborar migração controlada do schema operacional completo neste staging isolado; snapshot real de ACL/policies/constraints e baseline antes de escrita.
+- [ ] Conectar os handlers Next operacionais ao mesmo banco de identidade/planos/entitlements com roles PostgreSQL mínimas e regras completas; pilotar sem fallback.
+- [ ] Testar owner/analyst/worker/webhook positivamente por credenciais/roles separadas, dois tenants, vínculo múltiplo, expiração/grace, revogação e exports.
+- [ ] Homologar rollback para estado anterior **sem destruir objetos preexistentes**, CI/WS/HTTP no mesmo SHA e autorização explícita antes de produção.
+
+**Status:** ALT-08.10B GREEN em staging sintético; ALT-08.10C operacional **PENDENTE**. Nenhum merge/deploy.
