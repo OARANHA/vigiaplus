@@ -89,3 +89,29 @@ Critério de aceite: CI do HEAD exato e execução manual real exibindo `ALT0810
 - CI e execução dos testes precisam ser confirmados no SHA exato; o runtime padrão ainda usa bootstrap legado, o snapshot permanece fora de `migrations/`. Produção NO-GO.
 
 **Próximo gate:** grafo de dependências e classificação dos comandos (DDL/DML), papéis SQL distintos, snapshot completo de estado real e restauração reversível por objeto em PostgreSQL 16 descartável antes de qualquer DDL de staging.
+
+## ALT-08.10C.5 — inventário de dependências e papéis (candidato)
+
+O analisador `lib/db/bootstrap-dependencies.ts` classifica **somente** os comandos congelados em quatro categorias: `CREATE TABLE`, `ALTER TABLE ADD COLUMN`, `CREATE INDEX` (incluindo `USING gin`) e `UPDATE`. Extrai tabelas-alvo, dependências de `REFERENCES`, dependência dos índices/ALTER/UPDATE e hash SHA-256 por comando. Rejeita instrução desconhecida, referência a tabela ainda inexistente e tabela duplicada. **Não é parser SQL geral nem autorizador de migrações.** O resultado sempre traz `readyForMigration=false`.
+
+`tests/todo-alt0810c-bootstrap-dependencies.test.ts` exige a classificação integral dos 186 comandos (62 CREATE TABLE, 78 ALTER TABLE, 45 CREATE INDEX, 1 UPDATE) e casos adversariais. A execução foi adicionada ao CI; requer verificação do HEAD exato.
+
+### Contrato de papéis — proposta NÃO provisionada
+
+| Papel lógico | Acesso previsto | Proibições |
+| --- | --- | --- |
+| Migrador DDL (CI/staging dedicado) | DDL versionada e reversível somente no banco isolado, credencial separada e aprovação explícita | Runtime de usuário, transporte de notificações, credenciais produtivas |
+| Runtime de aplicação | DML estritamente necessária às rotas autenticadas, com políticas RLS e transações autorizadas | CREATE/ALTER/DROP, ownership de tabelas, SUPERUSER/BYPASSRLS |
+| Reader de verificação | SELECT somente colunas permitidas, catalog/ACL preflight em transação READ ONLY | Escrita, DDL, leitura de PII, SET ROLE para privilegiados |
+| Worker/webhook | Roles específicas com comandos e escopo explicitamente auditados | Herdar privilégios de owner/migrador ou aceitar tenant enviado pelo cliente |
+
+O nome do reader existente `vigia_alt087_staging_reader` **não autoriza** reutilizar a mesma credencial para migrar, autenticar clientes ou executar workers. Papéis internos positivos exigem E2E separados.
+
+### Pendente para a ALT-08.10C.5
+
+1. Catalogar também dependências indiretas (foreign keys, funções, triggers, extensões, grants e constraints existentes), se houver, com parser/inspeção PostgreSQL completa e revisão humana.
+2. Capturar o baseline de `pg_roles`, ownership, ACLs de coluna/tabela/schema, policies, `relrowsecurity`/`relforcerowsecurity`, índices, constraints, dados e `schema_migrations` **no alvo de ensaio**.
+3. Testar um plano de `UP/DOWN` por objeto em PostgreSQL 16 descartável, inclusive objetos pré-existentes, conflitos de nomes, falha pós-commit e recovery; preservar integralmente baseline.
+4. Somente depois, sob autorização explícita, preparar homologação de migração no staging isolado.
+
+**Estado:** inventário técnico inerte, sem scripts de provisioning ou SQL de migração ativada. Nenhuma alteração em produção; NO-GO.
