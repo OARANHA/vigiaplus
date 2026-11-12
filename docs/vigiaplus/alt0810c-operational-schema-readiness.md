@@ -79,3 +79,13 @@ Critério de aceite: CI do HEAD exato e execução manual real exibindo `ALT0810
 - Ainda faltam política formal de bootstrap de produção, migrações versionadas operacionais, snapshot/restore ACL/policies e autenticação de serviços em roles dedicadas.
 
 **Gate:** CI no SHA exato com teste unitário e E2E; só futuramente usar `preprovisioned-staging-ci` após migrador controlado provisionar o schema real em ambiente autorizado. Nenhum merge/deploy.
+
+## ALT-08.10C.4 — ensaio de baseline preexistente (candidato, sem migração)
+
+- `scripts/tests/alt0810c-preexisting-rollback.test.ts` exercita o snapshot legado inerte em PGlite **em memória** com tabela, linha, role NOLOGIN, GRANT de colunas e policy FORCE RLS previamente existentes.
+- Captura baseline ordenado de tabelas, role, definição de policy, ACL, flags RLS e contagem de dados; aplica os 186 comandos dentro de `BEGIN`, executa `ROLLBACK` e exige igualdade exata ao baseline.
+- Executa uma segunda transação interrompida após metade dos comandos e confirma novamente baseline intacto.
+- Ensaio incorporado ao job de build do CI, sem `DATABASE_URL`, `RLS_DATABASE_URL` ou `getDb()`. **Este teste não prova recuperação de falhas fora de transação, dependências entre migrações, grants de todos os objetos, migração em Neon nem rollback depois de COMMIT.**
+- CI e execução dos testes precisam ser confirmados no SHA exato; o runtime padrão ainda usa bootstrap legado, o snapshot permanece fora de `migrations/`. Produção NO-GO.
+
+**Próximo gate:** grafo de dependências e classificação dos comandos (DDL/DML), papéis SQL distintos, snapshot completo de estado real e restauração reversível por objeto em PostgreSQL 16 descartável antes de qualquer DDL de staging.
