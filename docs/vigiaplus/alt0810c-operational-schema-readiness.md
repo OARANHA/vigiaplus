@@ -115,3 +115,14 @@ O nome do reader existente `vigia_alt087_staging_reader` **não autoriza** reuti
 4. Somente depois, sob autorização explícita, preparar homologação de migração no staging isolado.
 
 **Estado:** inventário técnico inerte, sem scripts de provisioning ou SQL de migração ativada. Nenhuma alteração em produção; NO-GO.
+
+## ALT-08.10C.6 — snapshot de catálogo e rollback PostgreSQL 16 (candidato)
+
+**Escopo: somente o serviço PostgreSQL 16 efêmero do GitHub Actions**. Não usa `getDb()`, Neon, banco de staging nem credenciais remotas. O script exige conjuntamente `CI=true`, `GITHUB_ACTIONS=true`, `ALT0810C6_EPHEMERAL=1`, `PGHOST=127.0.0.1`, `PGPORT=5432`, `PGDATABASE=vigia_alt081_ci`, `PGUSER=vigia_ci`, senha descartável conhecida e `DATABASE_URL`/`RLS_DATABASE_URL` vazias.
+
+- `lib/db/disposable-catalog-snapshot.ts` usa somente SELECT de `pg_catalog` e `information_schema` e coleta, com ordenação estável, schemas e ACL, relações/owners/ACL/flags RLS, colunas/ACL/defaults, constraints, índices, policies, grants por tabela/coluna/schema, atributos de roles e memberships. Escopo permitido: namespace e roles com prefixo `alt0810c6_`. É inventário de metadados **de ensaio**, não backup de banco real.
+- `scripts/tests/alt0810c6-postgres-catalog-rollback.test.ts` cria namespace exclusivo, tabela com registro, constraint, índice, owner distinto, GRANT por coluna, policy SELECT e FORCE RLS antes de capturar o baseline. Altera ownership, revoga grants, remove policy/índice, altera coluna e dados, cria tabela extra e injeta erro SQL dentro de `BEGIN`. Executa `ROLLBACK`, exige igualdade exata do snapshot e da linha original. Também confirma uma reversão explícita sem erro.
+- Preflight recusa namespace ou roles preexistentes. Cleanup é limitado aos objetos criados pelo próprio ensaio e não usa `CASCADE`. O teste foi conectado ao job `postgres-disposable` do CI.
+- **Status da execução:** candidato até confirmação do CI no SHA exato. O teste prova somente reversibilidade transacional dos objetos sintéticos sob PostgreSQL 16. **Não prova** restauração após `COMMIT`, rollback de dados preexistentes no schema operacional, catálogo real completo, backups externos, recuperação de crash ou segurança de migração Neon.
+
+Próximo gate: confirmar CI GREEN incluindo teste de regressão PostgreSQL; ensaiar diferença entre catálogo preexistente e migração real com restauração por objeto *após COMMIT*, somente em banco descartável, com papéis migrator/runtime/reader distintos. Produção continua **NO-GO**.
