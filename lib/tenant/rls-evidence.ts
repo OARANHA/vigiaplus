@@ -48,7 +48,7 @@ export async function selectRlsEvidence(
     };
   });
 }
-export function isAlt084EvidencePilotEnabled(env:NodeJS.ProcessEnv):boolean {
+export function isAlt084EvidencePilotEnabled(env:Readonly<Record<string, string | undefined>>):boolean {
   // Definido explicitamente por CI e nunca por request.
   return env.VIGIA_ALT084_EVIDENCE_MODE==='ci-read-only'
     && env.VIGIA_RLS_MODE==='ci-experimental'
