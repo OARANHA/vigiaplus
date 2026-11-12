@@ -29,7 +29,7 @@ function guard():void{
  if(e.CI!=='true'||e.GITHUB_ACTIONS!=='true'||e.NODE_ENV==='production'||
     e.DATABASE_URL||e.VIGIA_RLS_MODE!=='ci-experimental'||
     e.ALT089_STAGING_CONFIRM!=='SIGNED_HTTP_SYNTHETIC_ONLY'||
-    !/^\\d+$/.test(e.GITHUB_RUN_ID??''))throw Error('ALT089_STAGING_ONLY');
+    !Number.isSafeInteger(Number(e.GITHUB_RUN_ID)))throw Error('ALT089_STAGING_ONLY');
  assert.equal(host(e.RLS_DATABASE_URL,READER),
               host(e.ALT087_STAGING_MIGRATOR_URL,MIGRATOR));
 }
