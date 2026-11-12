@@ -338,3 +338,19 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Aprovação explícita para merge/deploy ou mudanças na base operacional.
 
 **Não confundir:** manifesto atual cobre só os quatro arquivos `migrations/*.sql`; `npm run migrate` legado continua usando `getDb()` e **não está autorizado no staging operacional**. ALT-08.10C ainda PENDENTE.
+
+
+### ALT-08.10C.3 — extração integral do bootstrap legado (sem ativação)
+
+- [x] CI anterior ALT-08.10C.2: `40a256a3791996d416aa1ea91d1de4a9e0adc84f` GREEN 5/5 ([run 43247137019](https://github.com/OARANHA/vigiaplus/actions/runs/43247137019)).
+- [x] Inventariar `lib/db/index.ts`: `const DDL` contém **186 comandos estáticos** em ordem; há uma atualização de dados legada, não somente CREATE/ALTER.
+- [x] Extrair comandos para `schema/operational-bootstrap/00001_legacy_snapshot.sql` (fora do runner de migrações), com manifesto de hash Git em `schema/operational-bootstrap/manifest.json`; **não habilitar em produção**.
+- [x] Criar extrator/validador AST TypeScript `lib/db/bootstrap-snapshot.ts` e CLI `scripts/bootstrap-snapshot-check.ts`, impedindo divergência silenciosa do snapshot, SQL dinâmico e alegações falsas de deploy.
+- [x] Testes unitários de integridade e ensaio com os 186 DDL em PGlite **in-memory** dentro de transação, seguido de `ROLLBACK` e catálogo 0 tabelas.
+- [x] Adicionar etapas de validação e ensaio ao CI; não configurar conexão remota nem import de `getDb()` no ensaio.
+- [ ] Certificar CI do **HEAD exato** no workflow, incluindo TypeScript, manifesto, snapshot, teste PGlite e 5/5 jobs.
+- [ ] Converter o snapshot em migrações operacionais com dependências, seeding seguro, ACLs, RLS e rollback real de estado preexistente; **não executar** o snapshot diretamente no Neon.
+- [ ] Migrar schema real no staging isolado somente após procedimento de snapshot, autorização e ensaio completo com dois tenants; homologar papéis internos positivos.
+- [ ] Release/merge/deploy condicionado à autorização do proprietário.
+
+**Estado:** snapshot técnico versionado e ensaio descartável em implementação/validação, ALT-08.10C ainda aberta, produção NO-GO.
