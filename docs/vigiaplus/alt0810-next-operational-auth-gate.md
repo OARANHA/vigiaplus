@@ -1,6 +1,6 @@
 # ALT-08.10 — homologação do Next.js real com identidade e dados no mesmo Neon staging
 
-**Status:** ESPECIFICADO / AINDA NÃO IMPLEMENTADO. Produção NO-GO. PR #36 DRAFT.
+**Status:** IMPLEMENTAÇÃO PARCIAL DO CONTEXTO NEXT; HOMOLOGAÇÃO OPERACIONAL PENDENTE. Produção NO-GO. PR #36 DRAFT.
 
 ## Hipótese a provar
 
@@ -42,3 +42,15 @@ O caminho autenticado da **aplicação Next.js real** (não o harness HTTP de AL
 ## Não fazer
 
 Não declarar que ALT-08.9 já homologou Next.js; não ativar RLS em produção, trocar `getDb()` globalmente, usar banco do usuário, enviar notificações ou fazer merge/deploy sem autorização explícita.
+
+## Incremento ALT-08.10A — seleção de tenant por membership (2026-11-12)
+
+Implementado em `lib/tenant/authorized-membership.ts`, integrado ao **resolver real** `lib/tenant/context.ts` e coberto por `tests/todo-alt0810-authorized-membership.test.ts`.
+
+- Antes, a consulta `db.select().from(memberships).where(userId)` tomava a primeira linha arbitrária e podia atribuir um tenant não escolhido a uma conta com dois ou mais vínculos.
+- Agora, **zero vínculos** → 403; **um vínculo** → tenant autenticado (tentativa de selecionar outro tenant é registrada como spoof, sem conceder acesso); **múltiplos vínculos** → exigência de tenant explicitamente selecionado e comprovadamente presente na membership do usuário; sem escolha ou escolha não autorizada → 403; vínculos duplicados, tenant inválido ou papel inesperado → 403; ID inválido → 400.
+- A mudança protege o ponto existente de criação de `TenantContext`, não troca a sessão, o transporte de DB ou o fluxo de pagamentos.
+- **Limitação:** a seleção autenticada na UI para usuário multi-tenant ainda não foi desenvolvida; até lá o cliente multi-tenant sem seleção recebe 403 por segurança. Ainda não demonstra que todas as rotas consumam `TenantContext` corretamente.
+- A prova RLS/HTTP operacional completa do restante desta especificação permanece aberta. Não classificar ALT-08.10 como GREEN por CI unitário.
+
+**Pendente:** testar HTTP Next.js na aplicação real com DB operacional completo em Neon staging, matriz positiva dos serviços e rollback que preserve ACL/policies preexistentes.
