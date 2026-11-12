@@ -38,7 +38,7 @@ export function assertIsolatedStagingCatalog(
 export function operationalSchemaReadiness(c:StagingCatalog){
  assertIsolatedStagingCatalog(c);
  return {
-  readyForOperationalAuth: c.publicTables>0 && c.migrationLedger,
+  readyForOperationalAuth:false, // inventário sozinho nunca prova compatibilidade funcional
   status: c.publicTables===0?'EMPTY_STAGING':'MIGRATION_REVIEW_REQUIRED',
   // Nunca afirmar que tabelas presentes = schema completo/seguro.
   migratorAllowed:false,
