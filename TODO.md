@@ -310,3 +310,16 @@ O piloto usa **rota Next real + banco staging isolado**, mas a autorização/DDL
 - [ ] Homologar rollback para estado anterior **sem destruir objetos preexistentes**, CI/WS/HTTP no mesmo SHA e autorização explícita antes de produção.
 
 **Status:** ALT-08.10B GREEN em staging sintético; ALT-08.10C operacional **PENDENTE**. Nenhum merge/deploy.
+
+
+### ALT-08.10C.1 — preflight read-only de schema Neon staging (sem bootstrap)
+
+- [x] Criar contrato `lib/db/staging-schema-preflight.ts` com DB/role exatos, reader sem SUPERUSER/BYPASSRLS, falha fechada para CI/produção/URL inválida e estados `EMPTY_STAGING` / `MIGRATION_REVIEW_REQUIRED` (nenhum certifica readiness operacional).
+- [x] Criar `scripts/tests/alt0810c-neon-readonly-preflight.ts` com transação `BEGIN READ ONLY` no Neon reader, inventário de tabelas, políticas, índices, constraints, grants e ledger, rollback sem DDL/bootstrap.
+- [x] Adicionar testes `tests/todo-alt0810c-staging-preflight.test.ts` e etapa manual no workflow Neon com secret reader.
+- [ ] Confirmar CI no SHA exato e execução **real** do step manual ALT-08.10C sem falhas.
+- [ ] Gerar manifesto completo e versionado do DDL real (não apenas Drizzle schema), separar criação/migração de `getDb()` e do `migrate:check` antes de usar o banco de staging para runtime operacional.
+- [ ] Provisionar schema operacional no staging isolado com snapshot e rollback que preservem grants e policies originais; testar papéis e rotas Next sem adapters sintéticos.
+- [ ] Bloqueio de produção e merge permanece em vigor.
+
+Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstrap; **não usar como preflight read-only remoto**.
