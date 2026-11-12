@@ -10,6 +10,7 @@ import { users, memberships, tenants, auditEvents } from '@/lib/db/schema';
 import { getCurrentUser, type User } from '@/lib/auth';
 import { ROLES, type Role, type Surface } from './catalog';
 import { AppError } from './errors';
+import { selectAuthorizedClientMembership } from './authorized-membership';
 
 export type TenantContext = {
   userId: number;
@@ -82,15 +83,14 @@ export async function resolveTenantContext(opts: {
   } else {
     // Cliente: tenant vem do memberships, NUNCA do request.
     const db = await getDb();
-    const [membership] = await db.select().from(memberships)
+    const candidates = await db.select().from(memberships)
       .where(eq(memberships.userId, user.id));
-    if (!membership) throw AppError.forbidden('Usuario sem vinculo com tenant');
-    tenantId = membership.tenantId;
-    role = membership.role as Role;
-
-    if (requested && opts.requestedTenantId && opts.requestedTenantId !== tenantId) {
-      spoofAttempt = String(opts.requestedTenantId); // ignora e registra
-    }
+    // ALT-08.10: não selecionar a primeira membership sem ORDER BY;
+    // múltiplos vínculos exigem escolha explícita e comprovadamente autorizada.
+    const selected = selectAuthorizedClientMembership(candidates, opts.requestedTenantId);
+    tenantId = selected.membership.tenantId;
+    role = selected.membership.role as Role;
+    spoofAttempt = selected.spoofAttempt;
   }
 
   if (!ROLES[role]) throw AppError.forbidden('Papel desconhecido');
