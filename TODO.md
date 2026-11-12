@@ -412,3 +412,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar 5/5 jobs GREEN no HEAD deste incremento e investigar logs se RED.
 - [ ] Validar contratos operacionais completos com migrações e seeds revisados, banco com schema existente, constraints RLS/entitlements, roles separadas e autorização explícita para qualquer staging real.
 - [ ] Produção segue NO-GO. PR DRAFT, sem merge/deploy e sem escrita no Neon.
+
+### ALT-08.10C.9 — prontidão operacional é sempre NO-GO sem E2E
+
+- [x] Criado `lib/db/operational-readiness.ts` (relatório puro e fail-closed do catálogo descartável).
+- [x] Adicionada verificação no ensaio PostgreSQL16 da ALT-08.10C.8, rejeitando RLS/ledger/policies ausentes mesmo após 186 comandos SQL aplicados.
+- [x] Criados testes adversariais em `tests/todo-alt0810c-operational-readiness.test.ts`, executados pelo `tests/*.test.ts` no CI.
+- [ ] Confirmar CI completo GREEN do SHA exato deste incremento.
+- [ ] Próximo: preparar migrações operacionais versionadas, role migradora mínima, políticas e grants por tenant, homologação HTTP com revogação e rollback físico em banco descartável.
+- [ ] Só depois avaliar staging com autorização expressa; produção NO-GO, PR DRAFT, sem merge/deploy.
