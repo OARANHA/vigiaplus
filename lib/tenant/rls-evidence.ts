@@ -22,6 +22,23 @@ export async function selectRlsEvidence(
   limit=12,
 ):Promise<RlsEvidenceRow[]> {
   const safeLimit=checkedEvidenceLimit(limit);
+  // ALT-08.4: fail-closed caso a base não aplique FORCE RLS nas duas
+  // tabelas, ou a role de serviço consiga ignorar policies.
+  const guard=await query(`SELECT
+      current_database() AS db,
+      (SELECT rolsuper OR rolbypassrls FROM pg_roles WHERE rolname=current_user) AS privileged,
+      (SELECT count(*)::int FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+       WHERE n.nspname='public' AND c.relname IN ('projects','mentions')
+         AND c.relkind='r' AND c.relrowsecurity AND c.relforcerowsecurity) AS protected_count,
+      (SELECT count(*)::int FROM pg_policies
+       WHERE schemaname='public' AND
+         ((tablename='projects' AND policyname='alt084_projects_read' AND cmd='SELECT')
+          OR (tablename='mentions' AND policyname='alt084_mentions_read' AND cmd='SELECT'))) AS policy_count`);
+  if(guard.rows.length!==1 || guard.rows[0].privileged!==false ||
+     Number(guard.rows[0].protected_count)!==2 ||
+     Number(guard.rows[0].policy_count)!==2) {
+    throw new Error('RLS_EVIDENCE_POLICIES_NOT_ENFORCED');
+  }
   const result=await query(
     `SELECT m.id,m.title,m.url,m.source,m.published_at AS "publishedAt",
             p.name AS "projectName"
