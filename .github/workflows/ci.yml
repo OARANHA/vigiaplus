@@ -121,6 +121,11 @@ jobs:
           ALT0810C7_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c7-postcommit-restore.test.ts
+      - name: "ALT-08.10C.8 186 statements operacionais em PostgreSQL 16 com rollback"
+        env:
+          ALT0810C8_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
