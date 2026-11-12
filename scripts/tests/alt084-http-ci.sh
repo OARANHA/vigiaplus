@@ -21,15 +21,20 @@ export NEXT_TELEMETRY_DISABLED=1
 server_pid=''
 remote_created=0
 cleanup(){
+  local status=$?
   if [[ -n "$server_pid" ]]; then
     kill "$server_pid" 2>/dev/null || true
     pkill -P "$server_pid" 2>/dev/null || true
     wait "$server_pid" 2>/dev/null || true
   fi
   if [[ "$remote_created" == 1 ]]; then
-    node --import tsx scripts/tests/alt084-http-neon-setup.ts cleanup || echo "ALT084 CLEANUP FAILED — disposable DB requires attention" >&2
+    if ! node --import tsx scripts/tests/alt084-http-neon-setup.ts cleanup; then
+      echo "ALT084 CLEANUP FAILED — disposable DB requires attention" >&2
+      status=1
+    fi
   fi
   rm -rf -- "$state_root"
+  exit "$status"
 }
 trap cleanup EXIT
 node --import tsx scripts/tests/alt084-http-neon-setup.ts setup
