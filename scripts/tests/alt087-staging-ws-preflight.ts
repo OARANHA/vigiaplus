@@ -31,6 +31,7 @@ async function main():Promise<void>{
         (SELECT count(*)::int FROM pg_policies WHERE schemaname='public') AS policies`);
       assert.equal(x.rows.length,1);
       assert.equal(x.rows[0].db,'vigia_alt086_staging_20261112');
+      assert.equal(x.rows[0].role,'vigia_alt087_staging_reader','must not use database owner');
       assert.equal(x.rows[0].superuser,false,'superuser staging denied');
       assert.equal(x.rows[0].bypass,false,'BYPASSRLS staging denied');
       // Do not change a database if the schema already carries active policies.
