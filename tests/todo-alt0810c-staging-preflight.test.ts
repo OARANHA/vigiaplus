@@ -28,7 +28,7 @@ test('ALT-08.10C: baseline empty is NOT operational-ready',()=>{
 test('ALT-08.10C: existing tables never imply deployment approval',()=>{
  const c={...catalog,publicTables:12,publicIndexes:15,migrationLedger:true};
  assert.deepEqual(operationalSchemaReadiness(c),{
-  readyForOperationalAuth:true,status:'MIGRATION_REVIEW_REQUIRED',
+  readyForOperationalAuth:false,status:'MIGRATION_REVIEW_REQUIRED',
   migratorAllowed:false,productionAllowed:false
  });
 });
