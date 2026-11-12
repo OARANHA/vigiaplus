@@ -6,6 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { randomBytes } from 'node:crypto';
 
 if (process.env.CI !== 'true' || process.env.GITHUB_ACTIONS !== 'true'
   || process.env.ALT083_EPHEMERAL_RLS !== '1'
@@ -24,7 +25,8 @@ const { Client }=require('pg') as {
 const conn={host:'127.0.0.1',port:5432,database:'vigia_alt081_ci'};
 const admin=new Client({...conn,user:'vigia_ci',password:process.env.PGPASSWORD});
 const roles=['alt083_real_a','alt083_real_b'] as const;
-const clients=roles.map(role=>new Client({...conn,user:'vigia_ci',password:process.env.PGPASSWORD}));
+const passwords=roles.map(()=>randomBytes(20).toString('hex'));
+const clients=roles.map((role,i)=>new Client({...conn,user:role,password:passwords[i]}));
 const table='public.notification_deliveries';
 
 test('ALT-08.3: tabela operacional real respeita RLS para dois tenants, inclusive GUC falsificado',async()=>{
@@ -36,11 +38,9 @@ test('ALT-08.3: tabela operacional real respeita RLS para dois tenants, inclusiv
       `SELECT to_regclass('public.notification_deliveries') AS notification_table`);
     assert.ok(found.rows[0].notification_table,
       'ALT081 schema must have been installed in the same disposable job');
-    // Authenticação no banco: simula roles de execução distintas via SET ROLE
-    // para evitar senhas persistentes de teste e provar current_user real.
-    for(const role of roles){
-      await admin.query(`CREATE ROLE ${role} NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEROLE`);
-      await admin.query(`GRANT ${role} TO vigia_ci`);
+    // Cada sessão autentica como role diferente, sem herdar outra role.
+    for(const [i,role] of roles.entries()){
+      await admin.query(`CREATE ROLE ${role} LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEROLE PASSWORD '${passwords[i]}'`);
       await admin.query(`GRANT USAGE ON SCHEMA public TO ${role}`);
       await admin.query(`GRANT SELECT,INSERT,UPDATE,DELETE ON ${table} TO ${role}`);
     }
@@ -65,9 +65,9 @@ test('ALT-08.3: tabela operacional real respeita RLS para dois tenants, inclusiv
     for(let i=0;i<2;i++){
       const client=clients[i],role=roles[i];
       await client.connect();connected[i]=true;
-      await client.query('SET ROLE '+role);
       const current=await client.query('SELECT current_user AS role');
       assert.equal(current.rows[0].role,role);
+      await assert.rejects(client.query('SET ROLE '+roles[1-i]));
       const expected=i===0?idA:idB,foreign=i===0?idB:idA;
       const visible=await client.query(`SELECT id FROM ${table} ORDER BY id`);
       assert.deepEqual(visible.rows.map(r=>Number(r.id)),[expected]);
@@ -89,6 +89,10 @@ test('ALT-08.3: tabela operacional real respeita RLS para dois tenants, inclusiv
         [expected],
       );
     }
+    await admin.query(`DROP POLICY alt083_real_scope ON ${table}`);
+    await admin.query(`ALTER TABLE ${table} NO FORCE ROW LEVEL SECURITY`);
+    await admin.query(`ALTER TABLE ${table} DISABLE ROW LEVEL SECURITY`);
+    configured=false;
     const after=await admin.query(`SELECT id,message FROM ${table}
       WHERE id=$1 OR id=$2 ORDER BY id`,[idA,idB]);
     assert.deepEqual(after.rows.map(r=>r.message),
@@ -97,7 +101,6 @@ test('ALT-08.3: tabela operacional real respeita RLS para dois tenants, inclusiv
   } finally {
     for(let i=0;i<2;i++){
       if(connected[i]){
-        try {await clients[i].query('RESET ROLE');}catch{}
         await clients[i].end();
       }
     }
@@ -107,7 +110,6 @@ test('ALT-08.3: tabela operacional real respeita RLS para dois tenants, inclusiv
       await admin.query(`ALTER TABLE ${table} DISABLE ROW LEVEL SECURITY`);
     }
     for(const role of roles){
-      await admin.query(`REVOKE ${role} FROM vigia_ci`).catch(()=>{});
       await admin.query(`DROP OWNED BY ${role}`).catch(()=>{});
       await admin.query(`DROP ROLE IF EXISTS ${role}`).catch(()=>{});
     }
