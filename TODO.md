@@ -285,3 +285,17 @@ O harness não substitui a autenticação Next operacional. **Produção NO-GO; 
 - [ ] Homologar em staging e obter aprovação explícita antes de merge/deploy ou política RLS operacional.
 
 Referência: `docs/vigiaplus/alt0810-next-operational-auth-gate.md`. **Status: implementação parcial; produção NO-GO.**
+
+### ALT-08.10B — rota Next real com auth/entitlement no mesmo staging (candidato)
+
+- [x] Criar `lib/tenant/alt0810-next-staging.ts`: piloto CI somente opt-in, autenticação pelo cookie real do VIGIAPLUS, leitura `users.session_version/must_change_password`, membership, tenant, assinaturas e feature no mesmo banco Neon WS, reader sem BYPASSRLS e consulta RLS transacional à fixture `incidents`.
+- [x] Conectar piloto à **rota Next real** `app/api/app/evidence/route.ts`, sem alterar fluxo padrão nem usar fallback quando o piloto é solicitado de forma incorreta.
+- [x] Criar `scripts/tests/alt0810-next-http-staging-e2e.ts` com **servidor Next real** e HTTP cookies A/B, spoof, multi-membership, owner/analyst negados, senha temporária, revogação de sessão e membership, assinatura cancelada e override negativo, mais reversão integral 0/0/0 do schema sintético reservado `alt0810_next_ci`.
+- [x] Criar `tests/todo-alt0810-next-staging-gate.test.ts` para ambiente fail-closed; anexar passo manual isolado ao workflow Neon.
+- [ ] Confirmar CI do SHA atual; **não** usar resultado de SHA antigo.
+- [ ] Despachar workflow manual e confirmar que o passo ALT-08.10 foi **executado**, incluindo logs HTTP e rollback.
+- [ ] Substituir fixture por schema operacional completo em staging, com snapshot/restore de ACLs/policies preexistentes, e integrar `getCurrentUser/resolveTenantContext/requireFeature` em unidade de confiança no banco real (não apenas piloto).
+- [ ] Homologar papéis internos positivos owner/analyst/worker/webhook com credenciais e roles SQL distintas. Cobrir múltiplos vínculos, expiração, carência e cobrança integral.
+- [ ] Obter autorização do proprietário antes de migração de produção/merge/deploy.
+
+O piloto usa **rota Next real + banco staging isolado**, mas a autorização/DDL ainda operam sobre **schema sintético**. **Produção NO-GO.**
