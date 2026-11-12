@@ -29,6 +29,7 @@ const scoped=schema+'.evidence';
 test('ALT-08.10C.6: rollback restores pre-existing catalog exactly after failed DDL',async()=>{
  await admin.connect();
  let began=false;
+ let setupStarted=false;
  try{
   // Strictly disposable namespace and roles. Preflight refuses collisions.
   const exists=await admin.query(`SELECT to_regnamespace($1) AS ns`,[schema]);
@@ -36,6 +37,7 @@ test('ALT-08.10C.6: rollback restores pre-existing catalog exactly after failed 
   const prior=await admin.query(`SELECT rolname FROM pg_roles WHERE rolname=ANY($1::text[])`,[roles]);
   assert.equal(prior.rows.length,0,'test roles already exist');
 
+  setupStarted=true;
   await admin.query(`CREATE ROLE ${reader} NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEROLE`);
   await admin.query(`CREATE ROLE ${owner} NOLOGIN NOSUPERUSER NOBYPASSRLS NOCREATEROLE`);
   await admin.query(`CREATE SCHEMA ${schema}`);
@@ -87,11 +89,13 @@ test('ALT-08.10C.6: rollback restores pre-existing catalog exactly after failed 
   console.log('ALT0810C6 PostgreSQL16: scoped ACL/policies/owners/indexes/constraints/roles/data rollback VERIFIED');
  } finally{
   if(began)await admin.query('ROLLBACK').catch(()=>{});
-  // No CASCADE: cleanup must fail if unexpected dependent objects appeared.
+  // No CASCADE. If preflight detected preexisting objects, never touch them.
+  if(setupStarted){
   await admin.query(`DROP TABLE IF EXISTS ${scoped}`).catch(()=>{});
   await admin.query(`DROP SCHEMA IF EXISTS ${schema}`).catch(()=>{});
   await admin.query(`DROP ROLE IF EXISTS ${reader}`).catch(()=>{});
   await admin.query(`DROP ROLE IF EXISTS ${owner}`).catch(()=>{});
+  }
   await admin.end();
  }
 });
