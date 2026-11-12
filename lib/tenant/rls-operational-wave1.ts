@@ -16,6 +16,14 @@ export const ALT085_WAVE1_TABLES = [
 export type Alt085Wave1Table = typeof ALT085_WAVE1_TABLES[number];
 export const ALT085_READER_ROLE = 'vigia_alt085_client_read_ci';
 
+/** Colunas mínimas por consulta de leitura; não expor destinos, cobrança Pix ou payloads. */
+export const ALT085_WAVE1_READ_COLUMNS: Readonly<Record<Alt085Wave1Table, readonly string[]>> = {
+  reputation_targets:['id','name','kind','score'],
+  incidents:['id','title','status','severity'],
+  notification_channels:['id','channel','active','verified'],
+  invoices:['id','amount_brl','status','due_at'],
+};
+
 function quotedTable(table: Alt085Wave1Table): string {
   if (!ALT085_WAVE1_TABLES.includes(table)) throw Error('ALT085_TABLE_NOT_ALLOWLISTED');
   return 'public.' + table;
@@ -28,8 +36,9 @@ function policyName(table: Alt085Wave1Table): string {
 export function alt085ApplySql(table: Alt085Wave1Table,role=ALT085_READER_ROLE):readonly string[]{
   if(role!==ALT085_READER_ROLE)throw Error('ALT085_ROLE_NOT_ALLOWLISTED');
   const t=quotedTable(table);
+  const columns=ALT085_WAVE1_READ_COLUMNS[table].join(', ');
   return [
-    `GRANT SELECT ON TABLE ${t} TO ${role}`,
+    `GRANT SELECT (${columns}) ON TABLE ${t} TO ${role}`,
     `ALTER TABLE ${t} ENABLE ROW LEVEL SECURITY`,
     `ALTER TABLE ${t} FORCE ROW LEVEL SECURITY`,
     `CREATE POLICY ${policyName(table)} ON ${t} AS PERMISSIVE FOR SELECT
@@ -44,11 +53,12 @@ export function alt085ApplySql(table: Alt085Wave1Table,role=ALT085_READER_ROLE):
 export function alt085RollbackSql(table: Alt085Wave1Table,role=ALT085_READER_ROLE):readonly string[]{
   if(role!==ALT085_READER_ROLE)throw Error('ALT085_ROLE_NOT_ALLOWLISTED');
   const t=quotedTable(table);
+  const columns=ALT085_WAVE1_READ_COLUMNS[table].join(', ');
   return [
     `DROP POLICY IF EXISTS ${policyName(table)} ON ${t}`,
     `ALTER TABLE ${t} NO FORCE ROW LEVEL SECURITY`,
     `ALTER TABLE ${t} DISABLE ROW LEVEL SECURITY`,
-    `REVOKE SELECT ON TABLE ${t} FROM ${role}`,
+    `REVOKE SELECT (${columns}) ON TABLE ${t} FROM ${role}`,
   ];
 }
 
