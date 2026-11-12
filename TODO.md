@@ -236,3 +236,17 @@ Status real: **staging provisionado e SQL transacional básico verificado; homol
 - [ ] Validar schema integral, múltiplos vínculos, assinaturas vencidas/revogadas, rollback preservando ACL/policies preexistentes e aprovação explícita antes de qualquer deploy.
 
 Produção **NO-GO**, PR #36 DRAFT, nenhum merge ou deploy.
+
+### ALT-08.9 — autenticação HTTP assinada no mesmo Neon staging (harness)
+
+- [x] Inspecionar `lib/session.ts`, `lib/session-auth.ts`, `lib/tenant/context.ts`, `rls-runtime.ts` e rota Next `/api/app/evidence`; autenticação produtiva ainda usa `getDb()` (PGlite/neon-http), não a sessão WebSocket do staging.
+- [x] Criar `scripts/tests/alt089-staging-http-auth-e2e.ts`: servidor HTTP Node efêmero + cookies `sr_session` reais assinados por `signSession/verifySession`, leitura do mesmo banco Neon por role migradora, `withTenantRlsTransaction` com role sem BYPASS, políticas e escopo A/B, revogação de sessão e membership, cancelamento de plano e desabilitação de feature.
+- [x] Operar exclusivamente em namespace `alt089_http_ci` com sete tabelas sintéticas, migração e rollback integral reversível `0/0/0`, nunca em `public`.
+- [x] Exigir URL/host/role/banco exatos, CI manual, flags específicas e dois secrets de staging; adicionar passo no workflow `alt083-neon-e2e.yml`.
+- [x] Documentar restrições em `docs/vigiaplus/alt089-staging-http-auth-gate.md`.
+- [ ] CI GREEN no SHA exato da ALT-08.9.
+- [ ] Executar workflow manual com ALT-08.9 realmente executada e certificar logs de revogação HTTP e cleanup no SHA.
+- [ ] Homologar rota Next real com `resolveTenantContext`/`authenticateSession`/entitlements apontando para **mesmo banco**, schema integral e papéis internos positivos com identidades separadas.
+- [ ] Certificar múltiplos memberships, revogação simultânea, expiração de planos e políticas reais com snapshot/rollback preservando ACLs preexistentes.
+
+O harness não substitui a autenticação Next operacional. **Produção NO-GO; sem merge/deploy.**
