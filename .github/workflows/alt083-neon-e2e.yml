@@ -23,6 +23,7 @@ jobs:
       VIGIA_ALT083_DISPOSABLE_CONFIRM: YES-EMPTY-NEON-CI-DATABASE
       RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT083_NEON_CI_URL }}
       ALT087_STAGING_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+      ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -50,3 +51,17 @@ jobs:
           RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
           ALT087_STAGING_CONFIRM: VIGIAPLUS_ISOLATED_ALT086_STAGING
         run: node --import tsx scripts/tests/alt087-staging-ws-preflight.ts
+
+      - name: ALT-08.7 staging RLS real + migracao reversivel (somente staging exclusivo)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT087_STAGING_CONFIRM: VIGIAPLUS_ISOLATED_ALT086_STAGING
+          ALT087_MIGRATION_CONFIRM: REVERSIBLE_SYNTHETIC_SCHEMA_ONLY
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT087 NO-GO: migration secret absent, staging NOT homologated" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt087-staging-reversible-e2e.ts
