@@ -53,11 +53,11 @@ async function main():Promise<void>{
       assert.equal(r.rows[0]?.tenant,'993');
       throw Error('ALT087_FORCED_ROLLBACK');
     }),/ALT087_FORCED_ROLLBACK/);
-    const c=await pool.connect();
+    const verificationClient=await pool.connect();
     try{
-      const r=await c.query(`SELECT nullif(current_setting('app.tenant_id',true),'') AS tenant`);
+      const r=await verificationClient.query(`SELECT nullif(current_setting('app.tenant_id',true),'') AS tenant`);
       assert.equal(r.rows[0]?.tenant,null,'transaction scope leaked to next session');
-    }finally{c.release();}
+    }finally{verificationClient.release();}
     process.stdout.write('ALT087 isolated staging: real Neon WS transactional A/B, rollback and no leak VERIFIED\\n');
   });
 }
