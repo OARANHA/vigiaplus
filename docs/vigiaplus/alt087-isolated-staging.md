@@ -33,3 +33,26 @@
 6. Obter revisão e autorização do proprietário antes de merge, deploy, estágio seguinte ou qualquer mudança em produção.
 
 **Estado: staging provisionado e conexão SQL transacional básica validada; NÃO homologado end-to-end.**
+
+## ALT-08.7 — ensaio de migração reversível com WebSocket (novo gate)
+
+`scripts/tests/alt087-staging-reversible-e2e.ts` prepara, **somente quando o operador fornecer duas credenciais exclusivas de staging**, um schema sintético e fixo `alt087_staging_e2e` no banco `vigia_alt086_staging_20261112`. Não altera tabelas do produto e não toca em `public`. O ensaio:
+
+1. Rejeita qualquer hostname fora de Neon, nome de banco divergente, role diferente, host distinto entre as URLs, ausência das flags de CI e banco operacional via `DATABASE_URL`.
+2. Com a role migradora identificada explicitamente como `vigia_alt083_ci_20261112_owner`, valida o catálogo vazio do schema reservado e faz `BEGIN` → `CREATE SCHEMA/TABLE` sintéticos → `INSERT` A/B → `GRANT USAGE / SELECT (id,label)` somente para a role `vigia_alt087_staging_reader` → `ENABLE/FORCE RLS` → policy por `tenant_id` → `COMMIT`.
+3. Com a **role reader não privilegiada**, em conexões Neon WebSocket reais, prova ausência de tenant (zero linhas), tenant 771/882/771, tentativa de leitura de `private_payload` negada, `UPDATE` negado, `ROLLBACK` após falha forçada e ausência de vazamento de GUC.
+4. Em `finally`, a role migradora executa rollback explícito **somente** se o catálogo corresponde a exatos 1 schema/1 tabela/1 policy criados pelo ensaio: `DROP POLICY`, `NO FORCE/DISABLE RLS`, `REVOKE SELECT`, `REVOKE USAGE`, `DROP TABLE`, `DROP SCHEMA`, confirmando catálogo original vazio. Falha de cleanup deixa o workflow RED e requer inspeção humana.
+5. As DDLs são autorizadas **apenas** no staging sintético exclusivo. Isso **não** executa migração em tabelas operacionais reais, nem certifica autenticação HTTP no mesmo Neon, nem substitui o driver `getDb()` em produção.
+
+### Credenciais necessárias para executar manualmente
+
+Ambos os secrets precisam apontar para o **mesmo endpoint de branch Neon**, banco `vigia_alt086_staging_20261112`.
+
+- `VIGIA_ALT087_STAGING_URL`: usuário `vigia_alt087_staging_reader`, sem superuser nem bypass.
+- `VIGIA_ALT087_STAGING_MIGRATOR_URL`: usuário `vigia_alt083_ci_20261112_owner`, **somente migração do schema sintético**, não executar como leitor do teste.
+
+O workflow `alt083-neon-e2e.yml` permanece `workflow_dispatch` manual. Se o reader secret estiver ausente, o novo passo não executa; se reader estiver configurado e migrator não, o teste de migração falha fechado. **Não interpretar GREEN de um workflow que pulou este passo como homologação de staging.**
+
+As credenciais nunca devem ser incluídas em commits, logs, PR ou ELUS Memory Admin. O workflow só será considerado homologado quando houver run com esses passos executados e aprovados no SHA exato.
+
+**Revisão de segurança pendente:** role migradora é owner com BYPASSRLS, portanto pode fazer DDL **somente neste banco sintético**; isolamento deve sempre ser testado pela role de leitura restrita. Staging continua NO-GO para deploy.
