@@ -10,6 +10,7 @@ if(e.CI!=='true'||e.GITHUB_ACTIONS!=='true'||
  !resolve(e.PGLITE_DIR).startsWith(resolve(e.RUNNER_TEMP)+'/')) {
   throw Error('ALT084_HTTP_AUTH_FIXTURES_LOCAL_ONLY');
 }
+async function main():Promise<void>{
 const db=await getDb();
 const [a,b]=await db.insert(tenants).values([
  {name:'ALT084 client A',slug:'alt084-http-a'},
@@ -35,3 +36,8 @@ await db.insert(tenantFeatures).values([
  {tenantId:b.id,featureKey:'reputation_dual',enabled:1,reason:'ALT084 test only'},
 ]);
 process.stdout.write(JSON.stringify({a:us[0].id,b:us[1].id})+'\n');
+}
+main().catch(error=>{
+ console.error('ALT084 local fixture failed:',error instanceof Error?error.message:'unknown');
+ process.exitCode=1;
+});
