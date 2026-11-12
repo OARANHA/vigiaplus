@@ -70,3 +70,23 @@ Implementados:
 O endpoint é genuinamente uma rota Next.js, mas ainda utiliza **schema representativo sintético** `alt0810_next_ci`, e um adaptador de staging independente para autorização. O código regular de `getCurrentUser()`, `authenticateSession()`, `resolveTenantContext()` e `requireFeature()` não foi migrado para o mesmo DB transacional: isso requer schema operacional integral, papéis positivos owner/analyst/worker/webhook e desenho próprio de SQL/ACLs. A simulação de contrato é reduzida (assinatura ativa, plano e override negativo), não reproduz todos os casos de expiração, carência, catálogo e cobrança.
 
 O Next testa a superfície real, porém **não** certifica schema/role de produção e nem habilita RLS operacional. Sem alteração em banco de produção, sem merge/deploy. A evidência de sucesso ainda precisa de CI e workflow manual.
+
+
+## ALT-08.10B — evidência GREEN e limite operacional (2026-11-12)
+
+No SHA `ef0730e086e6e5e8107f873bd151be9dd6b45b76`, CI principal [43237972979](https://github.com/OARANHA/vigiaplus/actions/runs/43237972979) concluído com sucesso nos cinco jobs. Workflow manual [43239412881](https://github.com/OARANHA/vigiaplus/actions/runs/43239412881), job `131255454403`, GREEN e passo ALT-08.10 realmente executado. Mensagens certificadas do runner:
+- `ALT0810 NEXT: REAL Next HTTP route, same Neon staging reader auth+entitlements+RLS, session/membership/plan revocation VERIFIED`.
+- `ALT0810 NEXT: isolated staging schema rollback 0/0/0 VERIFIED`.
+
+No Neon staging `vigia_alt086_staging_20261112` foi realizada inspeção **somente leitura** da tabela de catálogo `pg_class`: o schema `public` contém **zero tabelas operacionais**. O namespace experimental `alt0810_next_ci` já havia sido removido pelo workflow. Assim, **não existe schema operacional integral nesse staging para certificar**; a prova acima é de uma rota Next real sobre tabelas sintéticas.
+
+### ALT-08.10C — próximo gate controlado
+
+- [ ] Inventariar DDL/migrações e dependências reais de `lib/db/index.ts` e `lib/db/schema.ts`, scripts de seed, constrangimentos e índices.
+- [ ] Preparar migração do **schema real** em branch/DB isolado, com snapshot de ACLs/policies, sem usar inicialização de produção como mecanismo implícito de DDL.
+- [ ] Separar role autenticadora, leitor RLS, admin de carteira, analyst, worker e webhook; proibir BYPASSRLS na certificação de leitura.
+- [ ] Cobrir sessão, memberships, ciclo de vida de tenants, plano/entitlements completos (`vigencia_ate`, `grace_until`, overrides duplicados e expirados).
+- [ ] Exercitar rotas Next operacionais além de `/api/app/evidence`, com autenticação, RLS/tenant e exports; rollback reproduz baseline anterior sem `DROP` indiscriminado.
+- [ ] Somente após provas executadas no SHA exato marcar homologação operacional completa.
+
+**Produção segue NO-GO.**
