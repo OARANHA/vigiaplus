@@ -74,6 +74,10 @@ jobs:
         env:
           ALT083_EPHEMERAL_RLS: "1"
         run: node --import tsx --test scripts/tests/alt083-postgres-rls.test.ts
+      - name: "ALT-08.3 RLS adversarial na tabela operacional real"
+        env:
+          ALT083_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt083-operational-rls.test.ts
 
   dryrun-isolated:
     name: ALT-08.2 dry-run isolado
