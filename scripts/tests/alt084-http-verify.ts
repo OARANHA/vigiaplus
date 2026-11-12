@@ -18,6 +18,7 @@ async function request(id?:number,tenant?:number,cookieOverride?:string){
   });
 }
 async function main():Promise<void>{
+  if (!ids) throw new Error('ALT084_HTTP_IDS_REQUIRED');
 let live=false;
 for(let attempt=0;attempt<50;attempt++){
   try {
