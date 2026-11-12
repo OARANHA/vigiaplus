@@ -111,6 +111,11 @@ jobs:
         env:
           ALT084_EPHEMERAL_RLS: "1"
         run: node --import tsx --test scripts/tests/alt084-evidence-rls.test.ts
+      - name: "ALT-08.10C.6 snapshot ACL, policies, ownership e ROLLBACK (PostgreSQL 16)"
+        env:
+          ALT0810C6_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c6-postgres-catalog-rollback.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
