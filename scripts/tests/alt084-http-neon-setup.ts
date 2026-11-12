@@ -16,6 +16,7 @@ if(!['setup','cleanup'].includes(action||'')||env.CI!=='true'||
   env.VIGIA_ALT083_DISPOSABLE_CONFIRM!=='YES-EMPTY-NEON-CI-DATABASE'||
   !/^\d+$/.test(env.GITHUB_RUN_ID??''))throw Error('ALT084_HTTP_NEON_DISPOSABLE_ONLY');
 
+async function main():Promise<void>{
 await withNeonRlsPool(env,async pool=>{
   const c=await pool.connect();
   try{
@@ -62,4 +63,9 @@ await withNeonRlsPool(env,async pool=>{
       process.stdout.write('ALT084 Neon HTTP disposable tables cleaned\n');
     }
   }finally{c.release()}
+});
+}
+main().catch(error=>{
+ console.error('ALT084 Neon disposable setup/cleanup failed:',error instanceof Error?error.message:'unknown');
+ process.exitCode=1;
 });
