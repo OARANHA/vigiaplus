@@ -54,3 +54,19 @@ Implementado em `lib/tenant/authorized-membership.ts`, integrado ao **resolver r
 - A prova RLS/HTTP operacional completa do restante desta especificação permanece aberta. Não classificar ALT-08.10 como GREEN por CI unitário.
 
 **Pendente:** testar HTTP Next.js na aplicação real com DB operacional completo em Neon staging, matriz positiva dos serviços e rollback que preserve ACL/policies preexistentes.
+
+## Incremento ALT-08.10B — rota Next real contra Neon isolado (2026-11-12)
+
+Implementados:
+- `lib/tenant/alt0810-next-staging.ts`: piloto **opt-in somente CI**, com host/db/role estritamente verificados; ativação por `VIGIA_ALT0810_NEXT_STAGING_MODE=isolated-next-auth` e `ALT0810_STAGING_CONFIRM=NEXT_REAL_ROUTE_SYNTHETIC_ONLY`, `NODE_ENV!=production`, sem `DATABASE_URL`. Se houver flag inválida, **falha fechado**.
+- `app/api/app/evidence/route.ts`: a **rota Next real** pode executar, exclusivamente neste modo, o caminho de autenticação no mesmo PostgreSQL via WebSocket, antes do `getDb()` operacional. Sem flag, a lógica original não é alterada.
+- A mesma role Neon sem BYPASSRLS lê `users.session_version`, `must_change_password`, `memberships`, tenant `status`, `subscriptions`, `plan_features`, `tenant_features` e os incidentes sintéticos com RLS e `SET LOCAL app.tenant_id`. O tenant provém apenas de membership validada (com escolha explícita em múltiplos vínculos).
+- `scripts/tests/alt0810-next-http-staging-e2e.ts`: o próprio **Next dev server** no runner, cookie assinado, requests HTTP reais e prova de revogação de sessão, vínculo, override de feature, contrato cancelado, senha temporária e isolamento; usa schema de fixture reservado `alt0810_next_ci`, role migradora só para DDL/alterações de teste e role reader só leitura. No `finally` reverte policy, grants, tabelas e schema e exige catálogo 0/0/0.
+- `tests/todo-alt0810-next-staging-gate.test.ts`: assertions negativas do gate de CI/produção/URL/role.
+- Passo explícito no workflow manual `.github/workflows/alt083-neon-e2e.yml`. **Só GREEN se esse passo tiver sido efetivamente executado no SHA atual**.
+
+### Limites deste incremento
+
+O endpoint é genuinamente uma rota Next.js, mas ainda utiliza **schema representativo sintético** `alt0810_next_ci`, e um adaptador de staging independente para autorização. O código regular de `getCurrentUser()`, `authenticateSession()`, `resolveTenantContext()` e `requireFeature()` não foi migrado para o mesmo DB transacional: isso requer schema operacional integral, papéis positivos owner/analyst/worker/webhook e desenho próprio de SQL/ACLs. A simulação de contrato é reduzida (assinatura ativa, plano e override negativo), não reproduz todos os casos de expiração, carência, catálogo e cobrança.
+
+O Next testa a superfície real, porém **não** certifica schema/role de produção e nem habilita RLS operacional. Sem alteração em banco de produção, sem merge/deploy. A evidência de sucesso ainda precisa de CI e workflow manual.
