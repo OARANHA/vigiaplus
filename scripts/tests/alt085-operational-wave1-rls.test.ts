@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {randomBytes} from 'node:crypto';
 import {
-  ALT085_WAVE1_TABLES,ALT085_READER_ROLE,alt085ApplySql,alt085RollbackSql,
+  ALT085_WAVE1_TABLES,ALT085_WAVE1_READ_COLUMNS,ALT085_READER_ROLE,alt085ApplySql,alt085RollbackSql,
 } from '../../lib/tenant/rls-operational-wave1';
 import {withTenantRlsTransaction,type TenantSqlPool} from '../../lib/tenant/rls-transaction';
 
@@ -80,6 +80,12 @@ test('ALT-08.5: cada tabela preserva isolamento, privilégio mínimo e rollback 
       // Aplicar policy + grants somente nesta tabela; todas as outras intactas.
       for(const statement of alt085ApplySql(table))await admin.query(statement);
       try{
+        const sensitive=table==='invoices'?'pix_copia_cola':
+          table==='notification_channels'?'destination':
+          table==='incidents'?'owner':'keywords';
+        assert.equal(ALT085_WAVE1_READ_COLUMNS[table].includes(sensitive),false);
+        await assert.rejects(reader.query(`SELECT ${sensitive} FROM public.${table}`),
+          /permission denied|42501/i,'PII column must not be granted');
         const baseline=await reader.query(`SELECT id FROM public.${table}
           WHERE id=$1 OR id=$2`,rows);
         assert.deepEqual(baseline.rows,[],'no scope must deny all');
