@@ -65,3 +65,16 @@ jobs:
             exit 1
           fi
           node --import tsx scripts/tests/alt087-staging-reversible-e2e.ts
+
+      - name: ALT-08.8 staging contratos operacionais RLS e rollback (sintetico)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT088_STAGING_CONFIRM: SYNTHETIC_CONTRACT_ONLY
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT088 NO-GO: staging migrator secret absent" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt088-staging-operational-rls-e2e.ts
