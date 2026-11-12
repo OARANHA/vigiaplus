@@ -15,7 +15,7 @@ A aplicação operacional usa `getDb()` com Drizzle + `neon-http`, sem transaç�
 
 ### Wave 1 — implementação de preparação
 
-`lib/tenant/rls-operational-wave1.ts` declara, **sem executá-las**, políticas `SELECT` exclusivas da role de teste `vigia_alt085_client_read_ci` para quatro tabelas com `tenant_id` direto. O catálogo inclui sequência de `GRANT SELECT`, `ENABLE ROW LEVEL SECURITY`, `FORCE ROW LEVEL SECURITY` e `CREATE POLICY` por tabela, além de rollback inverso: `DROP POLICY`, `NO FORCE`, `DISABLE` e `REVOKE SELECT`.
+`lib/tenant/rls-operational-wave1.ts` declara, **sem executá-las**, políticas `SELECT` **por coluna mínima** exclusivas da role de teste `vigia_alt085_client_read_ci` para quatro tabelas com `tenant_id` direto. O catálogo inclui sequência de `GRANT SELECT (colunas permitidas)`, `ENABLE ROW LEVEL SECURITY`, `FORCE ROW LEVEL SECURITY` e `CREATE POLICY` por tabela, além de rollback inverso: `DROP POLICY`, `NO FORCE`, `DISABLE` e `REVOKE SELECT (colunas permitidas)`.
 
 **Esta role é apenas de CI; jamais adotá-la como role operacional sem um projeto separado de provisionamento.** Ela não tem `SUPERUSER`, `BYPASSRLS`, `CREATEROLE` ou `CREATEDB`, e recebe apenas `USAGE` de schema e `SELECT` da tabela sob prova. O teste `scripts/tests/alt085-operational-wave1-rls.test.ts` usa o PostgreSQL 16 iniciado pelo runner, nunca Neon; exige as variáveis de CI, `DATABASE_URL` vazio e nome de banco `vigia_alt081_ci`.
 
@@ -38,3 +38,7 @@ A aplicação operacional usa `getDb()` com Drizzle + `neon-http`, sem transaç�
 - Aprovação explícita do dono, revisão de migrations e homologação com snapshots antes de qualquer deploy.
 
 **Separação garantida pela entrega ALT-08.5:** nenhuma integração desse catálogo com `getDb()`, jobs de migração, inicialização ou rotas HTTP. Nenhum banco operacional foi alterado. PR #36 segue DRAFT.
+
+### Redução de superfície por coluna
+
+O catálogo inclui exclusivamente as colunas `reputation_targets(id,name,kind,score)`, `incidents(id,title,status,severity)`, `notification_channels(id,channel,active,verified)` e `invoices(id,amount_brl,status,due_at)`. Não concede `SELECT *` nem leitura de `notification_channels.destination`, `invoices.pix_copia_cola`, `incidents.owner` ou `reputation_targets.keywords`. O ensaio adversarial verifica que o PostgreSQL nega leitura direta dessas colunas mesmo na role cliente. A seleção final para produção requer auditoria por contrato e pode exigir políticas mais restritivas; esta lista é provisória de CI.
