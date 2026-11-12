@@ -33,6 +33,12 @@ jobs:
       - name: ALT-08.10C.3 snapshot DDL de bootstrap (sem banco)
         run: node --import tsx scripts/bootstrap-snapshot-check.ts
 
+      - name: ALT-08.10C.3 ensaio de 186 DDL em PGlite descartável com ROLLBACK
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/tests/alt0810c-bootstrap-disposable.test.ts
+
       - name: Test
         run: node --import tsx --test tests/*.test.ts
 
