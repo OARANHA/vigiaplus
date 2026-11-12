@@ -323,3 +323,18 @@ O piloto usa **rota Next real + banco staging isolado**, mas a autorização/DDL
 - [ ] Bloqueio de produção e merge permanece em vigor.
 
 Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstrap; **não usar como preflight read-only remoto**.
+
+
+### ALT-08.10C.2 — manifesto SQL e `migrate:check` sem bootstrap
+
+- [x] CI anterior `4c877ac6bdf84bb9de0049071e36ff58a8b6b372` GREEN 5/5 (43243469407) e manual staging GREEN (43244800898); etapa READ ONLY executada no mesmo SHA, banco staging vazio `publicTables=0`, reader sem BYPASSRLS.
+- [x] `migrations/manifest.json`: quatro migrações SQL legadas inventariadas por Git blob SHA-1; flag explícita de schema operacional **não completo**.
+- [x] `lib/db/migration-manifest.ts` + `scripts/schema-manifest-check.ts`: conferência de hashes Git e SHA-256 local sem acessar banco; testes de adulteração, arquivos extras e catálogo incorreto.
+- [x] CI com passo offline `ALT-08.10C manifesto offline de migrações (sem banco)`.
+- [x] `scripts/migrate.ts --check` separado do `getDb()`: usa conexão PostgreSQL direta com transação `BEGIN READ ONLY`, consulta ledger e `ROLLBACK`; não executa `ensureSchema()`/seeds. Se `DATABASE_URL` ausente, falha fechado.
+- [ ] Confirmar CI no SHA novo (e logs do passo offline) antes de GREEN.
+- [ ] Migrar o **bootstrap operacional completo** (`lib/db/index.ts` com dezenas de CREATE/ALTER e seeds) para migrações versionadas auditadas, sem alterar comportamento produtivo sem aceite.
+- [ ] Staging: snapshot ACL/policies, aplicação explícita com role migradora, rollback por objeto, auth/entitlements completos, autorização positiva dos papéis internos e testes de duas organizações em rotas Next.
+- [ ] Aprovação explícita para merge/deploy ou mudanças na base operacional.
+
+**Não confundir:** manifesto atual cobre só os quatro arquivos `migrations/*.sql`; `npm run migrate` legado continua usando `getDb()` e **não está autorizado no staging operacional**. ALT-08.10C ainda PENDENTE.
