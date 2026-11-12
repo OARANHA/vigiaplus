@@ -1,0 +1,40 @@
+name: ALT-08.3 Neon WebSocket E2E (manual disposable only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alt083-neon-e2e-disposable
+  cancel-in-progress: false
+
+jobs:
+  neon-websocket-e2e:
+    name: ALT-08.3 Neon WebSocket RLS real (banco vazio descartável)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ""
+      DEMO_MODE: "0"
+      NODE_ENV: test
+      VIGIA_RLS_MODE: ci-experimental
+      VIGIA_ALT083_DISPOSABLE_CONFIRM: YES-EMPTY-NEON-CI-DATABASE
+      RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT083_NEON_CI_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Recusar ausência de credencial dedicada
+        shell: bash
+        run: |
+          if [[ -z "$RLS_DATABASE_URL" ]]; then
+            echo "NO-GO: secret VIGIA_ALT083_NEON_CI_URL ausente. Não rodar em produção." >&2
+            exit 1
+          fi
+      - run: npm ci
+      - name: Neon WebSocket E2E real com RLS em banco exclusivo descartável
+        run: node --import tsx --test scripts/tests/alt083-neon-ws-e2e.test.ts
