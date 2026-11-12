@@ -152,3 +152,15 @@ Merge/deploy: não autorizado
 - [ ] Projetar políticas/grants e fluxo de rollback para as demais tabelas operacionais; homologar owner/analyst/worker e migração por etapa antes de ativar em produção.
 
 **Gate de implantação:** NO-GO. `getDb()` continua `neon-http`, sem policies no banco operacional e sem migração/merge/deploy. Prova de reboot físico do host ainda pendente.
+
+### ALT-08.4 — gate HTTP autenticado e Neon WebSocket em base descartável
+
+- [x] Adicionado `scripts/tests/alt084-http-neon-setup.ts` com preflight sem escrita em DB `vigia_alt083_ci_*` vazio, role sem BYPASSRLS, fixtures sintéticas `public.projects` + `public.mentions`, `ENABLE/FORCE RLS`, rollback de policies e cleanup que sinaliza falha.
+- [x] Adicionados `scripts/tests/alt084-http-fixture.ts` (sessões/vínculos/entitlements em PGlite temporário), `alt084-http-verify.ts` (HTTP real, clientes A/B, cookies assinados, spoofing, no-store) e `alt084-http-ci.sh` para orquestração isolada no GitHub Actions.
+- [x] Workflow manual `alt083-neon-e2e.yml` na branch da PR passa a executar também o HTTP experimental (arquivo já registrado na `main`, porém versão atualizada apenas na branch).
+- [x] Leitura `selectRlsEvidence` falha fechada se `FORCE RLS`, políticas SELECT exatas ou role sem bypass não forem comprovadas; testes unitários da barreira adicionados.
+- [ ] Confirmar CI normal GREEN no SHA atual.
+- [ ] Disparar workflow manual na branch `feat/todo-alt08-notify-supervisor-20261111` e conferir log do teste `ALT084 HTTP Neon WS` e cleanup no SHA exato.
+- [ ] Reavaliar arquitetura de identidade/entitlements em banco comum antes de implantação operacional.
+
+**Produção segue NO-GO:** sem merge, sem deploy, sem alteração de policies/tabelas reais e sem troca do driver `getDb()`.
