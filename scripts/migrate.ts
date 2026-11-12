@@ -15,7 +15,7 @@ import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sql } from 'drizzle-orm';
-import { getDb } from '../lib/db';
+import { verifyLegacyMigrationManifest, type LegacyMigrationManifest } from '../lib/db/migration-manifest';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const dir = join(here, '..', 'migrations');
@@ -40,7 +40,66 @@ function checksum(file: string): string {
   return createHash('sha256').update(readFileSync(file)).digest('hex');
 }
 
+function verifiedFiles():string[] {
+  const files=readdirSync(dir).filter(f=>f.endsWith('.sql')).sort();
+  const manifest=JSON.parse(readFileSync(join(dir,'manifest.json'),'utf8')) as LegacyMigrationManifest;
+  const map:Record<string,Buffer>={};
+  for(const file of files)map[file]=readFileSync(join(dir,file));
+  verifyLegacyMigrationManifest(manifest,map);
+  return files;
+}
+
+/**
+ * Modo de VERIFICAÇÃO: não importa getDb, nunca inicializa/seed/migra.
+ * BEGIN READ ONLY obriga o PostgreSQL a rejeitar writes acidentais.
+ * Para PGlite local, use o verificador offline de manifesto.
+ */
+async function checkWithoutBootstrap(files:readonly string[]):Promise<void>{
+  const url=process.env.DATABASE_URL;
+  if(!url)throw Error('MIGRATE_CHECK_READONLY_REQUIRES_DATABASE_URL');
+  const parsed=new URL(url);
+  if(!['postgresql:','postgres:'].includes(parsed.protocol))
+    throw Error('MIGRATE_CHECK_DATABASE_URL_INVALID');
+  const {Pool}=await import('@neondatabase/serverless');
+  const pool=new Pool({connectionString:url,max:1});
+  try{
+    const c=await pool.connect();
+    try{
+      await c.query('BEGIN READ ONLY');
+      try{
+        const exists=await c.query(`SELECT to_regclass('public.schema_migrations') AS table_name`);
+        const rows:Row[]=exists.rows[0]?.table_name
+          ?(await c.query('SELECT version,checksum FROM public.schema_migrations ORDER BY version')).rows as Row[]
+          :[];
+        const applied=new Map(rows.map(x=>[x.version,x.checksum]));
+        for(const file of files){
+          const previous=applied.get(file);
+          const actual=checksum(join(dir,file));
+          if(previous && previous!==actual)
+            throw Error(`MIGRATE_CHECK_CHECKSUM_MISMATCH:${file}`);
+        }
+        const pending=files.filter(file=>!applied.has(file));
+        if(pending.length){
+          console.error(`migrate:check: ${pending.length} pendente(s): ${pending.join(', ')}`);
+          process.exitCode=1;
+        }else{
+          console.log(`migrate:check: ${applied.size} aplicadas, nenhuma pendente (READ ONLY)`);
+        }
+        await c.query('ROLLBACK');
+      }catch(e){await c.query('ROLLBACK');throw e}
+    }finally{c.release()}
+  }finally{await pool.end()}
+}
+
 async function main() {
+  const verified=verifiedFiles();
+  if(checkOnly){
+    await checkWithoutBootstrap(verified);
+    return;
+  }
+  // Fluxo de aplicação LEGADO ainda usa bootstrap; não executar em staging
+  // operacional antes de separar ensureSchema e seeds por migração revisada.
+  const { getDb }=await import('../lib/db');
   const db = await getDb();
   await db.execute(sql.raw(`CREATE TABLE IF NOT EXISTS schema_migrations (
     version TEXT PRIMARY KEY,
