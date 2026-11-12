@@ -150,3 +150,12 @@ Candidato implementado em `scripts/tests/alt0810c8-postgres-full-bootstrap.test.
 **Condição de aceite:** cinco jobs GREEN no SHA exato, inclusive passo ALT-08.10C.8. Sem GREEN no novo HEAD, tratar apenas como implementação candidata.
 
 **Limites:** ensaio PostgreSQL local não comprova bootstrap seguro em base com schema operacional existente, grants/propriedade em Neon, seeds, contrato Drizzle completo, migrações de billing nem restauração operacional após `COMMIT` dos 186 comandos. O futuro staging operacional exige plano versionado/diff, autorização humana e credencial migradora separada. **Produção NO-GO.**
+
+## ALT-08.10C.9 — gate de prontidão operacional fail-closed
+
+- `lib/db/operational-readiness.ts` interpreta somente snapshots do catálogo PostgreSQL efêmero em namespaces `alt0810c6_*`. Relata ausência de `users`, `memberships`, `tenants`, `subscriptions`, `plans`, `plan_features` e `tenant_features`; falta de FORCE RLS; falta de políticas com predicado; ausência de `schema_migrations`.
+- Mesmo quando **todas** as evidências do catálogo aparentam existir, `readyForOperationalAuth=false`, `migrationAllowed=false`, `productionAllowed=false` obrigatórios. Catálogo e SQL estáticos não certificam testes HTTP, revogação, isolamento, roles, seeds, grants ou compatibilidade de runtime.
+- O ensaio PostgreSQL 16 de 186 comandos (`alt0810c8-postgres-full-bootstrap.test.ts`) agora chama este gate *antes do ROLLBACK*, exige sete tabelas centrais sem FORCE RLS, ausência do ledger e proibição inequívoca de migração/produção. Nenhum objeto no Neon.
+- `tests/todo-alt0810c-operational-readiness.test.ts` cobre catálogo vazio, tabelas sem RLS/policies, catálogo aparentemente completo que continua NÃO autorizado, namespace estranho e dados inválidos.
+
+**Aceite:** CI dos 5 jobs GREEN no SHA exato incluindo testes unitários e PostgreSQL. **Próximo gate:** plano de migrações operacionais versionadas e provisionamento de roles/ACL/RLS no PostgreSQL 16 efêmero; staging somente após autorização humana e relatório de diff/backup. Produção NO-GO.
