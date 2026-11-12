@@ -107,3 +107,10 @@ jobs:
             exit 1
           fi
           node --import tsx scripts/tests/alt0810-next-http-staging-e2e.ts
+
+      - name: ALT-08.10C inventario read-only schema Neon staging sem bootstrap
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT0810C_PREFLIGHT_CONFIRM: READ_ONLY_NEON_STAGING
+        run: node --import tsx scripts/tests/alt0810c-neon-readonly-preflight.ts
