@@ -17,6 +17,7 @@ async function request(id?:number,tenant?:number,cookieOverride?:string){
     redirect:'manual',signal:AbortSignal.timeout(25000),
   });
 }
+async function main():Promise<void>{
 let live=false;
 for(let attempt=0;attempt<50;attempt++){
   try {
@@ -51,3 +52,9 @@ assert.equal(aAgain.status,200,'no scope leak after client B');
 const repeated=await aAgain.json() as {items:{title:string}[]};
 assert.deepEqual(repeated.items.map(m=>m.title),['ALT084_HTTP_A']);
 process.stdout.write('ALT084 HTTP Neon WS: signed auth, spoof denied, tenant A/B, no leakage VERIFIED\n');
+
+}
+main().catch(error=>{
+  console.error('ALT084 authenticated HTTP check failed:',error instanceof Error?error.message:'unknown');
+  process.exitCode=1;
+});
