@@ -13,7 +13,7 @@ const ident='([a-z_][a-z_0-9]*)';
 const rx={
  table:new RegExp('^CREATE\\s+TABLE\\s+IF\\s+NOT\\s+EXISTS\\s+'+ident+'\\s*\\(','i'),
  alter:new RegExp('^ALTER\\s+TABLE\\s+'+ident+'\\s+ADD\\s+COLUMN\\s+IF\\s+NOT\\s+EXISTS\\b','i'),
- index:new RegExp('^CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+IF\\s+NOT\\s+EXISTS\\s+'+ident+'\\s+ON\\s+'+ident+'\\s+(?:USING\\s+[a-z_][a-z_0-9]*\\s*)?\\(','i'),
+ index:new RegExp('^CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+IF\\s+NOT\\s+EXISTS\\s+'+ident+'\\s+ON\\s+'+ident+'\\s*(?:USING\\s+[a-z_][a-z_0-9]*\\s*)?\\(','i'),
  update:new RegExp('^UPDATE\\s+'+ident+'\\s+SET\\b','i'),
  references:new RegExp('\\bREFERENCES\\s+'+ident+'\\s*\\(','gi'),
 };
