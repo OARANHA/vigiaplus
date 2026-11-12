@@ -126,3 +126,13 @@ O nome do reader existente `vigia_alt087_staging_reader` **não autoriza** reuti
 - **Status da execução:** candidato até confirmação do CI no SHA exato. O teste prova somente reversibilidade transacional dos objetos sintéticos sob PostgreSQL 16. **Não prova** restauração após `COMMIT`, rollback de dados preexistentes no schema operacional, catálogo real completo, backups externos, recuperação de crash ou segurança de migração Neon.
 
 Próximo gate: confirmar CI GREEN incluindo teste de regressão PostgreSQL; ensaiar diferença entre catálogo preexistente e migração real com restauração por objeto *após COMMIT*, somente em banco descartável, com papéis migrator/runtime/reader distintos. Produção continua **NO-GO**.
+
+## ALT-08.10C.7 — restauração após COMMIT, com roles distintas (candidato)
+
+- `scripts/tests/alt0810c7-postcommit-restore.test.ts`: ensaio somente no PostgreSQL 16 efêmero do GitHub Actions (`vigia_alt081_ci` / `127.0.0.1:5432`), explicitamente bloqueado quando há `DATABASE_URL`, `RLS_DATABASE_URL` ou produção. Não importa `getDb()` nem o executor de migrações.
+- Preflight recusa namespace e roles preexistentes. Cria fixture em `alt0810c6_postcommit`, com três roles NOLOGIN distintas (`alt0810c6_migrator`, `alt0810c6_runtime`, `alt0810c6_reader_c7`), tabela, dados dos tenants 771/882, constraint, índice, owner migrator, ACL por coluna e policies RLS específicas.
+- Prova negativa: reader não acessa `private_note` nem altera dados; runtime somente atualiza a linha permitida por RLS e essa alteração é revertida.
+- Prova de recuperação: captura catálogo e dados via `snapshotDisposableCatalog`; executa alterações em ownership, policies, RLS, ACL, índice, coluna e dados e efetua **COMMIT**; verifica diferença frente ao baseline; executa compensação explícita em **outra transação** com novo COMMIT; exige igualdade integral de catálogo e linhas originais.
+- Etapa incluída no job `postgres-disposable` de CI. **Somente marcar GREEN após verificar conclusão do SHA exato.**
+
+**Limites:** teste de cenário sintético conhecido, não gerador automático de rollback nem backup. Não cobre falhas de energia/crash, mudanças externas concorrentes, dados operacionais reais, extensão do esquema completo, RESTORE físico ou credenciais migradoras Neon. Migração operacional e produção permanecem NO-GO; nenhuma alteração em staging foi autorizada ou realizada.
