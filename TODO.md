@@ -203,3 +203,13 @@ Merge/deploy: não autorizado
 - [ ] Fazer aprovação de staging e autorização específica antes de qualquer efeito em produção.
 
 Status real: **staging provisionado e SQL transacional básico verificado; homologação WebSocket + rollback operacional no staging ainda NÃO executados.** Ver `docs/vigiaplus/alt087-isolated-staging.md`.
+
+### ALT-08.7B — ensaio de migração reversível no staging Neon dedicado
+
+- [x] Implementar `scripts/tests/alt087-staging-reversible-e2e.ts`: guards DB/role/host, schema sintético exclusivo, RLS real para A/B, grants de SELECT por coluna, leitura PII e escrita negadas, transações WebSocket 771→882→771, rollback de transação e remoção física de schema/policies/grants em finally.
+- [x] Adicionar passo opcional ao workflow manual `alt083-neon-e2e.yml` condicionado a credenciais exclusivas de reader `VIGIA_ALT087_STAGING_URL` e migrator `VIGIA_ALT087_STAGING_MIGRATOR_URL`; migrator ausente produz RED (não um GREEN enganoso).
+- [x] Documentar contratos, cleanup e separação total do staging operacional em `docs/vigiaplus/alt087-isolated-staging.md`.
+- [ ] Validar CI completo do HEAD exato (incluindo TypeScript) após a implementação.
+- [ ] Configurar os dois secrets de staging de forma privada; disparar workflow manual e inspecionar os logs dos passos ALT-08.7.
+- [ ] Certificar staging de verdade com schema operacional/memberships/entitlements/HTTP no mesmo banco: o ensaio sintético NÃO satisfaz esse gate.
+- [ ] Migrar cada tabela operacional em staging sob baseline completo de ACL/policies e rollback comprovado; nenhum deploy sem autorização.
