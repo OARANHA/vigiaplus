@@ -66,3 +66,16 @@ Critério de aceite: CI do HEAD exato e execução manual real exibindo `ALT0810
 - A aplicação **continua** usando o antigo `ensureSchema`/seeds em `getDb()`; não se alterou o fluxo produtivo. O snapshot sozinho não é um plano de rollback de ambientes com dados ou grants anteriores.
 
 **Critérios de aceite deste incremento:** no SHA exato, CI completo GREEN, passo de comparação de snapshot GREEN e ensaio descartável de aplicação+rollback GREEN. Não promover o schema operacional de staging nem produção antes de rever dependências, seeds, roles e política de migração existente. ALT-08.10C global **PENDENTE**.
+
+
+## ALT-08.10C.4 — bootstrap separado por modo operacional (2026-11-12)
+
+**Implementação inicial, não homologação do schema integral.**
+
+- `lib/db/bootstrap-mode.ts`: `resolveDbBootstrapMode()` preserva `legacy-bootstrap` como padrão, inclusive em produção. Apenas `preprovisioned-staging-ci` permite ignorar o bootstrap e é protegido por `CI=true`, `GITHUB_ACTIONS=true`, `NODE_ENV!=production`, `DEMO_MODE!=1`, `VIGIA_RLS_MODE=ci-experimental`, `GITHUB_RUN_ID` numérico, confirmação `READ_EXISTING_SCHEMA_ONLY`, ausência de `RLS_DATABASE_URL` e URL `DATABASE_URL` fixada ao banco `vigia_alt086_staging_20261112` / usuário PostgreSQL `vigia_alt087_staging_reader` em host Neon.
+- `lib/db/index.ts`: resolve o modo **antes** da abertura de conexão; caso modo pré-provisionado validado, verifica via `to_regclass` a existência de `users`, `memberships`, `tenants`, `subscriptions`, `plans`, `plan_features` e `tenant_features`. Se ausentes, lança `PREPROVISIONED_STAGING_SCHEMA_NOT_READY` sem executar `ensureSchema()`, seeds, catálogo ou índices. O caminho padrão legado continua com comportamento anterior.
+- `tests/todo-alt0810c-bootstrap-mode.test.ts` valida ausência de opt-in, defaults, role não privilegiada, banco exato e recusas em produção ou ambiente inválido.
+- Este modo **não** é um migrador. Não altera `scripts/migrate.ts` nem autoriza execução de DDL, não afirma que a role reader possui todos os grants necessários às rotas. Staging tem `public` vazio na última inspeção; portanto, a ativação deverá falhar fechado.
+- Ainda faltam política formal de bootstrap de produção, migrações versionadas operacionais, snapshot/restore ACL/policies e autenticação de serviços em roles dedicadas.
+
+**Gate:** CI no SHA exato com teste unitário e E2E; só futuramente usar `preprovisioned-staging-ci` após migrador controlado provisionar o schema real em ambiente autorizado. Nenhum merge/deploy.
