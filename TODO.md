@@ -380,3 +380,14 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] E2E real por credenciais e papéis distintos em staging autorizado antes de qualquer operação de migração.
 
 **Não é migração executável:** snapshot e inventário são inertes; PR DRAFT, sem merge/deploy/banco operacional, produção NO-GO.
+
+### ALT-08.10C.6 — snapshot ACL/policies/ownership e rollback PostgreSQL (candidato)
+
+- [x] Módulo `lib/db/disposable-catalog-snapshot.ts`: snapshot determinístico e limitado ao namespace de ensaio de schema, relações, owners, grants por tabela/coluna/schema, RLS, policies, constraints, índices, roles e memberships.
+- [x] Script `scripts/tests/alt0810c6-postgres-catalog-rollback.test.ts`: fixture pré-existente, falha SQL em transação, rollback e comparação estrutural/dados sob PostgreSQL 16 efêmero; recusa DB remoto e colisões.
+- [x] Etapa adicionada ao job `postgres-disposable` de `.github/workflows/ci.yml`.
+- [ ] Verificar CI GREEN no SHA exato incluindo esta etapa; sem inferir sucesso a partir do código.
+- [ ] Cobrir rollback após COMMIT, cópia/restauração de dados reais e ACL/owners preexistentes do schema operacional completo em ambiente descartável antes de preparar migrador autorizado de staging.
+- [ ] Homologar roles distintas migrator/runtime/reader e papéis internos na mesma base de staging com aprovação explícita.
+
+**Status:** apenas ensaio descartável e snapshot de catálogo; PR DRAFT; sem merge/deploy/migração operacional; produção NO-GO.
