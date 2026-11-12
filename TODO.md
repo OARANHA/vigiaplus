@@ -364,6 +364,7 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [x] Preservar comportamento `legacy-bootstrap` por padrão em instalações existentes (sem alteração global de produção).
 - [x] Testes adversariais em `tests/todo-alt0810c-bootstrap-mode.test.ts`.
 - [ ] Verificar CI GREEN no SHA exato atual; testes de integração comprovando ausência de DDL no novo modo ainda não executados no Neon.
+- [x] Acrescentar ensaio descartável PGlite de rollback com baseline preexistente (tabela, registro, role, ACL, policy FORCE RLS), cobrindo aplicação integral e interrupção parcial. Teste anexado ao CI; resultado do SHA novo ainda pendente.
 - [ ] Manifesto operacional completo com dependências/constraints e autenticação separada por role PostgreSQL, snapshot/rollback preservando baseline e integração das rotas.
 - [ ] Remover bootstrap de produção somente por migração planejada, ADR, compatibilidade, homologação e aprovação explícita.
 
