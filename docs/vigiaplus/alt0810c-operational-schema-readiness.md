@@ -54,3 +54,15 @@ Critério de aceite: CI do HEAD exato e execução manual real exibindo `ALT0810
 - `scripts/migrate.ts --check` deixou de chamar `getDb()`: valida primeiro o manifesto e executa consultas diretas de `schema_migrations` em `BEGIN READ ONLY`, com `ROLLBACK`, sem bootstrap/seeds. Requer `DATABASE_URL` existente; sem URL falha fechado, sem criar banco PGlite local. Ainda não substitui o preflight de staging por role fixa e portanto **não deve ser usado para certificar o staging**.
 
 **Limitação crítica:** `npm run migrate` (sem `--check`) ainda usa o fluxo legado `getDb()`, `ensureSchema()` e seeds por compatibilidade; NÃO EXECUTAR em staging operacional nem produção sem revisão e autorização. Inventário versionado desses quatro arquivos **não contém** as ~62 criações e ~78 alterações implementadas pelo bootstrap em `lib/db/index.ts`. A migração completa, plano de rollback e papéis operacionais permanecem pendentes.
+
+
+## ALT-08.10C.3 — snapshot estático integral do bootstrap (2026-11-12)
+
+- `schema/operational-bootstrap/00001_legacy_snapshot.sql`: **186 comandos SQL** extraídos em ordem da lista estática `DDL` em `lib/db/index.ts` (CREATE TABLE, ALTER TABLE, índices e uma atualização legada de `mentions.kind`). Este é um **snapshot versionado inerte**, fora da pasta `migrations/`; NÃO é executado por `npm run migrate`.
+- `schema/operational-bootstrap/manifest.json`: fixa o SHA-1 Git blob do snapshot, a quantidade exata e os indicadores `bootstrapSeparated=false`, `operationalSchemaCertified=false`, `migrationRunnerActivated=false`.
+- `lib/db/bootstrap-snapshot.ts`: extrai o array pelo compilador AST do TypeScript, **sem importar nem executar** `lib/db/index.ts`; rejeita SQL dinâmico e deriva um snapshot determinístico. Hash Git e texto exato do snapshot devem coincidir com o manifesto.
+- `scripts/bootstrap-snapshot-check.ts`: verificação offline, sem banco ou rede. Testes adversariais em `tests/todo-alt0810c-bootstrap-snapshot.test.ts`.
+- `scripts/tests/alt0810c-bootstrap-disposable.test.ts`: ensaio de aplicação dos 186 statements em **PGlite somente em memória**, seguido de `ROLLBACK` e verificação do catálogo restaurado a zero tabelas. CI executa o ensaio explicitamente.
+- A aplicação **continua** usando o antigo `ensureSchema`/seeds em `getDb()`; não se alterou o fluxo produtivo. O snapshot sozinho não é um plano de rollback de ambientes com dados ou grants anteriores.
+
+**Critérios de aceite deste incremento:** no SHA exato, CI completo GREEN, passo de comparação de snapshot GREEN e ensaio descartável de aplicação+rollback GREEN. Não promover o schema operacional de staging nem produção antes de rever dependências, seeds, roles e política de migração existente. ALT-08.10C global **PENDENTE**.
