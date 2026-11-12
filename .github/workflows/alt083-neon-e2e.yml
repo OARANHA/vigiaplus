@@ -92,3 +92,18 @@ jobs:
             exit 1
           fi
           node --import tsx scripts/tests/alt089-staging-http-auth-e2e.ts
+
+      - name: ALT-08.10 rota Next real auth memberships entitlements e RLS no mesmo Neon staging
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT0810_STAGING_CONFIRM: NEXT_REAL_ROUTE_SYNTHETIC_ONLY
+          VIGIA_ALT0810_NEXT_STAGING_MODE: isolated-next-auth
+          SESSION_SECRET: ALT0810_HARNESS_Strong_Only_For_CI_2026
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT0810 NO-GO: staging migrator URL missing" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt0810-next-http-staging-e2e.ts
