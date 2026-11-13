@@ -124,8 +124,8 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   assert.deepEqual(owner.body.tenants?.map(x=>x.id).sort((x,y)=>x-y),[101,202]);
   const deniedClient=await consoleTenants(1001);
   const deniedAnalyst=await consoleTenants(8001);
-  assert.notEqual(deniedClient.status,200,'client cannot read owner console');
-  assert.notEqual(deniedAnalyst.status,200,'analyst cannot read owner console');
+  assert.equal(deniedClient.status,403,'client forbidden');
+  assert.equal(deniedAnalyst.status,403,'analyst forbidden');
   // A 500 here is a real app error-handler deficit, NOT certification of
   // appropriate 403; preserve evidence without weakening access denial.
   console.log('ALT0810C29 console deny statuses',JSON.stringify({
