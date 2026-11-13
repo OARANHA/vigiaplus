@@ -372,3 +372,7 @@ Foi criado `scripts/tests/alt0810c29-real-business-pg.test.ts`, que invoca **a r
 Asserções: sessão HMAC válida/ausente/revogada; isolamento de tenants A/B; `tenant_id` forjado em query não altera vínculo; entitlement derivado do plano, revogação do override para A sem alterar B; com `FORCE ROW LEVEL SECURITY` no cadastro de tenants e policy que requer `app.tenant_id`, a rota atual **não estabelece** contexto transacional autenticado e deve deixar de oferecer a feature ao cliente. Esse último resultado é **diagnóstico fail-closed**, não homologação positiva de RLS. O teste não substitui uma futura integração transacional verdadeira nas rotas de negócio. **Produção permanece NO-GO.**
 
 Critério: novo teste deve passar em CI no SHA exato com 6/6 jobs GREEN. Mesmo GREEN significa apenas cobertura do fluxo existente com diagnóstico de lacuna RLS; não significa autorização de staging/produção. PR #36 DRAFT; sem merge/deploy/Neon.
+
+### Ampliação do ensaio ALT-08.10C.29 — segunda rota comercial
+
+O mesmo teste passa a chamar também a rota de negócio pré-existente `GET /api/console/tenants` com usuário de papel global `owner` (espera 200 e dois tenants), cliente comum e `analyst` (ambos devem ser negados). Um retorno 500 na negativa é registrado como **déficit de tratamento de erros de autorização**, não considerado resposta HTTP 403 homologada. Ensaio limitado ao PostgreSQL CI e ao driver injetado; não altera ou aprova as rotas reais em staging/produção.
