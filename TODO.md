@@ -611,3 +611,13 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] PR #36 DRAFT, sem merge/deploy/Neon, produção NO-GO.
 
 - [x] Incluída segunda rota real `GET /api/console/tenants`: owner com acesso à carteira A/B, cliente e analista negados; classificação HTTP 500 vs 403 permanece diagnóstico separado.
+
+### ALT-08.10C.30 — identidade + membership + entitlement + FORCE RLS em uma transação PG16
+
+- [x] Candidato isolado que valida sessão versionada, membership, contrato/assinatura e feature antes de `SET LOCAL ROLE` e `set_config(...,true)` na mesma conexão.
+- [x] Leitura por callback SQL definido pelo servidor, sem seleção de role ou SQL de origem HTTP, e `ROLLBACK` de toda transação.
+- [x] Ensaio PG16 `FORCE RLS` A/B positivo, falsificação entre tenants, sessões e contratos revogados, RLS sem `BYPASSRLS`, isolamento do estado entre requisições.
+- [x] Novo passo de CI PostgreSQL descartável.
+- [ ] Confirmar CI GREEN 6/6 no SHA exato e corrigir RED.
+- [ ] Integrar rotas reais com transportador PostgreSQL de conexão fixa e contratos de roles e migrations auditadas antes de remover NO-GO.
+- [ ] PR #36 DRAFT, sem merge, deploy ou Neon.
