@@ -609,3 +609,5 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Validar 6/6 jobs GREEN no HEAD exato, corrigir RED por logs.
 - [ ] Gate seguinte: resolver a arquitetura das rotas de negócio para contexto de tenant **não falsificável** no mesmo PostgreSQL/tx antes de habilitar RLS de produção.
 - [ ] PR #36 DRAFT, sem merge/deploy/Neon, produção NO-GO.
+
+- [x] Incluída segunda rota real `GET /api/console/tenants`: owner com acesso à carteira A/B, cliente e analista negados; classificação HTTP 500 vs 403 permanece diagnóstico separado.
