@@ -296,3 +296,11 @@ A proposta requer `app.tenant_id` **e** `app.user_id` positivos, membership ativ
 - O CI PostgreSQL16 `postgres-disposable` ganhou passo ALT-08.10C.21. Tudo é descartável, sem URLs remotas ou acesso ao Neon.
 
 **Limites/NO-GO:** a assinatura HMAC é uma chave fixa de fixture e o servidor HTTP é de teste, não uma implementação de autenticação Next.js. A política depende de GUCs mutáveis e não prova segurança contra acesso SQL direto com credenciais de aplicativo. Não há teste de conexões Neon HTTP/WebSocket, direitos comerciais completos, políticas operacionais legadas nem autenticação real por cookie da aplicação. A aceitação requer CI GREEN 5/5 no SHA exato e análise dos logs. PR #36 DRAFT; sem merge, deploy ou migração operacional.
+
+## ALT-08.10C.22 — rota Next.js real, sessão revogada e falsificação de tenant (candidato)
+
+- Reutiliza o ensaio existente `scripts/tests/alt083-http-ci.sh`, que inicia **Next.js real** com `PGLITE_DIR` descartável, cookie de sessão HMAC e banco de identidades sintéticas. Não cria rota de diagnóstico nova.
+- `scripts/tests/alt083-http-fixture.ts` acrescenta identidade owner com `session_version=2`. O verificador HTTP chama a rota real `/api/console/notifications/operations` com cookie HMAC válido mas versão antiga `0`, exigindo HTTP **401**; a mesma identidade com versão atual `2` recebe **200**. Cliente tentando forjar `x-tenant-id` recebe **403**. Testes existentes para acesso owner/analyst/clientes A/B, cookie adulterado, anonimato e remoção de dados sensíveis permanecem.
+- Critério de isolamento: somente `DATABASE_URL` vazia e PGlite criado em diretório temporário no runner GitHub; nenhuma consulta ao Neon/staging. O teste real Next.js está no job `ALT-08.3 HTTP autenticado (PGlite descartável)` já existente.
+- **Limite:** a etapa usa a rota Next.js real mas não a integra ao PostgreSQL16 simultaneamente. O gate anterior .21 prova HTTP+PG16 em servidor HTTP de fixture, não em Next.js. Nenhum dos dois certifica a união Next.js + memberships + entitlements + RLS no mesmo PostgreSQL operacional. Para isso, restam seleção de driver transacional, vínculo entre cookie e DB, testes de revogação dentro do mesmo processo e revisão de GUCs falsificáveis.
+- PR #36 DRAFT, produção NO-GO. A confirmação exige todos os jobs GREEN no SHA exato.
