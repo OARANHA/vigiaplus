@@ -1,0 +1,24 @@
+/**
+ * ALT-08.10C.29 — CI-only replacement for lib/db/index.ts.
+ * This is INERT text in the repository; loaded ONLY from ephemeral PG16 CI.
+ * No production or staging runtime imports this file.
+ */
+import type { PgliteDatabase } from 'drizzle-orm/pglite';
+import * as schema from './schema';
+import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+
+export type DB=PgliteDatabase<typeof schema>;
+const e=process.env;
+if(e.CI!=='true'||e.GITHUB_ACTIONS!=='true'||e.RUNNER_OS!=='Linux'||
+ e.ALT0810C29_EPHEMERAL!=='1'||e.PGHOST!=='127.0.0.1'||
+ e.PGPORT!=='5432'||e.PGDATABASE!=='vigia_alt081_ci'||
+ e.PGUSER!=='vigia_ci'||e.PGPASSWORD!=='isolated_ci_only'||
+ e.DATABASE_URL||e.RLS_DATABASE_URL||
+ e.ALT0810C29_SCHEMA!=='alt0810c29_real_route')
+ throw Error('ALT0810C29_DISPOSABLE_ONLY');
+const pool=new Pool({host:'127.0.0.1',port:5432,
+ database:'vigia_alt081_ci',user:'vigia_ci',password:'isolated_ci_only',
+ options:'-c search_path=alt0810c29_real_route'});
+const db=drizzle(pool,{schema}) as unknown as DB;
+export async function getDb():Promise<DB>{return db}
