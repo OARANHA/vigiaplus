@@ -195,6 +195,12 @@ jobs:
           ALT0810C21_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c21-http-pg-authz.test.ts
+      - name: "ALT-08.10C.24 adaptador transacional PG16 descartável e revogação"
+        env:
+          ALT0810C24_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C24_Disposable_Only_Secret_2026"
+        run: node --import tsx --test scripts/tests/alt0810c24-pg-adapter.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
