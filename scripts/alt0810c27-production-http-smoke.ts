@@ -31,8 +31,9 @@ assert.match(docker,/CMD \["node", "server\.js"\]/);
 assert.match(ignore,/^\.next\s*$/m);
 assert.match(ignore,/^node_modules\s*$/m);
 assert.doesNotMatch(docker,/npm install\s+--no-save[^\n]*pg/);
-const cookie=`${SESSION_COOKIE}=${signSession(1001,0)}`;
 const secret='Alt0810C27_Only_CI_Ephemeral_Secret_2026_A1B2C3D4';
+process.env.SESSION_SECRET=secret; // fixture-only signer matches the child server
+const cookie=`${SESSION_COOKIE}=${signSession(1001,0)}`;
 async function smoke(label:string,command:string,args:string[],port:number){
  const output:string[]=[];
  const child:ChildProcess=spawn(command,args,{
