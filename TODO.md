@@ -531,3 +531,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN 5/5 no HEAD exato e corrigir RED pelos logs se necessário.
 - [ ] Integrar autenticação das rotas Next.js reais e banco operacional de staging somente mediante autorização específica e protocolo de rollback; revisar risco de GUC falsificável.
 - [ ] PR #36 DRAFT, sem merge/deploy, produção NO-GO.
+
+### ALT-08.10C.22 — rota Next.js real + revogação por session_version
+
+- [x] Reutilizado ensaio HTTP já existente com Next.js real e PGlite isolado, sem criar rota pública de teste.
+- [x] Adicionada identidade owner sintética com versão de sessão 2 e verificações de cookie válido antigo 401, cookie atual 200 e cabeçalho de tenant falsificado 403.
+- [x] Mantidos testes de isolamento owner/analyst/cliente e proteção de dados privados, usando DB efêmero.
+- [ ] Confirmar CI GREEN em 5/5 no HEAD exato e corrigir RED pelos logs.
+- [ ] Gate futuro: Next.js real + sessão/membership/entitlement no mesmo PostgreSQL16 com driver transacional e RLS, **sem** acesso operacional até aprovação.
+- [ ] PR #36 DRAFT; sem merge/deploy/Neon. Produção NO-GO.
