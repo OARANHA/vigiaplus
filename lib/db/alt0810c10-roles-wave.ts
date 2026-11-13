@@ -20,7 +20,7 @@ const tenantPredicate=(id:number,role:string)=>
  `tenant_id = ${id} AND current_user = '${role}'`;
 
 export const ALT0810C10_UP_SQL=Object.freeze([
- `GRANT USAGE ON SCHEMA ${ns} TO ${tenantA},${tenantB},${reader}`,
+ `GRANT USAGE ON SCHEMA ${ns} TO ${migrator},${tenantA},${tenantB},${reader}`,
  `ALTER TABLE ${target} OWNER TO ${migrator}`,
  `GRANT SELECT(id,tenant_id,label),UPDATE(label) ON ${target} TO ${tenantA},${tenantB}`,
  `GRANT SELECT(id,tenant_id,label) ON ${target} TO ${reader}`,
@@ -46,7 +46,7 @@ export const ALT0810C10_DOWN_SQL=Object.freeze([
  `REVOKE SELECT(id,tenant_id,label) ON ${target} FROM ${reader}`,
  `REVOKE SELECT(id,tenant_id,label),UPDATE(label) ON ${target} FROM ${tenantA},${tenantB}`,
  `ALTER TABLE ${target} OWNER TO vigia_ci`,
- `REVOKE USAGE ON SCHEMA ${ns} FROM ${tenantA},${tenantB},${reader}`,
+ `REVOKE USAGE ON SCHEMA ${ns} FROM ${migrator},${tenantA},${tenantB},${reader}`,
 ] as const);
 
 export function assertAlt0810c10DisposableEnv(
