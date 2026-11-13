@@ -578,3 +578,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar 5/5 GREEN no SHA atual e reparar falhas comprovadas pelos logs.
 - [ ] Auditar se a rota de fixture permanece ausente em `next start` empacotado, e validar separadamente o artefato Docker com dependências de produção.
 - [ ] PR #36 DRAFT; sem merge, deploy ou Neon; produção NO-GO.
+
+### ALT-08.10C.27 — smoke artefato produção e rota CI inacessível
+
+- [x] Criado smoke de `next start` e `.next/standalone/server.js` com `NODE_ENV=production`, cookie HMAC sintético válido, banco remoto desativado e HTTP 404 obrigatório para rota CI.
+- [x] Verificação estática de Dockerfile standalone e `.dockerignore` sem dependência temporária `pg`; inspeção da árvore/manifesto e cleanup de processos.
+- [x] Novo passo pós-build em CI.
+- [ ] Confirmar CI GREEN em 5/5 no SHA exato e corrigir eventuais falhas.
+- [ ] Gate posterior: construir e executar a imagem Docker em runner isolado, verificar rota CI 404 e comportamento sem credenciais operacionais.
+- [ ] PR #36 DRAFT, sem merge/deploy/Neon; produção NO-GO.
