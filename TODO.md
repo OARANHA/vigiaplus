@@ -440,3 +440,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Certificar CI GREEN 5/5 no SHA exato deste incremento; corrigir eventuais falhas.
 - [ ] Homologar pg_dump, restore independente, drift, UP/DOWN e política real de roles sobre banco isolado somente com escopo aprovado.
 - [ ] PR DRAFT, sem merge/deploy/DDL no Neon, produção NO-GO.
+
+### ALT-08.10C.12 — backup custom e restore PostgreSQL16 entre bancos descartáveis
+
+- [x] Criado `scripts/tests/alt0810c12-pg-dump-restore.test.ts` com `pg_dump` real (formato custom), `pg_restore --single-transaction --exit-on-error` em segundo database efêmero e SHA-256 do arquivo; bloqueio de URL remota e colisões prévias.
+- [x] Testa fixture de dados tenants A/B, owner, schema ACL, grants por coluna, RLS/FORCE, policy, índice, constraints e igualdade integral de baseline catalogado/dados após restore.
+- [x] Integrado ao job PostgreSQL16 descartável do CI; sem `migrate.ts`, Neon, staging ou produção.
+- [ ] Verificar CI GREEN 5/5 no SHA exato **e confirmar passo ALT-08.10C.12** em execução real.
+- [ ] Ampliar teste com restore entre instâncias, drift e backup completo do schema operacional somente em infraestrutura aprovada, com PITR comprovado separadamente.
+- [ ] PR #36 DRAFT; produção NO-GO, sem merge/deploy.
