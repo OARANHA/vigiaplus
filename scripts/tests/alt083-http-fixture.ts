@@ -27,6 +27,9 @@ async function main() {
       role:'member',globalRole:null,mustChangePassword:0,sessionVersion:0},
     {name:'ALT083 client B',email:'alt083-b@example.invalid',passwordHash:'synthetic-only',
       role:'member',globalRole:null,mustChangePassword:0,sessionVersion:0},
+    {name:'ALT0810C22 revoked owner',email:'alt0810c22-revoked@example.invalid',
+      passwordHash:'synthetic-only',role:'member',globalRole:'owner',
+      mustChangePassword:0,sessionVersion:2},
   ]).returning();
   await db.insert(memberships).values([
     {tenantId:a.id,userId:identities[2].id,role:'client_admin'},
@@ -49,6 +52,7 @@ async function main() {
   process.stdout.write(JSON.stringify({
     owner:identities[0].id,analyst:identities[1].id,
     clientA:identities[2].id,clientB:identities[3].id,
+    revokedOwner:identities[4].id,
   })+'\n');
 }
 main().then(()=>process.exit(0)).catch(()=>{
