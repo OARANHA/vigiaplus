@@ -421,3 +421,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI completo GREEN do SHA exato deste incremento.
 - [ ] Próximo: preparar migrações operacionais versionadas, role migradora mínima, políticas e grants por tenant, homologação HTTP com revogação e rollback físico em banco descartável.
 - [ ] Só depois avaliar staging com autorização expressa; produção NO-GO, PR DRAFT, sem merge/deploy.
+
+### ALT-08.10C.10 — roles/ACL/RLS versionadas em PostgreSQL descartável
+
+- [x] Criado plano proposto e inerte `lib/db/alt0810c10-roles-wave.ts` com versão fixa, `UP_SQL`/`DOWN_SQL`, `operationalMigrationAuthorized=false`, schema e roles isoladas.
+- [x] Teste `scripts/tests/alt0810c10-postgres-roles-wave.test.ts`: migrador, runtime A/B e reader, tenant isolation, bloqueio de PII/INSERT/DDL, aplicação COMMIT e compensação separada após COMMIT com baseline igual.
+- [x] Integrado ao job PostgreSQL16 descartável do CI e documentado risco/limites.
+- [ ] Comprovar CI GREEN no SHA exato antes de avançar.
+- [ ] Planejar migrations reais para todo schema operacional com dependências, ownership e rollback físico. Somente staging aprovado explicitamente; sem alterações Neon nesta etapa.
+- [ ] Manter PR DRAFT, produção NO-GO, sem merge/deploy.
