@@ -18,7 +18,8 @@ import {compareColumnContract} from '../../lib/db/operational-column-compatibili
 import {auditBootstrapStructure, type StructuralCatalogRow} from '../../lib/db/operational-structural-audit';
 import {auditDefaultsAndForeignKeys, type ForeignKeyCatalog} from '../../lib/db/operational-default-fk-audit';
 import {getTableColumns,getTableName,is} from 'drizzle-orm';
-import {PgTable} from 'drizzle-orm/pg-core';
+import {PgTable,getTableConfig} from 'drizzle-orm/pg-core';
+import {auditOrmForeignKeys, type FkTuple} from '../../lib/db/operational-fk-contract-audit';
 import * as drizzleSchema from '../../lib/db/schema';
 
 const e=process.env;
@@ -225,6 +226,36 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
       foreignKeyCount:defaultsAndFk.foreignKeyCount,
       sampleForeignKeys:defaultsAndFk.foreignKeyDetails.slice(0,8),
       sha256:defaultsAndFk.evidenceSha256,migrationAuthorized:false
+    }));
+    const declaredFks:FkTuple[]=Object.values(drizzleSchema).filter(v=>is(v,PgTable))
+      .flatMap(value=>{
+        const table=value as PgTable;
+        return getTableConfig(table).foreignKeys.map(foreignKey=>{
+          const ref=foreignKey.reference();
+          return {
+            table:getTableName(table),
+            columns:ref.columns.map(c=>c.name),
+            referencedTable:getTableName(ref.foreignTable),
+            referencedColumns:ref.foreignColumns.map(c=>c.name),
+            onDelete:foreignKey.onDelete??'no action',
+            onUpdate:foreignKey.onUpdate??'no action'
+          };
+        });
+      });
+    const observedFks:FkTuple[]=defaultsAndFk.foreignKeyDetails.map(fk=>({
+      table:fk.table,columns:fk.columns,referencedTable:fk.referencedTable,
+      referencedColumns:fk.referencedColumns,onDelete:fk.onDelete,onUpdate:fk.onUpdate
+    }));
+    const fkContract=auditOrmForeignKeys(declaredFks,observedFks);
+    assert.equal(fkContract.fkContractCertified,false);
+    assert.equal(fkContract.migrationAuthorized,false);
+    assert.equal(fkContract.productionAuthorized,false);
+    console.log('ALT0810C18 ORM VS PG16 FK CONTRACT '+JSON.stringify({
+      expectedCount:fkContract.expectedCount,actualCount:fkContract.actualCount,
+      missingDbCount:fkContract.missingDbFks.length,missingOrmCount:fkContract.missingOrmFks.length,
+      missingDbSample:fkContract.missingDbFks.slice(0,10),
+      missingOrmSample:fkContract.missingOrmFks.slice(0,10),
+      sha256:fkContract.sha256,migrationAuthorized:false
     }));
     await client.query('ROLLBACK');tx=false;
     assert.deepEqual(await snapshotDisposableCatalog(client,ns,[role]),before,
