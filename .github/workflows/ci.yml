@@ -51,6 +51,12 @@ jobs:
           RLS_DATABASE_URL: ""
         run: node --import tsx scripts/operational-compatibility-check.ts
 
+      - name: ALT-08.10C.23 gate arquitetural Next.js e PostgreSQL16 sem banco
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c23-database-routing-check.ts
+
       - name: ALT-08.10C.3 ensaio de 186 DDL em PGlite descartável com ROLLBACK
         env:
           DATABASE_URL: ""
