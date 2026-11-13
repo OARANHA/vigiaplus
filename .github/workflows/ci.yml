@@ -201,6 +201,13 @@ jobs:
           RLS_DATABASE_URL: ""
           SESSION_SECRET: "ALT0810C24_Disposable_Only_Secret_2026"
         run: node --import tsx --test scripts/tests/alt0810c24-pg-adapter.test.ts
+      - name: "ALT-08.10C.25 Next.js real + PostgreSQL16 descartável com sessão, contrato e FORCE RLS"
+        env:
+          ALT0810C24_EPHEMERAL: "1"
+          ALT0810C25_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C25_Disposable_Signed_Cookie_Secret_2026"
+        run: node --import tsx --test scripts/tests/alt0810c25-next-pg-e2e.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
