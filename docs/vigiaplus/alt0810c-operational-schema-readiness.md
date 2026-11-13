@@ -217,3 +217,11 @@ Teste adicionado: `scripts/tests/alt0810c12-pg-dump-restore.test.ts`, executado 
 - **Aceite:** CI do HEAD exato GREEN com todos os jobs, especialmente esta nova etapa. A criação dos serviços no mesmo runner não equivale a isolamento de infraestrutura física, nem comprova backup remoto, PITR, restore de todos os objetos operacionais, autenticação HTTP real no Neon ou segurança de migração de produção.
 
 O teste é **candidato até execução**; banco externo, staging e produção não são utilizados. PR #36 continua DRAFT; produção **NO-GO**.
+
+## ALT-08.10C.14 — auditoria estática ORM / bootstrap / RLS (candidato)
+
+`lib/db/operational-compatibility-audit.ts` usa AST TypeScript, sem executar `schema.ts`, para inventariar nomes de tabelas `pgTable()` e compará-los às 62 criações congeladas no bootstrap. Cruza nomes com instruções ENABLE ROW LEVEL SECURITY e CREATE POLICY contidas em `migrations/00002_rls.sql`.
+
+O relatório offline identifica tabelas somente no Drizzle, somente no bootstrap, tabelas Drizzle sem par ENABLE RLS/policy no arquivo legado, policies que apontam a tabelas não declaradas e detecção textual de `current_setting('app.tenant_id', true) IS NULL` como possível risco de acesso sem contexto. Em todos os casos `readyForMigration=false`, `readyForOperationalAuth=false` e `productionAuthorized=false`.
+
+Os achados são **sinais estáticos**, não execução de políticas, análise completa de colunas, migração funcional nem confirmação de vulnerabilidade em runtime. A inspeção CI `scripts/operational-compatibility-check.ts` só lê arquivos; testes adversariais em `tests/todo-alt0810c-operational-compatibility.test.ts`. A aprovação depende do CI GREEN no SHA exato. Próximo gate técnico: comparar colunas, tipos, defaults e constraints do contrato Drizzle ao catálogo real criado em PostgreSQL descartável, e revisar policies legadas com contexto ausente. Neon/staging e produção permanecem NO-GO.
