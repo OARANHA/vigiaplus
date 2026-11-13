@@ -45,6 +45,12 @@ jobs:
           RLS_DATABASE_URL: ""
         run: node --import tsx scripts/operational-evidence-check.ts
 
+      - name: ALT-08.10C.14 auditoria Drizzle, bootstrap e RLS (NO-GO offline)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/operational-compatibility-check.ts
+
       - name: ALT-08.10C.3 ensaio de 186 DDL em PGlite descartável com ROLLBACK
         env:
           DATABASE_URL: ""
