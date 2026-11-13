@@ -196,6 +196,13 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
       } satisfies ForeignKeyCatalog)),
       existingTables
     );
+    if(defaultsAndFk.brokenReferences.length){
+      console.error('ALT0810C17_BROKEN_FK_DIAGNOSTIC '+JSON.stringify({
+        existingTables:existingTables.slice(0,12),count:existingTables.length,
+        foreignKeySample:defaultsAndFk.foreignKeyDetails.slice(0,6),
+        brokenSample:defaultsAndFk.brokenReferences.slice(0,12)
+      }));
+    }
     assert.equal(defaultsAndFk.brokenReferences.length,0,'broken foreign key topology');
     assert.equal(defaultsAndFk.unvalidatedForeignKeys.length,0,'unvalidated foreign keys');
     assert.equal(defaultsAndFk.unknownActions.length,0,'unexpected FK referential action');
