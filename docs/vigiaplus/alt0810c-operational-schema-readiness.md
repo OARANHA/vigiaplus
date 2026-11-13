@@ -225,3 +225,13 @@ O teste é **candidato até execução**; banco externo, staging e produção n�
 O relatório offline identifica tabelas somente no Drizzle, somente no bootstrap, tabelas Drizzle sem par ENABLE RLS/policy no arquivo legado, policies que apontam a tabelas não declaradas e detecção textual de `current_setting('app.tenant_id', true) IS NULL` como possível risco de acesso sem contexto. Em todos os casos `readyForMigration=false`, `readyForOperationalAuth=false` e `productionAuthorized=false`.
 
 Os achados são **sinais estáticos**, não execução de políticas, análise completa de colunas, migração funcional nem confirmação de vulnerabilidade em runtime. A inspeção CI `scripts/operational-compatibility-check.ts` só lê arquivos; testes adversariais em `tests/todo-alt0810c-operational-compatibility.test.ts`. A aprovação depende do CI GREEN no SHA exato. Próximo gate técnico: comparar colunas, tipos, defaults e constraints do contrato Drizzle ao catálogo real criado em PostgreSQL descartável, e revisar policies legadas com contexto ausente. Neon/staging e produção permanecem NO-GO.
+
+## ALT-08.10C.15 — diff de colunas Drizzle versus PostgreSQL16 descartável (candidato)
+
+- `lib/db/operational-column-compatibility.ts` compara os contratos por tabela/coluna: faltas, colunas extras, tipos SQL e `NOT NULL`, calculando hash SHA-256 e flags `schemaCertified=false`, `migrationAuthorized=false`, `productionAuthorized=false`. Não cria nem aplica SQL.
+- O ensaio `scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts` agora, antes do rollback dos 186 comandos, obtém metadados do catálogo `pg_attribute` e os contratos de coluna via `getTableColumns` do `lib/db/schema.ts` (módulo declarativo, **sem** `getDb`). Imprime contagens e uma amostra dos gaps, sem tratar incompatibilidades legadas como aprovação para DDL automático.
+- `tests/todo-alt0810c-column-compatibility.test.ts` cobre tipos, nulabilidade, campos ausentes/extras, entradas duplicadas e determinismo. Comparação com dados reais limita-se ao Postgres 16 do job descartável.
+- O comparador é conservador e **não cobre** defaults, precision, constraints compostas, índices, arrays, enums, sequência SERIAL/identity, todas as nuances de `format_type`, policies e tabela de migrações. Diferenças detectadas exigem revisão técnica; igualdade de colunas não equivale à homologação operacional.
+- Sem acesso ao Neon e sem habilitar migrador; critério de aceite é CI GREEN do SHA exato e confirmação do passo PostgreSQL.
+
+Próximo gate: análise detalhada de defaults, PK/FK, índices e policy coverage com catálogo de PostgreSQL descartável, seguida de plano versionado aprovado. Produção NO-GO.
