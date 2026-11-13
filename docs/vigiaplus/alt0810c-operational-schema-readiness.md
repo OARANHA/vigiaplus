@@ -195,3 +195,15 @@ Artefatos:
 ### Não coberto
 
 Este incremento **não cria backup**, **não testa restore**, **não valida o schema Drizzle inteiro**, **não ativa migrador** e **não aprova o estágio operacional**. Dependências extraídas do SQL textual são parciais: não representam grafo completo do catálogo existente, extensões, triggers, relações externas e constraints implícitas. Somente uma inspeção de catálogo do alvo autorizado poderá resolver isso. Produção: **NO-GO**.
+
+## ALT-08.10C.12 — pg_dump/pg_restore real entre bancos efêmeros (candidato)
+
+Teste adicionado: `scripts/tests/alt0810c12-pg-dump-restore.test.ts`, executado no job PostgreSQL 16 descartável via Docker oficial `postgres:16`. **Não usa** `DATABASE_URL`, `RLS_DATABASE_URL`, Neon, `getDb()` nem o migrador legado.
+
+1. Guardas exigem GitHub Actions CI, runner Linux, banco `vigia_alt081_ci` em `127.0.0.1:5432`, role `vigia_ci`, senha de fixture descartável e flag `ALT0810C12_EPHEMERAL=1`. Namespace e roles com nomes exclusivos; preflight recusa colisões com objetos preexistentes.
+2. Fixture inclui dois registros de tenants distintos e dados privados, owner separado, reader sem BYPASSRLS/SUPERUSER, GRANT em colunas, schema ACL, policy SELECT, FORCE RLS, índice e CHECK/PK.
+3. `pg_dump --format=custom --schema=alt0810c6_backup_c12` produz arquivo isolado no runner; verifica cabeçalho PGDMP, tamanho, SHA-256 e lista de objetos `pg_restore --list`.
+4. Cria um **outro database descartável** `vigia_alt0810c12_restored_ci`, na mesma instância PostgreSQL16 efêmera. Restaura com `pg_restore --single-transaction --exit-on-error` mantendo owner e ACL originais, sem `--no-owner` e sem `--no-acl`.
+5. Compara `snapshotDisposableCatalog` de fonte/destino e linhas originais; verifica owner, FORCE RLS e policy preservados. Remove o banco restaurado, tabela/namespace e roles de fixture ao final.
+
+**Critério de aceite**: job completo no CI GREEN no SHA exato, e execução da nova etapa sem skips/falhas. A certificação de backup vale **apenas para a fixture sintética**. NÃO é backup físico, PITR, restore de schema operacional real, prova de interoperabilidade entre instâncias ou segurança de migração Neon. O backup é temporário e destruído ao final. **Staging e produção permanecem NO-GO.**
