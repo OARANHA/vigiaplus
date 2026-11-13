@@ -159,3 +159,16 @@ Candidato implementado em `scripts/tests/alt0810c8-postgres-full-bootstrap.test.
 - `tests/todo-alt0810c-operational-readiness.test.ts` cobre catálogo vazio, tabelas sem RLS/policies, catálogo aparentemente completo que continua NÃO autorizado, namespace estranho e dados inválidos.
 
 **Aceite:** CI dos 5 jobs GREEN no SHA exato incluindo testes unitários e PostgreSQL. **Próximo gate:** plano de migrações operacionais versionadas e provisionamento de roles/ACL/RLS no PostgreSQL 16 efêmero; staging somente após autorização humana e relatório de diff/backup. Produção NO-GO.
+
+## ALT-08.10C.10 — proposta versionada de ACL e RLS com ensaio em PostgreSQL 16
+
+A proposta **inerte** `lib/db/alt0810c10-roles-wave.ts` identifica a versão `alt0810c10-disposable-roles-v1` e disponibiliza sequências explícitas `ALT0810C10_UP_SQL` e `ALT0810C10_DOWN_SQL`, sem integração à pasta `migrations/` nem ao runtime. O atributo `operationalMigrationAuthorized=false` é obrigatório. Os nomes de schema/roles são fixos, reservados ao teste `alt0810c6_roles_wave`, e não são configuráveis por variáveis externas.
+
+O teste `scripts/tests/alt0810c10-postgres-roles-wave.test.ts`, integrado ao job PostgreSQL 16 descartável, exige GitHub Actions CI, endpoint `127.0.0.1:5432`, banco `vigia_alt081_ci`, credenciais descartáveis conhecidas e ausência de `DATABASE_URL` ou `RLS_DATABASE_URL`. Recusa colisões de namespace e roles. Cria dados sintéticos de dois tenants (101 e 202) e quatro roles NOLOGIN sem SUPERUSER ou BYPASSRLS: migrador, runtime A, runtime B e leitor. Aplica a proposta em transação com COMMIT e verifica:
+
+- Runtime A/B lê apenas o próprio tenant; UPDATE cross-tenant retorna zero; SELECT de dado sensível, INSERT e DDL são negados.
+- Reader tem SELECT de colunas não sensíveis, sem UPDATE e sem acesso ao campo privado.
+- Migrador é owner da tabela sintética e consegue fazer DDL permitido; o runtime não recebe ownership nem CREATE no schema.
+- A versão de compensação DOWN roda em outra transação com COMMIT e restaura exatamente o baseline de catálogo, RLS, policies, ACLs, ownership e linhas de dados.
+
+**Status: somente candidato até CI GREEN no HEAD exato.** Esse ensaio é uma prova isolada de privilégios PostgreSQL e reversibilidade de uma fixture, não a migração das 62 tabelas operacionais, não representa autenticação HTTP real em Neon e não autoriza provisionamento de roles em staging. Próximo gate exige plano completo por objeto, catálogo/Drizzle compatível, roles operacionais e E2E autorizado em staging com backups. Produção NO-GO.
