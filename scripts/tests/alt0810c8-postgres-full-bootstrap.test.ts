@@ -15,6 +15,7 @@ import {inspectBootstrapDependencies} from '../../lib/db/bootstrap-dependencies'
 import {snapshotDisposableCatalog} from '../../lib/db/disposable-catalog-snapshot';
 import {assessOperationalReadiness} from '../../lib/db/operational-readiness';
 import {compareColumnContract} from '../../lib/db/operational-column-compatibility';
+import {auditBootstrapStructure, type StructuralCatalogRow} from '../../lib/db/operational-structural-audit';
 import {getTableColumns,getTableName,is} from 'drizzle-orm';
 import {PgTable} from 'drizzle-orm/pg-core';
 import * as drizzleSchema from '../../lib/db/schema';
@@ -123,6 +124,40 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
       ...compatibility.counts,sha256:compatibility.evidenceSha256,
       sampleGaps:compatibility.gaps.slice(0,15),migrationAuthorized:false
     }));
+    const structureCatalog=await client.query(`SELECT c.relname AS table,idx.relname AS name,
+     'index' AS kind,pg_get_indexdef(idx.oid) AS detail,NULL::text AS constraint_type
+     FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid
+     JOIN pg_class idx ON idx.oid=i.indexrelid
+     JOIN pg_namespace n ON n.oid=c.relnamespace
+     WHERE n.nspname=$1 AND c.relname<>'preexisting'
+     UNION ALL
+     SELECT c.relname AS table,co.conname AS name,
+     'constraint' AS kind,pg_get_constraintdef(co.oid) AS detail,
+     co.contype::text AS constraint_type
+     FROM pg_constraint co JOIN pg_class c ON c.oid=co.conrelid
+     JOIN pg_namespace n ON n.oid=c.relnamespace
+     WHERE n.nspname=$1 AND c.relname<>'preexisting'
+     UNION ALL
+     SELECT c.relname AS table,a.attname AS name,
+     'default' AS kind,pg_get_expr(d.adbin,d.adrelid) AS detail,
+     NULL::text AS constraint_type
+     FROM pg_attrdef d JOIN pg_attribute a ON a.attrelid=d.adrelid AND a.attnum=d.adnum
+     JOIN pg_class c ON c.oid=d.adrelid
+     JOIN pg_namespace n ON n.oid=c.relnamespace
+     WHERE n.nspname=$1 AND c.relname<>'preexisting'`,[ns]);
+    const structural=auditBootstrapStructure(statements,structureCatalog.rows.map(r=>({
+      table:String(r.table),name:String(r.name),
+      kind:String(r.kind) as StructuralCatalogRow['kind'],
+      detail:String(r.detail),constraintType:r.constraint_type===null?undefined:String(r.constraint_type)
+    })));
+    assert.equal(structural.expectedNamedIndexes,45);
+    assert.deepEqual(structural.missingNamedIndexes,[],
+      'a named bootstrap index is absent from PostgreSQL catalog');
+    assert.equal(structural.missingForeignKeys,0,
+      'one or more declared REFERENCES have no corresponding FK constraint');
+    assert.equal(structural.schemaCertified,false);
+    assert.equal(structural.migrationAuthorized,false);
+    console.log('ALT0810C16 PG16 STRUCTURAL REPORT '+JSON.stringify(structural));
     await client.query('ROLLBACK');tx=false;
     assert.deepEqual(await snapshotDisposableCatalog(client,ns,[role]),before,
       'catalog ACL/RLS/indexes/constraints/roles changed after rollback');
