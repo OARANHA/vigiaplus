@@ -27,6 +27,7 @@ const adapterFixture=resolve(root,'scripts/tests/fixtures/alt0810c29-db.fixture.
 const original=readFileSync(dbPath,'utf8');
 assert.equal(existsSync(adapterFixture),true);
 const {Client}=createRequire(import.meta.url)('pg') as {Client:new(options:Record<string,unknown>)=>any};
+const role='vigia_alt0810c29_route';
 const db=new Client({host:'127.0.0.1',port:5432,database:'vigia_alt081_ci',
  user:'vigia_ci',password:'isolated_ci_only'});
 const secret='ALT0810C29_Disposable_Signed_Cookie_2026_Only';
@@ -37,6 +38,10 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
  try{
   assert.equal((await db.query('SELECT to_regnamespace($1) AS name',[ns])).rows[0].name,null);
   created=true;
+  const existingRole=await db.query('SELECT rolname FROM pg_roles WHERE rolname=$1',[role]);
+  assert.equal(existingRole.rows.length,0,'refuse existing CI role');
+  await db.query(`CREATE ROLE ${role} LOGIN PASSWORD 'ci29_route_only'
+    NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE`);
   await db.query(`CREATE SCHEMA ${ns}`);
   await db.query(`SET search_path TO ${ns}`);
   const ddl=extractStaticBootstrapDdl(original);
@@ -59,6 +64,9 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   await db.query('INSERT INTO plan_features(plan_key,feature_key) VALUES($1,$2)',['ci29',feature]);
   await db.query(`INSERT INTO subscriptions(tenant_id,plan_key,status)
     VALUES(101,'ci29','active'),(202,'ci29','active')`);
+
+  await db.query(`GRANT USAGE ON SCHEMA ${ns} TO ${role}`);
+  await db.query(`GRANT SELECT ON ALL TABLES IN SCHEMA ${ns} TO ${role}`);
 
   // Inject adapter ONLY in the disposable runner's checkout, then restore.
   assert.match(original,/export function getDb\(/);
@@ -131,6 +139,7 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   if(created){
    await db.query('SET search_path TO public').catch(()=>{});
    await db.query(`DROP SCHEMA IF EXISTS ${ns} CASCADE`).catch(()=>{});
+   await db.query(`DROP ROLE IF EXISTS ${role}`).catch(()=>{});
   }
   await db.end().catch(()=>{});
  }
