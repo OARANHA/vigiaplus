@@ -632,3 +632,14 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Verificar CI 6/6 GREEN no SHA exato e corrigir eventuais falhas.
 - [ ] Gate seguinte: integração versionada da rota real e driver PG transacional seguro, após auditoria de superfície e autorização; sem ativar RLS até homologação.
 - [ ] PR #36 DRAFT, produção NO-GO; sem merge/deploy/Neon.
+
+### ALT-08.10C.32 — rota versionada com opt-in estrito e rollback
+
+- [x] Criado `lib/tenant/alt0810c32-versioned-route.ts` com modo desativado por padrão e permissão somente no CI PostgreSQL16 descartável.
+- [x] `GET /api/me/permissions` chama o transporte transacional apenas após validação da flag; código legacy intacto quando off.
+- [x] Criados testes de ativação negada para produção/staging, desligamento e retorno ao fluxo existente.
+- [x] Criado ensaio HTTP Next.js **sem injeção de código** com sesssão, membership, assinatura, entitlement e `FORCE RLS` em duas organizações.
+- [x] Novo passo de CI PostgreSQL descartável; documentação viva atualizada.
+- [ ] Verificar CI 6/6 GREEN no SHA exato e corrigir falhas.
+- [ ] Gate futuro: projeto de transporte operacional com role e schema revisados, pool, migrations RLS auditadas, rollback por tabela, aprovação explícita de homologação staging antes de qualquer enable.
+- [ ] PR #36 DRAFT, produção NO-GO, sem merge/deploy/Neon.
