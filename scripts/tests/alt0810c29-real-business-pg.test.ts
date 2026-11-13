@@ -104,20 +104,20 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   const a=await request(1001),b=await request(2002);
   assert.equal(a.status,200);assert.equal(b.status,200);
   assert.equal(a.body.permissions?.tenantId,101);
-  assert.equal(b.body.permissions.tenantId,202);
+  assert.equal(b.body.permissions?.tenantId,202);
   assert.ok(a.body.features?.includes(feature),'commercial plan feature A');
-  assert.ok(b.body.features.includes(feature),'commercial plan feature B');
+  assert.ok(b.body.features?.includes(feature),'commercial plan feature B');
   const spoof=await request(1001,0,202);
   assert.equal(spoof.status,200);
-  assert.equal(spoof.body.permissions.tenantId,101,'forged tenant query must be ignored');
+  assert.equal(spoof.body.permissions?.tenantId,101,'forged tenant query must be ignored');
   assert.equal((await request(undefined)).status,401);
   await db.query(`INSERT INTO tenant_features(tenant_id,feature_key,enabled,reason)
     VALUES(101,$1,0,'CI revoked')`,[feature]);
   const revokedFeature=await request(1001);
   assert.equal(revokedFeature.status,200);
-  assert.equal(revokedFeature.body.features.includes(feature),false,
+  assert.equal(revokedFeature.body.features?.includes(feature),false,
     'tenant A disabled override must win');
-  assert.equal((await request(2002)).body.features.includes(feature),true,
+  assert.equal((await request(2002)).body.features?.includes(feature),true,
     'tenant B still has its contracted feature');
   await db.query('UPDATE users SET session_version=1 WHERE id=1001');
   assert.equal((await request(1001)).status,401);
@@ -130,7 +130,7 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
     FOR SELECT USING (id=COALESCE(NULLIF(current_setting('app.tenant_id',true),''),'0')::integer)`);
   const rls=await request(2002);
   assert.equal(rls.status,200);
-  assert.equal(rls.body.features.includes(feature),false,
+  assert.equal(rls.body.features?.includes(feature),false,
     'without authenticated transaction-local tenant GUC, RLS must fail closed');
   console.log('ALT0810C29 real business route: auth/membership/entitlement positive; spoof and revoke denied; FORCE RLS fails closed without scoped transaction. OPERATIONAL RLS NO-GO');
  }finally{
