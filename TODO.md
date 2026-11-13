@@ -587,3 +587,14 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN em 5/5 no SHA exato e corrigir eventuais falhas.
 - [ ] Gate posterior: construir e executar a imagem Docker em runner isolado, verificar rota CI 404 e comportamento sem credenciais operacionais.
 - [ ] PR #36 DRAFT, sem merge/deploy/Neon; produção NO-GO.
+
+### ALT-08.10C.28 — imagem Docker real e ausência de banco operacional
+
+- [x] Script de execução restrito ao GitHub CI: build da imagem usando Dockerfile real; nenhuma publicação da imagem.
+- [x] Container isolado com `--network none`, usuário não root e sem credenciais PostgreSQL/Neon.
+- [x] Inspeção da imagem/manifesto e HTTP localhost `404 not_found` para rota CI excluída.
+- [x] Cleanup de imagem/container por `trap`, permissões mínimas, timeout do job.
+- [x] Job `docker-disposable` adicionado ao CI como sexto gate.
+- [ ] Confirmar **6/6 jobs GREEN no HEAD exato** e corrigir falhas por logs.
+- [ ] Homologação de rotas de negócio reais contra banco operacional descartável continua pendente; produção NO-GO.
+- [ ] Sem merge, deploy, publicação GHCR ou alteração Neon sem autorização.
