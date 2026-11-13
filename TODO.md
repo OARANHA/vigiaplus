@@ -549,3 +549,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN em 5/5 no SHA exato; corrigir falhas.
 - [ ] Implementar e homologar em **gate separado** Next.js real + PostgreSQL16 transacional no mesmo processo/connection, sessão real, membership e entitlement no banco, RLS com identidades não falsificáveis.
 - [ ] PR #36 DRAFT. Não existe autorização de merge/deploy/migração no Neon; produção NO-GO.
+
+### ALT-08.10C.24 — adaptador PostgreSQL transacional descartável
+
+- [x] Criado `lib/db/alt0810c24-disposable-pg-adapter.ts` com guarda CI, sessão HMAC verdadeira, verificação de versão no banco, membership e entitlement sob `FOR SHARE`, escopo `SET LOCAL ROLE` e `set_config` na mesma conexão PG16, leitura RLS e ROLLBACK.
+- [x] Criado `scripts/tests/alt0810c24-pg-adapter.test.ts` com duas identidades, tenants isolados, revogação de sessão/membership/feature, tentativas de spoof e limpeza do contexto.
+- [x] Registrado ensaio no CI PostgreSQL16 descartável.
+- [ ] Confirmar 5/5 GREEN no SHA exato e corrigir RED pelos logs, se ocorrer.
+- [ ] Próximo gate: conectar o adaptador **somente em CI descartável** à rota Next.js real, comprovando sessão, memberships, contratos, roles e RLS no mesmo PostgreSQL16 com isolamento end-to-end.
+- [ ] PR #36 DRAFT, produção NO-GO; nenhum merge/deploy/migração no Neon.
