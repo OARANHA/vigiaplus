@@ -503,3 +503,13 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Verificar CI GREEN no SHA exato e analisar falhas se RED.
 - [ ] Corrigir desenho RLS legado com identidade autenticada e matrizes de papéis em gate separado, após revisão e aprovação; não aplicar diretamente no Neon.
 - [ ] PR #36 DRAFT, produção NO-GO, sem merge/deploy.
+
+### ALT-08.10C.19 — candidato RLS com membership e identidade
+
+- [x] Criada proposta SQL versionada **inerte**, isolada e fail-closed com `app.tenant_id`, `app.user_id`, membership ativa e papéis `client_viewer/client_admin/owner`.
+- [x] Novo ensaio PG16 efêmero: contexto ausente, tenants A/B, tenant indevido, membership revogada, papel interno desativado, role sem BYPASSRLS.
+- [x] Testes offline para ausência de política permissiva, flags NO-GO e guarda de ambiente.
+- [x] CI PostgreSQL descartável recebeu ensaio ALT-08.10C.19.
+- [ ] Certificar CI GREEN 5/5 no SHA exato; corrigir quaisquer falhas.
+- [ ] Projetar vínculo **não falsificável** entre sessão HTTP e conexão/escopo PostgreSQL, validar entitlements e matriz de papéis, garantir rollback/backup, homologar apenas mediante autorização explícita.
+- [ ] PR #36 DRAFT. Sem merge/deploy/DDL operacional; produção NO-GO.
