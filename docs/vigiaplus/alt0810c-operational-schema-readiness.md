@@ -243,3 +243,12 @@ Próximo gate: análise detalhada de defaults, PK/FK, índices e policy coverage
 - `tests/todo-alt0810c-structural-audit.test.ts` exercita cenários de ausência de índice/FK, catálogo inválido e duplicações.
 - **Limitações:** o contador de FKs não certifica correspondência coluna-a-coluna, ações `ON DELETE`, compatibilidade de defaults Drizzle, índices implícitos/únicos ou SQL de políticas. É somente o ensaio do bootstrap congelado em PostgreSQL 16 descartável; não equivale a migração segura sobre DB já existente.
 - Aceite condicionado ao CI GREEN do HEAD exato. Nenhuma execução em Neon/staging/produção. PR DRAFT, produção NO-GO.
+
+## ALT-08.10C.17 — evidências de defaults e topologia completa das FKs (candidato)
+
+- `lib/db/operational-default-fk-audit.ts` compara a presença de defaults esperados (`hasDefault` das colunas Drizzle) ao catálogo `pg_attrdef` no PostgreSQL16 descartável. Relata defaults ausentes, extras e colunas não modeladas; preserva as expressões de defaults do catálogo para auditoria. **Não** equivale a afirmar igualdade semântica das expressões.
+- Consulta real `pg_constraint` com `conkey`/`confkey` e `pg_attribute` para registrar por FK a tabela origem/destino, **colunas ordenadas**, ações `ON UPDATE` e `ON DELETE`, flag `convalidated`. Recusa FKs quebradas, não validadas e ações desconhecidas no cenário efêmero.
+- Integrado ao ensaio de aplicação dos 186 comandos SQL em transação no PostgreSQL16, antes do `ROLLBACK`. Relatório com hash SHA-256 e amostras, sem habilitar migração.
+- `tests/todo-alt0810c-default-fk-audit.test.ts` cobre ausência/extra de defaults, topologia de FK inválida, constraint não validada, ações desconhecidas e entradas duplicadas.
+
+**Limitações:** defaults dinâmicos, `onUpdateFn`, `SERIAL`, `generated` e expressões SQL ainda exigem inspeção semântica; relatório não correlaciona todas as FKs com referências esperadas do Drizzle e não certifica segurança de políticas RLS no Neon. CI GREEN no SHA exato é necessário para considerar este gate concluído. PR DRAFT e produção NO-GO.
