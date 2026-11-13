@@ -522,3 +522,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN de 5/5 no SHA exato; corrigir eventuais RED.
 - [ ] Gate posterior: verificar cookie/sessão HTTP real e memberships/entitlements transacionais no mesmo PostgreSQL; distinguir consulta via driver Neon HTTP sem transação interativa.
 - [ ] PR #36 DRAFT; produção NO-GO, sem merge/deploy/DDL no Neon.
+
+### ALT-08.10C.21 — HTTP autenticado e autorização na mesma transação PG16
+
+- [x] Implementado ensaio HTTP loopback em CI com cookie HMAC de fixture, sessão/versionamento no PostgreSQL16, memberships, contrato/entitlements e FORCE RLS na mesma conexão/transação.
+- [x] Testes adversariais: acesso cross-tenant, cookie adulterado, anonimato, membership revogada, entitlement desligado, sessão revogada e isolamento de sessão B.
+- [x] Passo no job PostgreSQL16 descartável; guarda de ambiente local, sem credenciais Neon.
+- [ ] Confirmar CI GREEN 5/5 no HEAD exato e corrigir RED pelos logs se necessário.
+- [ ] Integrar autenticação das rotas Next.js reais e banco operacional de staging somente mediante autorização específica e protocolo de rollback; revisar risco de GUC falsificável.
+- [ ] PR #36 DRAFT, sem merge/deploy, produção NO-GO.
