@@ -466,3 +466,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN 5/5 no HEAD exato; inspecionar e corrigir falhas.
 - [ ] Comparação real de colunas, tipos, defaults e constraints em PostgreSQL descartável; revisão do comportamento de políticas com contexto de tenant ausente.
 - [ ] PR DRAFT, sem merge/deploy/migração, produção NO-GO.
+
+### ALT-08.10C.15 — diff Drizzle x catálogo PG16 descartável
+
+- [x] Criado comparador puro de colunas por tabela: faltas, extras, tipos e nulabilidade, com relatório determinístico e status NO-GO.
+- [x] Integrada inspeção `pg_attribute` no teste do bootstrap completo PostgreSQL16 para comparar com `getTableColumns` do Drizzle, antes de ROLLBACK.
+- [x] Criados testes adversariais para gaps e duplicação.
+- [ ] Confirmar CI GREEN no SHA exato e inspecionar possíveis erros TS/PG.
+- [ ] Extender comparação para defaults, constraints, FK, índices e policies; staging somente após autorização humana específica.
+- [ ] PR DRAFT, sem merge/deploy, produção NO-GO.
