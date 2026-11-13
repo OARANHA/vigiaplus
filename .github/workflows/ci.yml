@@ -82,6 +82,19 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 15
+      postgres_restore:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vigia_ci
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: vigia_alt0810c13_restore_ci
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U vigia_ci -d vigia_alt0810c13_restore_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
     env:
       PGHOST: 127.0.0.1
       PGPORT: 5432
@@ -142,6 +155,14 @@ jobs:
           ALT0810C12_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c12-pg-dump-restore.test.ts
+      - name: "ALT-08.10C.13 pg_dump/restore entre dois clusters PostgreSQL16 isolados"
+        env:
+          ALT0810C13_EPHEMERAL: "1"
+          ALT0810C13_DEST_HOST: "127.0.0.1"
+          ALT0810C13_DEST_PORT: "5433"
+          ALT0810C13_DEST_DATABASE: "vigia_alt0810c13_restore_ci"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c13-pg-cross-instance-restore.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
