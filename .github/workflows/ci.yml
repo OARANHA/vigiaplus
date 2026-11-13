@@ -73,6 +73,9 @@ jobs:
       - name: Test
         run: node --import tsx --test tests/*.test.ts
 
+      - name: "ALT-08.10C.25 instalar driver PG apenas no runner build para resolver rota CI"
+        run: npm install --no-save --package-lock=false pg
+
       - name: Build
         run: npm run build
 
