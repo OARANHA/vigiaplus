@@ -7,6 +7,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {spawn,type ChildProcess} from 'node:child_process';
 import {setTimeout as delay} from 'node:timers/promises';
+import {mkdirSync,copyFileSync,existsSync,rmSync} from 'node:fs';
+import {resolve,dirname} from 'node:path';
 import {signSession,SESSION_COOKIE} from '../../lib/session';
 import {assertAlt0810c24Env,CI_SCHEMA,CI_READER,newDisposableClient}
  from '../../lib/db/alt0810c24-disposable-pg-adapter';
@@ -18,8 +20,12 @@ if(process.env.ALT0810C25_EPHEMERAL!=='1'||!process.env.RUNNER_TEMP||
 const ns=CI_SCHEMA,role=CI_READER,port=3205;
 const admin=newDisposableClient(process.env);
 const origin=`http://127.0.0.1:${port}/api/ci/alt0810c25`;
+const injectedRoute=resolve(process.cwd(),'app/api/ci/alt0810c25/route.ts');
+const fixtureRoute=resolve(process.cwd(),'scripts/tests/fixtures/alt0810c25-route.fixture.txt');
 test('ALT-08.10C.25 Next.js handler+PG16 same-transaction authorization and revocation',async()=>{
- await admin.connect();let created=false;let child:ChildProcess|undefined;
+ assert.equal(existsSync(injectedRoute),false,'refuse to overwrite operational route');
+ assert.equal(existsSync(fixtureRoute),true,'missing CI-only route fixture');
+ await admin.connect();let created=false;let child:ChildProcess|undefined;let injected=false;
  try{
   assert.equal((await admin.query('SELECT to_regnamespace($1) AS ns',[ns])).rows[0].ns,null);
   assert.equal((await admin.query('SELECT count(*)::int AS n FROM pg_roles WHERE rolname=$1',[role])).rows[0].n,0);
@@ -46,6 +52,9 @@ test('ALT-08.10C.25 Next.js handler+PG16 same-transaction authorization and revo
   await admin.query(`CREATE POLICY alt0810c25_tenant ON ${ns}.evidence TO ${role}
    USING (tenant_id=NULLIF(current_setting('app.tenant_id',true),'')::integer
     AND NULLIF(current_setting('app.user_id',true),'')::integer>0)`);
+  mkdirSync(dirname(injectedRoute),{recursive:true});
+  copyFileSync(fixtureRoute,injectedRoute);
+  injected=true;
   const logs:string[]=[];
   child=spawn(process.execPath,['node_modules/next/dist/bin/next','dev',
    '--hostname','127.0.0.1','--port',String(port)],{
@@ -101,6 +110,11 @@ test('ALT-08.10C.25 Next.js handler+PG16 same-transaction authorization and revo
    child.kill('SIGTERM');
    for(let n=0;n<12&&child.exitCode===null;n++)await delay(300);
    if(child.exitCode===null)child.kill('SIGKILL');
+  }
+  if(injected){
+   rmSync(injectedRoute,{force:true});
+   // Remove only the ephemeral route's leaf directory, not shared app/api/ci.
+   rmSync(dirname(injectedRoute),{recursive:true,force:true});
   }
   if(created){
    await admin.query(`DROP SCHEMA IF EXISTS ${ns} CASCADE`).catch(()=>{});
