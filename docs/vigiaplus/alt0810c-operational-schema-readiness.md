@@ -172,3 +172,26 @@ O teste `scripts/tests/alt0810c10-postgres-roles-wave.test.ts`, integrado ao job
 - A versão de compensação DOWN roda em outra transação com COMMIT e restaura exatamente o baseline de catálogo, RLS, policies, ACLs, ownership e linhas de dados.
 
 **Status: somente candidato até CI GREEN no HEAD exato.** Esse ensaio é uma prova isolada de privilégios PostgreSQL e reversibilidade de uma fixture, não a migração das 62 tabelas operacionais, não representa autenticação HTTP real em Neon e não autoriza provisionamento de roles em staging. Próximo gate exige plano completo por objeto, catálogo/Drizzle compatível, roles operacionais e E2E autorizado em staging com backups. Produção NO-GO.
+
+## ALT-08.10C.11 — manifesto de evidência, dependências e preparação de backup (offline)
+
+**Status: candidato, não aplicável.** Um plano de migração operacional revisado deve separar (i) análise do snapshot, (ii) attestation do destino, (iii) backups comprovados, (iv) migração com papel próprio, (v) compensação e restore verificável. **Nenhum desses passos é autorizado somente pelo CI.**
+
+Artefatos:
+- `lib/db/operational-migration-evidence.ts`: gera plano determinístico de **186 passos** (ordinais, classes DDL/DML, SHA-256 por comando, hash de conjunto, precedências entre tabelas e dependência da última alteração na tabela). Marca cada passo como `reversibleAutomatically=false`; `migrationAuthorized/stagingAuthorized/productionAuthorized=false` invariáveis. Modificações de dados ou estrutura de colunas exigem backup de dados; todas exigem backup do catálogo.
+- `tests/todo-alt0810c-operational-evidence.test.ts`: recusa divergência, ordem adulterada, tentativa de alegar readiness e execução; verifica hashes, contagem, determinismo e dependências.
+- `scripts/operational-evidence-check.ts`: relatório **somente offline**, sem conexão ao DB e sem `getDb()`. Valida o snapshot congelado e emite apenas hashes, contagens, bloqueios e pré-requisitos. Executado pelo CI `build`.
+
+### Critérios para um futuro gate de backup e restore
+
+1. **Identidade verificável do alvo**: banco, projeto, branch, host, role e versão PostgreSQL atestados fora do app; credencial migradora separada das credenciais do runtime/reader; nenhuma role aplicativa deve ter `BYPASSRLS`, `SUPERUSER`, ownership de objetos protegidos ou DDL arbitrária.
+2. **Congelamento e diff**: conferir SHA exato da PR e do plano, migrations já aplicadas, SQL do catálogo do destino, constraints, extensões, índices, policies, grants de coluna e ownership. Exigir identificação de drift e de possíveis conflitos `IF NOT EXISTS`.
+3. **Backup lógico**: realizar `pg_dump` no alvo autorizado com formato custom, incluir dados e schema, conferir exit code, tamanho, integridade do artefato e metadados auditáveis. Manter cópia independente do banco-alvo.
+4. **Backup físico/PITR**: comprovar mecanismo do provedor, retenção e ponto restaurável antes de qualquer alteração; não presumir que o `pg_dump` atende a PITR.
+5. **Restore obrigatório**: restaurar em **outro banco descartável**, conferir checksums/contagens por tabela, permissions/ownership/policies e executar E2E de autenticação, revogação e tenants A/B antes de alegar reversibilidade real.
+6. **Plano UP/DOWN revisado**: para UPDATE legado, backfill, alterações de tipo, DROP, índices e constraint com possíveis dependências, descrever compensação e perda potencial de informação. Proibir runner legado `getDb()`/seeds no staging enquanto não houver separação certificada.
+7. **Aprovação humana exclusiva**: nenhuma flag, CI GREEN ou manifesto permite criar roles ou aplicar DDL no Neon automaticamente. Toda operação de staging depende de autorização explícita, escopo e plano aprovado; produção exige gate separado.
+
+### Não coberto
+
+Este incremento **não cria backup**, **não testa restore**, **não valida o schema Drizzle inteiro**, **não ativa migrador** e **não aprova o estágio operacional**. Dependências extraídas do SQL textual são parciais: não representam grafo completo do catálogo existente, extensões, triggers, relações externas e constraints implícitas. Somente uma inspeção de catálogo do alvo autorizado poderá resolver isso. Produção: **NO-GO**.
