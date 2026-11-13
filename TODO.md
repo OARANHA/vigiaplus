@@ -568,3 +568,13 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Validar CI #441 da etapa anterior e CI atual 5/5 no SHA exato; corrigir RED, se necessário.
 - [ ] Gate seguinte: refatorar e homologar **rotas de negócio existentes** contra esquema operacional PG16, com mapeamento de roles, entitlements e identidade não falsificável; exige arquitetura e revisão independentes antes de staging.
 - [ ] PR #36 DRAFT; sem merge, deploy ou alterações no Neon; produção NO-GO.
+
+### ALT-08.10C.26 — produção sem dependências temporárias nem rota de CI
+
+- [x] Removida rota `app/api/ci/alt0810c25/route.ts` do App Router versionado; preservada como fixture textual inerte.
+- [x] E2E Next.js+PG16 CI cria a rota somente no checkout efêmero após guarda de ambiente e faz cleanup.
+- [x] Retirado `pg` de `serverExternalPackages` e retirada instalação `npm install --no-save pg` do job build.
+- [x] Inspeção antes/depois de `npm run build` exige `npm ci`, ausência de `pg` no lock e ausência de rota CI no manifesto/artefato.
+- [ ] Confirmar 5/5 GREEN no SHA atual e reparar falhas comprovadas pelos logs.
+- [ ] Auditar se a rota de fixture permanece ausente em `next start` empacotado, e validar separadamente o artefato Docker com dependências de produção.
+- [ ] PR #36 DRAFT; sem merge, deploy ou Neon; produção NO-GO.
