@@ -207,3 +207,13 @@ Teste adicionado: `scripts/tests/alt0810c12-pg-dump-restore.test.ts`, executado 
 5. Compara `snapshotDisposableCatalog` de fonte/destino e linhas originais; verifica owner, FORCE RLS e policy preservados. Remove o banco restaurado, tabela/namespace e roles de fixture ao final.
 
 **Critério de aceite**: job completo no CI GREEN no SHA exato, e execução da nova etapa sem skips/falhas. A certificação de backup vale **apenas para a fixture sintética**. NÃO é backup físico, PITR, restore de schema operacional real, prova de interoperabilidade entre instâncias ou segurança de migração Neon. O backup é temporário e destruído ao final. **Staging e produção permanecem NO-GO.**
+
+## ALT-08.10C.13 — restore entre clusters independentes e drift negativo (candidato)
+
+- `scripts/tests/alt0810c13-pg-cross-instance-restore.test.ts` opera somente dentro de GitHub Actions com `CI=true`, flag `ALT0810C13_EPHEMERAL=1`, endpoint fonte fixo `127.0.0.1:5432/vigia_alt081_ci`, endpoint destino fixo `127.0.0.1:5433/vigia_alt0810c13_restore_ci`, senha efêmera, sem `DATABASE_URL` ou `RLS_DATABASE_URL`.
+- O job `postgres-disposable` passou a provisionar **dois serviços PostgreSQL 16**, com volumes e clusters independentes, e testes que comparam o identificador físico `pg_control_system().system_identifier` antes de operar.
+- A fixture sintética inclui dois tenants e registros confidenciais, duas roles sem BYPASSRLS, schema/table owner, ACL por coluna, política SELECT, FORCE RLS, índices e CHECK/PK. O teste gera `pg_dump -Fc` no cluster fonte e executa `pg_restore --single-transaction --exit-on-error` no cluster destino, sem omitir ACL nem ownership.
+- Compara snapshots de catálogo, ownership, permissões, policies, RLS, constraints/índices e dados entre os clusters. Injeta drift em RLS e registro no cluster destino, **exige falha de igualdade**, corrige a fixture e exige recuperação do baseline. SHA-256 do arquivo é calculado e registrado em log.
+- **Aceite:** CI do HEAD exato GREEN com todos os jobs, especialmente esta nova etapa. A criação dos serviços no mesmo runner não equivale a isolamento de infraestrutura física, nem comprova backup remoto, PITR, restore de todos os objetos operacionais, autenticação HTTP real no Neon ou segurança de migração de produção.
+
+O teste é **candidato até execução**; banco externo, staging e produção não são utilizados. PR #36 continua DRAFT; produção **NO-GO**.
