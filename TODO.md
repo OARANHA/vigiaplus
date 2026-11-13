@@ -458,3 +458,11 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN 5/5 no SHA exato, inclusive o passo cross-cluster; corrigir logs se necessário.
 - [ ] Elaborar pré-homologação de schema operacional integral, catálogo/Drizzle, roles, backup/PITR do provedor e matriz E2E de auth; staging somente com autorização humana específica.
 - [ ] PR #36 DRAFT, sem merge/deploy/DDL no Neon, produção NO-GO.
+
+### ALT-08.10C.14 — comparação estática ORM versus DDL e RLS
+
+- [x] `lib/db/operational-compatibility-audit.ts`: AST Drizzle `pgTable`, inventário de bootstrap e cobertura RLS das migrations legadas com hash e flags NO-GO.
+- [x] Testes adversariais, relatório offline e etapa CI adicionados sem conexão de banco.
+- [ ] Confirmar CI GREEN 5/5 no HEAD exato; inspecionar e corrigir falhas.
+- [ ] Comparação real de colunas, tipos, defaults e constraints em PostgreSQL descartável; revisão do comportamento de políticas com contexto de tenant ausente.
+- [ ] PR DRAFT, sem merge/deploy/migração, produção NO-GO.
