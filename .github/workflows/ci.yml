@@ -73,11 +73,14 @@ jobs:
       - name: Test
         run: node --import tsx --test tests/*.test.ts
 
-      - name: "ALT-08.10C.25 instalar driver PG apenas no runner build para resolver rota CI"
-        run: npm install --no-save --package-lock=false pg
+      - name: "ALT-08.10C.26 isolamento de rota CI e dependências no build limpo"
+        run: node --import tsx scripts/alt0810c26-production-isolation-check.ts
 
       - name: Build
         run: npm run build
+
+      - name: "ALT-08.10C.26 verificar artefato de produção sem rota de CI"
+        run: node --import tsx scripts/alt0810c26-production-isolation-check.ts --postbuild
 
   postgres-disposable:
     name: ALT-08.1 PostgreSQL descartável
