@@ -50,11 +50,12 @@ test('ALT-08.10C.30 PG16 same-connection signed session, membership, entitlement
     VALUES(101,'ci30','active'),(202,'ci30','active')`);
   await admin.query(`INSERT INTO plan_features VALUES('ci30','reports')`);
   await admin.query(`INSERT INTO evidence VALUES(1,101),(2,202)`);
+  await admin.query(`GRANT ${role} TO vigia_ci`);
   await admin.query(`GRANT USAGE ON SCHEMA ${ns} TO ${role}`);
   await admin.query(`GRANT SELECT ON ${ns}.evidence TO ${role}`);
   await admin.query(`ALTER TABLE evidence ENABLE ROW LEVEL SECURITY`);
   await admin.query(`ALTER TABLE evidence FORCE ROW LEVEL SECURITY`);
-  await admin.query(`CREATE POLICY ci30_evidence ON evidence TO ${role} FOR SELECT
+  await admin.query(`CREATE POLICY ci30_evidence ON evidence FOR SELECT TO ${role}
     USING(tenant_id=NULLIF(current_setting('app.tenant_id',true),'')::int
       AND NULLIF(current_setting('app.user_id',true),'')::int>0)`);
   const read=async(cookie:string|undefined,tenantId:number)=>{
