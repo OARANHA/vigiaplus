@@ -252,3 +252,9 @@ Próximo gate: análise detalhada de defaults, PK/FK, índices e policy coverage
 - `tests/todo-alt0810c-default-fk-audit.test.ts` cobre ausência/extra de defaults, topologia de FK inválida, constraint não validada, ações desconhecidas e entradas duplicadas.
 
 **Limitações:** defaults dinâmicos, `onUpdateFn`, `SERIAL`, `generated` e expressões SQL ainda exigem inspeção semântica; relatório não correlaciona todas as FKs com referências esperadas do Drizzle e não certifica segurança de políticas RLS no Neon. CI GREEN no SHA exato é necessário para considerar este gate concluído. PR DRAFT e produção NO-GO.
+
+## ALT-08.10C.17 — correção de decoding de nomes de coluna no PostgreSQL
+
+O CI #400, SHA `174633f97766eb41146feadeebf19d1c57935b52`, falhou somente na etapa `ALT-08.10C.8 186 statements ... rollback` do job PostgreSQL16. As asserções de 591 colunas Drizzle/PG16 e dos 45 índices passaram; a asserção nova da ALT-08.10C.17 relatou `broken foreign key topology: 57 !== 0`.
+
+Correção candidata: a consulta `pg_constraint` obtinha `ARRAY(SELECT a.attname ...)` como PostgreSQL `name[]`; o driver pode não retornar esse tipo como array JS padrão. As duas projeções foram explicitamente convertidas para `text[]` via `a.attname::text`, e o teste valida `Array.isArray` e tipo string das colunas antes de avaliar a topologia FK. Sem desabilitar a asserção de integridade. Confirmar resultado no **SHA exato posterior** antes de classificar GREEN. Staging/produção inalterados.
