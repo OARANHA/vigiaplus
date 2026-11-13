@@ -237,6 +237,12 @@ jobs:
           RLS_DATABASE_URL: ""
           SESSION_SECRET: "ALT0810C25_Disposable_Signed_Cookie_Secret_2026"
         run: node --import tsx --test scripts/tests/alt0810c25-next-pg-e2e.test.ts
+      - name: "ALT-08.10C.29 rota de negocio real: sessao, membership, contrato e RLS PG16"
+        env:
+          ALT0810C29_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C29_Disposable_Signed_Cookie_2026_Only"
+        run: node --import tsx --test scripts/tests/alt0810c29-real-business-pg.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
