@@ -449,3 +449,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Verificar CI GREEN 5/5 no SHA exato **e confirmar passo ALT-08.10C.12** em execução real.
 - [ ] Ampliar teste com restore entre instâncias, drift e backup completo do schema operacional somente em infraestrutura aprovada, com PITR comprovado separadamente.
 - [ ] PR #36 DRAFT; produção NO-GO, sem merge/deploy.
+
+### ALT-08.10C.13 — restore entre dois clusters PostgreSQL16 descartáveis
+
+- [x] Criado `scripts/tests/alt0810c13-pg-cross-instance-restore.test.ts`: dois clusters independentes verificados por system_identifier, backup lógico custom com `pg_dump`, restore com `pg_restore --single-transaction`, baseline de catálogo/dados, owner, ACL por coluna, policy RLS, restrições e índice.
+- [x] Testes adversariais de divergência após restore: desligar RLS e alterar dado no destino deve modificar snapshots e ser detectado; restauração de fixture deve recompor baseline.
+- [x] CI `postgres-disposable` ganhou segundo serviço PostgreSQL16 `postgres_restore` (porta 5433) e etapa ALT-08.10C.13, sem credenciais Neon.
+- [ ] Confirmar CI GREEN 5/5 no SHA exato, inclusive o passo cross-cluster; corrigir logs se necessário.
+- [ ] Elaborar pré-homologação de schema operacional integral, catálogo/Drizzle, roles, backup/PITR do provedor e matriz E2E de auth; staging somente com autorização humana específica.
+- [ ] PR #36 DRAFT, sem merge/deploy/DDL no Neon, produção NO-GO.
