@@ -1,0 +1,56 @@
+/**
+ * This text is inserted into the EXISTING /api/me/permissions GET handler
+ * only in the disposable GitHub Actions checkout. Not imported by the app.
+ * The production route source remains unchanged at the end of this test.
+ */
+  if (process.env.ALT0810C31_EPHEMERAL === '1') {
+    const env = process.env;
+    if (env.CI !== 'true' || env.GITHUB_ACTIONS !== 'true' ||
+        env.RUNNER_OS !== 'Linux' || env.PGHOST !== '127.0.0.1' ||
+        env.PGPORT !== '5432' || env.PGDATABASE !== 'vigia_alt081_ci' ||
+        env.DATABASE_URL || env.RLS_DATABASE_URL) {
+      return NextResponse.json({error:'CI_ONLY'}, {status:503});
+    }
+    const {Client} = await import('pg');
+    const {verifySession,SESSION_COOKIE} = await import('@/lib/session');
+    const {authorizedTenantRead} = await import('@/lib/tenant/alt0810c30-transactional-read');
+    const cookieHeader = request.headers.get('cookie') ?? '';
+    const cookieValue = cookieHeader.split(';').map(v=>v.trim())
+      .find(v=>v.startsWith(SESSION_COOKIE+'='))?.slice(SESSION_COOKIE.length+1);
+    const session = verifySession(cookieValue);
+    if (!session) return NextResponse.json({error:'UNAUTHENTICATED'}, {status:401});
+    const db = new Client({
+      host:'127.0.0.1',port:5432,database:'vigia_alt081_ci',
+      user:'vigia_ci',password:'isolated_ci_only',
+      options:'-c search_path=alt0810c31_http',
+    });
+    await db.connect();
+    try {
+      // This is a hint from the signed principal, NOT trust in query parameters.
+      // The transactional gate rechecks membership/session/contract under locks.
+      const member = await db.query(
+        'SELECT tenant_id FROM alt0810c31_http.memberships WHERE user_id=$1 ORDER BY tenant_id',
+        [session.userId]);
+      if (member.rows.length !== 1)
+        return NextResponse.json({error:'FORBIDDEN'}, {status:403});
+      const tenantId = Number(member.rows[0].tenant_id);
+      const decision = await authorizedTenantRead({
+        db,cookie:cookieValue,tenantId,featureKey:'reports_weekly',
+        readerRole:'alt0810c31_reader',
+        read:async tx=>{
+          const records = await tx.query(
+            'SELECT id FROM alt0810c31_http.evidence ORDER BY id');
+          return records.rows.map(r=>Number(r.id));
+        },
+      });
+      if (decision.status!==200)
+        return NextResponse.json({error:decision.status===401?'UNAUTHENTICATED':'FORBIDDEN'},
+          {status:decision.status,headers:{'Cache-Control':'no-store'}});
+      return NextResponse.json({
+        permissions:{tenantId},features:['reports_weekly'],
+        scopedEvidenceIds:decision.data,
+      },{headers:{'Cache-Control':'no-store'}});
+    } finally {
+      await db.end();
+    }
+  }
