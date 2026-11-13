@@ -71,6 +71,12 @@ async function smoke(label:string,command:string,args:string[],port:number){
   }
  }
 }
-await smoke('next-start',process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','3227'],3227);
-await smoke('standalone',process.execPath,[standalone],3228);
-console.log('ALT0810C27: production HTTP smoke and static Docker packaging contract passed; no Docker daemon, no deploy');
+async function main():Promise<void>{
+ await smoke('next-start',process.execPath,['node_modules/next/dist/bin/next','start','--hostname','127.0.0.1','--port','3227'],3227);
+ await smoke('standalone',process.execPath,[standalone],3228);
+ console.log('ALT0810C27: production HTTP smoke and static Docker packaging contract passed; no Docker daemon, no deploy');
+}
+void main().catch(error=>{
+ console.error('ALT0810C27 production smoke failed:',error instanceof Error?error.message:String(error));
+ process.exitCode=1;
+});
