@@ -235,3 +235,11 @@ Os achados são **sinais estáticos**, não execução de políticas, análise c
 - Sem acesso ao Neon e sem habilitar migrador; critério de aceite é CI GREEN do SHA exato e confirmação do passo PostgreSQL.
 
 Próximo gate: análise detalhada de defaults, PK/FK, índices e policy coverage com catálogo de PostgreSQL descartável, seguida de plano versionado aprovado. Produção NO-GO.
+
+## ALT-08.10C.16 — auditoria estrutural de defaults, índices e constraints (candidato)
+
+- `lib/db/operational-structural-audit.ts` produz resumo determinístico com SHA-256, contagens de defaults, PK, FK, UNIQUE, CHECK, índices nomeados no bootstrap e referências externas declaradas. Detecta índice explicitamente declarado ausente no catálogo e contagem insuficiente de FKs.
+- O ensaio real `scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts` passa a consultar `pg_index`, `pg_constraint` e `pg_attrdef` durante o `BEGIN` dos 186 comandos. Exige os 45 índices nomeados, referências de FK presentes, relatório com NO-GO e executa `ROLLBACK` com comparação do baseline preexistente.
+- `tests/todo-alt0810c-structural-audit.test.ts` exercita cenários de ausência de índice/FK, catálogo inválido e duplicações.
+- **Limitações:** o contador de FKs não certifica correspondência coluna-a-coluna, ações `ON DELETE`, compatibilidade de defaults Drizzle, índices implícitos/únicos ou SQL de políticas. É somente o ensaio do bootstrap congelado em PostgreSQL 16 descartável; não equivale a migração segura sobre DB já existente.
+- Aceite condicionado ao CI GREEN do HEAD exato. Nenhuma execução em Neon/staging/produção. PR DRAFT, produção NO-GO.
