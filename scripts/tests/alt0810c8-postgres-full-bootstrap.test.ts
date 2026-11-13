@@ -16,6 +16,7 @@ import {snapshotDisposableCatalog} from '../../lib/db/disposable-catalog-snapsho
 import {assessOperationalReadiness} from '../../lib/db/operational-readiness';
 import {compareColumnContract} from '../../lib/db/operational-column-compatibility';
 import {auditBootstrapStructure, type StructuralCatalogRow} from '../../lib/db/operational-structural-audit';
+import {auditDefaultsAndForeignKeys, type ForeignKeyCatalog} from '../../lib/db/operational-default-fk-audit';
 import {getTableColumns,getTableName,is} from 'drizzle-orm';
 import {PgTable} from 'drizzle-orm/pg-core';
 import * as drizzleSchema from '../../lib/db/schema';
@@ -158,6 +159,57 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
     assert.equal(structural.schemaCertified,false);
     assert.equal(structural.migrationAuthorized,false);
     console.log('ALT0810C16 PG16 STRUCTURAL REPORT '+JSON.stringify(structural));
+    const defaultRows=await client.query(`SELECT c.relname AS table,
+     a.attname AS column,pg_get_expr(d.adbin,d.adrelid) AS expression
+     FROM pg_attrdef d JOIN pg_attribute a ON a.attrelid=d.adrelid AND a.attnum=d.adnum
+     JOIN pg_class c ON c.oid=d.adrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+     WHERE n.nspname=$1 AND c.relname<>'preexisting' ORDER BY c.relname,a.attname`,[ns]);
+    const foreignKeyRows=await client.query(`SELECT c.relname AS table,con.conname AS name,
+     referenced.relname AS referenced_table,
+     ARRAY(SELECT a.attname FROM unnest(con.conkey) WITH ORDINALITY AS keys(attnum,ord)
+       JOIN pg_attribute a ON a.attrelid=con.conrelid AND a.attnum=keys.attnum
+       ORDER BY keys.ord) AS columns,
+     ARRAY(SELECT a.attname FROM unnest(con.confkey) WITH ORDINALITY AS keys(attnum,ord)
+       JOIN pg_attribute a ON a.attrelid=con.confrelid AND a.attnum=keys.attnum
+       ORDER BY keys.ord) AS referenced_columns,
+     con.confupdtype::text AS on_update,con.confdeltype::text AS on_delete,
+     con.convalidated AS validated
+     FROM pg_constraint con JOIN pg_class c ON c.oid=con.conrelid
+     JOIN pg_class referenced ON referenced.oid=con.confrelid
+     JOIN pg_namespace n ON n.oid=c.relnamespace
+     WHERE n.nspname=$1 AND con.contype='f'
+     ORDER BY c.relname,con.conname`,[ns]);
+    const existingTables=[...new Set(pgColumns.map(c=>c.table))];
+    const defaultsAndFk=auditDefaultsAndForeignKeys(
+      Object.values(drizzleSchema).filter(v=>is(v,PgTable) &&
+        existingTables.includes(getTableName(v as PgTable)))
+        .flatMap(t=>Object.values(getTableColumns(t as PgTable)).map(col=>({
+          table:getTableName(t as PgTable),column:col.name,hasDefault:col.hasDefault
+        }))),
+      defaultRows.rows.map(r=>({
+        table:String(r.table),column:String(r.column),expression:String(r.expression)
+      })),
+      foreignKeyRows.rows.map(r=>({
+        table:String(r.table),name:String(r.name),referencedTable:String(r.referenced_table),
+        columns:r.columns as string[],referencedColumns:r.referenced_columns as string[],
+        onUpdate:String(r.on_update),onDelete:String(r.on_delete),validated:r.validated===true
+      } satisfies ForeignKeyCatalog)),
+      existingTables
+    );
+    assert.equal(defaultsAndFk.brokenReferences.length,0,'broken foreign key topology');
+    assert.equal(defaultsAndFk.unvalidatedForeignKeys.length,0,'unvalidated foreign keys');
+    assert.equal(defaultsAndFk.unknownActions.length,0,'unexpected FK referential action');
+    assert.equal(defaultsAndFk.schemaCertified,false);
+    assert.equal(defaultsAndFk.migrationAuthorized,false);
+    console.log('ALT0810C17 PG16 DEFAULT/FK AUDIT '+JSON.stringify({
+      expected:defaultsAndFk.expectationCount,actualDefaults:defaultsAndFk.observedDefaults,
+      missingDefaults:defaultsAndFk.missingDefaults.slice(0,30),
+      unexpectedDefaults:defaultsAndFk.unexpectedDefaults.slice(0,30),
+      unmodeledDefaults:defaultsAndFk.unmodeledDefaults.slice(0,30),
+      foreignKeyCount:defaultsAndFk.foreignKeyCount,
+      sampleForeignKeys:defaultsAndFk.foreignKeyDetails.slice(0,8),
+      sha256:defaultsAndFk.evidenceSha256,migrationAuthorized:false
+    }));
     await client.query('ROLLBACK');tx=false;
     assert.deepEqual(await snapshotDisposableCatalog(client,ns,[role]),before,
       'catalog ACL/RLS/indexes/constraints/roles changed after rollback');
