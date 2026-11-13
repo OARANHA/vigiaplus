@@ -169,6 +169,11 @@ jobs:
           ALT0810C13_DEST_DATABASE: "vigia_alt0810c13_restore_ci"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c13-pg-cross-instance-restore.test.ts
+      - name: "ALT-08.10C.18 RLS legado com contexto tenant ausente (PostgreSQL descartável)"
+        env:
+          ALT0810C18_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c18-legacy-rls-null-context.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
