@@ -267,3 +267,15 @@ Correção candidata: a consulta `pg_constraint` obtinha `ARRAY(SELECT a.attname
 - `scripts/tests/alt0810c18-legacy-rls-null-context.test.ts` reproduz em fixture efêmera o comportamento perigoso da política legada: quando `app.tenant_id` está ausente, a condição `IS NULL OR ...` permite ler ambos os tenants. Com política alternativa de contexto obrigatório, testa **zero linhas** sem escopo e somente tenant A com contexto 101. A migração `migrations/00002_rls.sql` não é alterada ou executada em produção.
 - A prova de exposição é **falha de prontidão de segurança**, não certificação de segurança do sistema. A lógica de identidade/membership e a cobertura de todas as tabelas ainda não estão homologadas. Nenhum resultado GREEN autoriza aplicar a política proposta ao Neon.
 - Aceite limitado aos jobs do CI no SHA exato. PR #36 DRAFT e produção NO-GO.
+
+## ALT-08.10C.19 — proposta INERTE de RLS com tenant, usuário, membership e papel interno
+
+`lib/db/alt0810c19-membership-rls.ts` declara a candidata versionada `alt0810c19-rls-membership-candidate-v1`, restrita à fixture `alt0810c6_membership19` em PostgreSQL16 descartável. Nenhum SQL foi incorporado a `migrations/`, `scripts/migrate.ts` ou executado no Neon.
+
+A proposta requer `app.tenant_id` **e** `app.user_id` positivos, membership ativa do usuário no tenant e papel permitido (`client_viewer`/`client_admin`). A política separada para owner exige papel interno `owner` ativo e tenant selecionado explicitamente; ela não concede automaticamente visão de carteira. Ambas usam RLS + FORCE RLS, aplicadas somente à fixture.
+
+`scripts/tests/alt0810c19-membership-rls.test.ts` prova negação sem contexto, leitura A/B separada, troca indevida de tenant, membership desativada/excluída, usuário interno revogado e roles PostgreSQL sem `BYPASSRLS`. `tests/todo-alt0810c19-rls-candidate.test.ts` verifica as flags NO-GO e recusa executar em ambiente diferente do CI efêmero.
+
+**Bloqueador de segurança:** `SET LOCAL app.user_id/app.tenant_id` são parâmetros alteráveis por clientes SQL com conexão; não representam prova criptográfica de identidade. Uma futura implementação operacional exige que o app autentique sessão HTTP, confirme vínculo/entitlement no banco, use um papel sem `BYPASSRLS`, e estabeleça o escopo em transação confiável com conexão persistente e testes de falsificação/revogação. O driver Neon HTTP atual não fornece a transação interativa necessária segundo `lib/tenant/scope.ts`. Conceder acesso direto ao banco ao usuário final ou confiar nesses GUCs seria inseguro.
+
+**Não há autorização para staging, produção, migração, merge ou deploy.** A aceitação técnica fica condicionada a 5/5 GREEN no SHA exato, especialmente o teste de RLS da fixture. A migração legada com contexto opcional permanece inalterada e insegura como opção operacional.
