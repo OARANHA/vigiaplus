@@ -53,7 +53,9 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   }
   await db.query(`INSERT INTO users(id,name,email,password_hash,global_role,must_change_password,session_version)
     VALUES(1001,'Client A','a@ci.invalid','not-real',NULL,0,0),
-          (2002,'Client B','b@ci.invalid','not-real',NULL,0,0)`);
+          (2002,'Client B','b@ci.invalid','not-real',NULL,0,0),
+          (9001,'CI Owner','owner@ci.invalid','not-real','owner',0,0),
+          (8001,'CI Analyst','analyst@ci.invalid','not-real','analyst',0,0)`);
   await db.query(`INSERT INTO tenants(id,name,slug,status,plan_key)
     VALUES(101,'Tenant A','tenant-a-ci','active','ci29'),
           (202,'Tenant B','tenant-b-ci','active','ci29')`);
@@ -107,6 +109,28 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   assert.equal(b.body.permissions?.tenantId,202);
   assert.ok(a.body.features?.includes(feature),'commercial plan feature A');
   assert.ok(b.body.features?.includes(feature),'commercial plan feature B');
+  // A second REAL business route: internal console tenants listing.
+  // Owner sees portfolio; client and analyst may not list owner portfolio.
+  async function consoleTenants(id:number){
+   const response=await fetch(`http://127.0.0.1:${port}/api/console/tenants`,{
+    headers:{cookie:`${SESSION_COOKIE}=${signSession(id,0)}`},
+    redirect:'manual',signal:AbortSignal.timeout(15000)});
+   return {status:response.status,body:await response.json().catch(()=>({})) as {
+     tenants?:{id:number;name:string}[];
+   }};
+  }
+  const owner=await consoleTenants(9001);
+  assert.equal(owner.status,200,'owner must access real console business endpoint');
+  assert.deepEqual(owner.body.tenants?.map(x=>x.id).sort((x,y)=>x-y),[101,202]);
+  const deniedClient=await consoleTenants(1001);
+  const deniedAnalyst=await consoleTenants(8001);
+  assert.notEqual(deniedClient.status,200,'client cannot read owner console');
+  assert.notEqual(deniedAnalyst.status,200,'analyst cannot read owner console');
+  // A 500 here is a real app error-handler deficit, NOT certification of
+  // appropriate 403; preserve evidence without weakening access denial.
+  console.log('ALT0810C29 console deny statuses',JSON.stringify({
+   client:deniedClient.status,analyst:deniedAnalyst.status
+  }));
   const spoof=await request(1001,0,202);
   assert.equal(spoof.status,200);
   assert.equal(spoof.body.permissions?.tenantId,101,'forged tenant query must be ignored');
@@ -132,7 +156,7 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   assert.equal(rls.status,200);
   assert.equal(rls.body.features?.includes(feature),false,
     'without authenticated transaction-local tenant GUC, RLS must fail closed');
-  console.log('ALT0810C29 real business route: auth/membership/entitlement positive; spoof and revoke denied; FORCE RLS fails closed without scoped transaction. OPERATIONAL RLS NO-GO');
+  console.log('ALT0810C29 two real business routes: permissions and console tenants; auth/membership/entitlement positive; spoof and revoke denied; FORCE RLS fails closed without scoped transaction. OPERATIONAL RLS NO-GO');
  }finally{
   if(child&&child.exitCode===null){
    child.kill('SIGTERM');
