@@ -513,3 +513,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Certificar CI GREEN 5/5 no SHA exato; corrigir quaisquer falhas.
 - [ ] Projetar vínculo **não falsificável** entre sessão HTTP e conexão/escopo PostgreSQL, validar entitlements e matriz de papéis, garantir rollback/backup, homologar apenas mediante autorização explícita.
 - [ ] PR #36 DRAFT. Sem merge/deploy/DDL operacional; produção NO-GO.
+
+### ALT-08.10C.20 — pré-validação de sessão/entitlement + escopo PostgreSQL
+
+- [x] Criada decisão fail-closed inerte com sessão verificada, membership exata, tenant/assinatura ativos e entitlement habilitado.
+- [x] Testes negativos: sessão revogada, tentativa cross-tenant, membership inativa, assinatura suspensa, feature desligada, role interna.
+- [x] Teste PG16 efêmero de `BEGIN`, role mínima, `set_config` transacional e limpeza por ROLLBACK; integrado ao CI.
+- [ ] Confirmar CI GREEN de 5/5 no SHA exato; corrigir eventuais RED.
+- [ ] Gate posterior: verificar cookie/sessão HTTP real e memberships/entitlements transacionais no mesmo PostgreSQL; distinguir consulta via driver Neon HTTP sem transação interativa.
+- [ ] PR #36 DRAFT; produção NO-GO, sem merge/deploy/DDL no Neon.
