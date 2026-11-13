@@ -475,3 +475,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN no SHA exato e inspecionar possíveis erros TS/PG.
 - [ ] Extender comparação para defaults, constraints, FK, índices e policies; staging somente após autorização humana específica.
 - [ ] PR DRAFT, sem merge/deploy, produção NO-GO.
+
+### ALT-08.10C.16 — defaults, constraints e índices PostgreSQL16
+
+- [x] Criado `lib/db/operational-structural-audit.ts` com hash determinístico e detecção de índices declarados/FKs ausentes, contagens de defaults, PK/FK/UNIQUE/CHECK.
+- [x] Incorporadas consultas `pg_index`, `pg_constraint`, `pg_attrdef` ao ensaio 186 DDL PostgreSQL16, antes de `ROLLBACK`.
+- [x] Testes adversariais de inconsistência e duplicação.
+- [ ] Certificar CI do HEAD exato; se RED, corrigir.
+- [ ] Validar defaults por coluna, FK por coluna e ação, índices únicos e políticas efetivas com identidades reais; staging requer autorização expressa.
+- [ ] PR DRAFT, sem merge/deploy, produção NO-GO.
