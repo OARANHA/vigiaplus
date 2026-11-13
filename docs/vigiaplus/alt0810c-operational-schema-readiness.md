@@ -258,3 +258,12 @@ Próximo gate: análise detalhada de defaults, PK/FK, índices e policy coverage
 O CI #400, SHA `174633f97766eb41146feadeebf19d1c57935b52`, falhou somente na etapa `ALT-08.10C.8 186 statements ... rollback` do job PostgreSQL16. As asserções de 591 colunas Drizzle/PG16 e dos 45 índices passaram; a asserção nova da ALT-08.10C.17 relatou `broken foreign key topology: 57 !== 0`.
 
 Correção candidata: a consulta `pg_constraint` obtinha `ARRAY(SELECT a.attname ...)` como PostgreSQL `name[]`; o driver pode não retornar esse tipo como array JS padrão. As duas projeções foram explicitamente convertidas para `text[]` via `a.attname::text`, e o teste valida `Array.isArray` e tipo string das colunas antes de avaliar a topologia FK. Sem desabilitar a asserção de integridade. Confirmar resultado no **SHA exato posterior** antes de classificar GREEN. Staging/produção inalterados.
+
+## ALT-08.10C.18 — contrato Drizzle/PG de FKs e prova adversarial da RLS legada
+
+- `lib/db/operational-fk-contract-audit.ts` compara FKs como tuplas ordenadas (tabela/colunas de origem, tabela/colunas referenciadas, ações `ON DELETE`/`ON UPDATE`) e normaliza códigos do PostgreSQL (a/r/c/n/d). Divergências `missingDbFks`/`missingOrmFks` são evidência; o relatório mantém `fkContractCertified=false` e `migrationAuthorized=false`.
+- `scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts` extrai `getTableConfig(table).foreignKeys` do Drizzle e compara com `pg_constraint` antes do rollback dos 186 DDL no PostgreSQL16 descartável; imprime contagens, amostras de diferenças e hash SHA-256. Sem modificar o schema real.
+- `tests/todo-alt0810c-fk-contract.test.ts` cobre ordem, código das ações, divergências e tuples inválidas.
+- `scripts/tests/alt0810c18-legacy-rls-null-context.test.ts` reproduz em fixture efêmera o comportamento perigoso da política legada: quando `app.tenant_id` está ausente, a condição `IS NULL OR ...` permite ler ambos os tenants. Com política alternativa de contexto obrigatório, testa **zero linhas** sem escopo e somente tenant A com contexto 101. A migração `migrations/00002_rls.sql` não é alterada ou executada em produção.
+- A prova de exposição é **falha de prontidão de segurança**, não certificação de segurança do sistema. A lógica de identidade/membership e a cobertura de todas as tabelas ainda não estão homologadas. Nenhum resultado GREEN autoriza aplicar a política proposta ao Neon.
+- Aceite limitado aos jobs do CI no SHA exato. PR #36 DRAFT e produção NO-GO.
