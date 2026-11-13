@@ -6,7 +6,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {existsSync,readFileSync,writeFileSync,mkdirSync,rmSync} from 'node:fs';
+import {existsSync,readFileSync,writeFileSync} from 'node:fs';
 import {resolve} from 'node:path';
 import {spawn,type ChildProcess} from 'node:child_process';
 import {setTimeout as delay} from 'node:timers/promises';
@@ -26,7 +26,8 @@ const dbPath=resolve(root,'lib/db/index.ts');
 const adapterFixture=resolve(root,'scripts/tests/fixtures/alt0810c29-db.fixture.txt');
 const original=readFileSync(dbPath,'utf8');
 assert.equal(existsSync(adapterFixture),true);
-const {Client}=createRequire(import.meta.url)('pg') as {Client:new(options:Record<string,unknown>)=>any};
+type PgPort={connect():Promise<void>;query(sql:string,parameters?:unknown[]):Promise<{rows:Record<string,unknown>[]}>;end():Promise<void>};
+const {Client}=createRequire(import.meta.url)('pg') as {Client:new(options:Record<string,unknown>)=>PgPort};
 const role='vigia_alt0810c29_route';
 const db=new Client({host:'127.0.0.1',port:5432,database:'vigia_alt081_ci',
  user:'vigia_ci',password:'isolated_ci_only'});
@@ -87,7 +88,10 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
     headers:id?{cookie:`${SESSION_COOKIE}=${signSession(id,version)}`}:{},
     redirect:'manual',signal:AbortSignal.timeout(15000)});
    const body=await response.json().catch(()=>({}));
-   return {status:response.status,body:body as Record<string,any>};
+   return {status:response.status,body:body as {
+    permissions?:{tenantId?:number};
+    features?:string[];
+  }};
   }
   let ready=false;
   for(let i=0;i<70;i++){
@@ -99,9 +103,9 @@ test('ALT-08.10C.29 real business route: signed sessions, tenant membership, ent
   assert.equal(ready,true,'real Next route failed startup: '+logs.slice(-8).join('').slice(-2500));
   const a=await request(1001),b=await request(2002);
   assert.equal(a.status,200);assert.equal(b.status,200);
-  assert.equal(a.body.permissions.tenantId,101);
+  assert.equal(a.body.permissions?.tenantId,101);
   assert.equal(b.body.permissions.tenantId,202);
-  assert.ok(a.body.features.includes(feature),'commercial plan feature A');
+  assert.ok(a.body.features?.includes(feature),'commercial plan feature A');
   assert.ok(b.body.features.includes(feature),'commercial plan feature B');
   const spoof=await request(1001,0,202);
   assert.equal(spoof.status,200);
