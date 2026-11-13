@@ -14,6 +14,10 @@ import {extractStaticBootstrapDdl,verifyBootstrapSnapshot,
 import {inspectBootstrapDependencies} from '../../lib/db/bootstrap-dependencies';
 import {snapshotDisposableCatalog} from '../../lib/db/disposable-catalog-snapshot';
 import {assessOperationalReadiness} from '../../lib/db/operational-readiness';
+import {compareColumnContract} from '../../lib/db/operational-column-compatibility';
+import {getTableColumns,getTableName,is} from 'drizzle-orm';
+import {PgTable} from 'drizzle-orm/pg-core';
+import * as drizzleSchema from '../../lib/db/schema';
 
 const e=process.env;
 if(e.CI!=='true'||e.GITHUB_ACTIONS!=='true'||e.ALT0810C8_EPHEMERAL!=='1'||
@@ -93,6 +97,32 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
     assert.equal(readiness.readyForOperationalAuth,false);
     assert.equal(readiness.migrationAllowed,false);
     assert.equal(readiness.productionAllowed,false);
+    const pgRows=await client.query(`SELECT c.relname AS table,a.attname AS column,
+      format_type(a.atttypid,a.atttypmod) AS sql_type,a.attnotnull AS not_null
+      FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid
+      JOIN pg_namespace n ON n.oid=c.relnamespace
+      WHERE n.nspname=$1 AND c.relkind IN ('r','p')
+        AND c.relname <> 'preexisting' AND a.attnum>0 AND NOT a.attisdropped
+      ORDER BY c.relname,a.attnum`,[ns]);
+    const ormColumns=Object.values(drizzleSchema).filter(v=>is(v,PgTable))
+      .flatMap(t=>Object.values(getTableColumns(t as PgTable)).map(col=>({
+        table:getTableName(t as PgTable),column:col.name,
+        sqlType:col.getSQLType(),notNull:col.notNull
+      })));
+    const pgColumns=pgRows.rows.map(r=>({
+      table:String(r.table),column:String(r.column),
+      sqlType:String(r.sql_type),notNull:r.not_null===true
+    }));
+    const compatibility=compareColumnContract(ormColumns,pgColumns);
+    assert.ok(compatibility.counts.expectedColumns>0);
+    assert.ok(compatibility.counts.actualColumns>0);
+    assert.equal(compatibility.schemaCertified,false);
+    assert.equal(compatibility.migrationAuthorized,false);
+    assert.equal(compatibility.productionAuthorized,false);
+    console.log('ALT0810C15 DISPOSABLE PG16 ORM COLUMN AUDIT '+JSON.stringify({
+      ...compatibility.counts,sha256:compatibility.evidenceSha256,
+      sampleGaps:compatibility.gaps.slice(0,15),migrationAuthorized:false
+    }));
     await client.query('ROLLBACK');tx=false;
     assert.deepEqual(await snapshotDisposableCatalog(client,ns,[role]),before,
       'catalog ACL/RLS/indexes/constraints/roles changed after rollback');
