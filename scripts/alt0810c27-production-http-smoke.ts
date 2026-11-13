@@ -54,7 +54,7 @@ async function smoke(label:string,command:string,args:string[],port:number){
      headers:{cookie},redirect:'manual',signal:AbortSignal.timeout(1700)});
     if(r.status===404){result=r;break}
     if(r.status!==502&&r.status!==503)
-     throw Error(label+' CI-only route responded '+r.status+' instead of 404');
+     throw Error(label+' CI-only route responded '+r.status+' instead of 404; server log: '+output.slice(-8).join('').slice(-1600));
    }catch(err){
     if(err instanceof Error&&err.message.includes('instead of 404'))throw err;
    }
