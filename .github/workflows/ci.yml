@@ -89,6 +89,22 @@ jobs:
           RLS_DATABASE_URL: ""
         run: node --import tsx scripts/alt0810c27-production-http-smoke.ts
 
+  docker-disposable:
+    name: ALT-08.10C.28 Docker standalone isolado
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      ALT0810C28_EPHEMERAL: "1"
+      DATABASE_URL: ""
+      RLS_DATABASE_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+      - name: "ALT-08.10C.28 build Docker real, network none e HTTP 404 sem banco"
+        run: bash scripts/tests/alt0810c28-docker-isolated-ci.sh
+
   postgres-disposable:
     name: ALT-08.1 PostgreSQL descartável
     runs-on: ubuntu-latest
