@@ -237,6 +237,12 @@ jobs:
           RLS_DATABASE_URL: ""
           SESSION_SECRET: "ALT0810C25_Disposable_Signed_Cookie_Secret_2026"
         run: node --import tsx --test scripts/tests/alt0810c25-next-pg-e2e.test.ts
+      - name: "ALT-08.10C.32 rota versionada real, ativacao e rollback PG16"
+        env:
+          ALT0810C32_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C32_Only_Disposable_Http_Session_2026"
+        run: node --import tsx --test scripts/tests/alt0810c32-versioned-http-pg.test.ts
       - name: "ALT-08.10C.31 rota Next real HTTP com transacao autorizada e FORCE RLS"
         env:
           ALT0810C31_EPHEMERAL: "1"
