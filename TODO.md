@@ -493,3 +493,13 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN no SHA exato; corrigir falhas se RED.
 - [ ] Correlacionar FKs com contratos Drizzle e verificar semântica de defaults e políticas RLS no próximo gate.
 - [ ] PR DRAFT, nenhum merge/deploy; Neon/staging não alterados; produção NO-GO.
+
+### ALT-08.10C.18 — contratos FK Drizzle e RLS contexto ausente
+
+- [x] Comparador puro de FKs Drizzle versus `pg_constraint`, inclusive ordem de colunas, ações referenciais e hash.
+- [x] Integrado ao PostgreSQL16 descartável dentro de transação com rollback dos 186 DDL.
+- [x] Testes adversariais de FKs, drift e validação da identidade de tuplas.
+- [x] Teste adversarial de RLS legado `app.tenant_id IS NULL`: comprova leitura cross-tenant em fixture e alternativa fail-closed isolada.
+- [ ] Verificar CI GREEN no SHA exato e analisar falhas se RED.
+- [ ] Corrigir desenho RLS legado com identidade autenticada e matrizes de papéis em gate separado, após revisão e aprovação; não aplicar diretamente no Neon.
+- [ ] PR #36 DRAFT, produção NO-GO, sem merge/deploy.
