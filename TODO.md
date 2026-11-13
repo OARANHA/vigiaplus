@@ -598,3 +598,14 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar **6/6 jobs GREEN no HEAD exato** e corrigir falhas por logs.
 - [ ] Homologação de rotas de negócio reais contra banco operacional descartável continua pendente; produção NO-GO.
 - [ ] Sem merge, deploy, publicação GHCR ou alteração Neon sem autorização.
+
+### ALT-08.10C.29 — rota de negócio real + PostgreSQL16 efêmero
+
+- [x] Preparada rota existente `GET /api/me/permissions` no ensaio Next.js HTTP real, sem adicionar rota de teste à produção.
+- [x] Preparado transporte Drizzle PostgreSQL CI-only como fixture textual, aplicado somente ao checkout do runner e restaurado em `finally`.
+- [x] Testes de sessão HMAC, membership A/B, tentativas de falsificar tenant, entitlement do plano, override negado e revogação de sessão.
+- [x] Diagnóstico `FORCE RLS`: recurso deve falhar fechado na falta de `app.tenant_id` transacional; não alegar RLS operacional certificado.
+- [x] Teste adicionado ao job PostgreSQL16 descartável sem novos secrets ou acesso ao Neon.
+- [ ] Validar 6/6 jobs GREEN no HEAD exato, corrigir RED por logs.
+- [ ] Gate seguinte: resolver a arquitetura das rotas de negócio para contexto de tenant **não falsificável** no mesmo PostgreSQL/tx antes de habilitar RLS de produção.
+- [ ] PR #36 DRAFT, sem merge/deploy/Neon, produção NO-GO.
