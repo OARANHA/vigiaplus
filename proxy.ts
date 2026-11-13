@@ -28,6 +28,15 @@ export function proxy(req: NextRequest) {
     h.set('x-vigia-request-method', req.method);
     return NextResponse.next({ request: { headers: h } });
   };
+  // ALT-08.10C.27: production build NEVER serves the disposable CI route.
+  // CI-only Next dev E2E explicitly opts in; other environments return 404
+  // before falling through to the app 404 page (which may need a DB).
+  if (pathname === '/api/ci/alt0810c25'
+      && process.env.ALT0810C25_EPHEMERAL !== '1') {
+    return NextResponse.json({ error: 'not_found' }, {
+      status: 404, headers: { 'Cache-Control': 'no-store' },
+    });
+  }
   // Public read-only demo: no auth gate at all.
   if (process.env.DEMO_MODE === '1') {
     // Gate global, antes de qualquer API, webhook, cron ou Server Action.
