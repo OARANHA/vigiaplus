@@ -558,3 +558,13 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar 5/5 GREEN no SHA exato e corrigir RED pelos logs, se ocorrer.
 - [ ] Próximo gate: conectar o adaptador **somente em CI descartável** à rota Next.js real, comprovando sessão, memberships, contratos, roles e RLS no mesmo PostgreSQL16 com isolamento end-to-end.
 - [ ] PR #36 DRAFT, produção NO-GO; nenhum merge/deploy/migração no Neon.
+
+### ALT-08.10C.25 — Next.js real e PostgreSQL16 na mesma transação descartável
+
+- [x] Nova rota `app/api/ci/alt0810c25/route.ts`, habilitada somente no runner GitHub com guarda dupla e indisponível em outros ambientes.
+- [x] Reutilizado adaptador `readAuthorizedFixture` de ALT-08.10C.24 para cookie real, sessão, membership, entitlement e RLS na mesma conexão/transação PG16.
+- [x] Criado E2E HTTP Next.js real com clientes A/B, tentativas de spoof e owner, cookies inválidos, revogações de sessão, membership e feature, cleanup de fixture.
+- [x] Integrado ao CI PG16 efêmero sem Neon.
+- [ ] Validar CI #441 da etapa anterior e CI atual 5/5 no SHA exato; corrigir RED, se necessário.
+- [ ] Gate seguinte: refatorar e homologar **rotas de negócio existentes** contra esquema operacional PG16, com mapeamento de roles, entitlements e identidade não falsificável; exige arquitetura e revisão independentes antes de staging.
+- [ ] PR #36 DRAFT; sem merge, deploy ou alterações no Neon; produção NO-GO.
