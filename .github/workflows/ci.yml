@@ -137,6 +137,11 @@ jobs:
           ALT0810C10_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c10-postgres-roles-wave.test.ts
+      - name: "ALT-08.10C.12 pg_dump + pg_restore em outro banco PostgreSQL 16 descartável"
+        env:
+          ALT0810C12_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c12-pg-dump-restore.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
