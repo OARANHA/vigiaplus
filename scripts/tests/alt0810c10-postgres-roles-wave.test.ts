@@ -45,6 +45,9 @@ test('ALT-08.10C.10: committed versioned ACL/RLS is least-privilege and reversib
     CONSTRAINT alt0810c10_positive CHECK(tenant_id>0))`);
   await db.query(`INSERT INTO ${table} VALUES
     (1,101,'A-original','secret-A'),(2,202,'B-original','secret-B')`);
+  // Pre-existing grants are part of the immutable baseline and must survive DOWN.
+  await db.query(`GRANT USAGE ON SCHEMA ${ns} TO ${migrator}`);
+  await db.query(`GRANT SELECT(id) ON ${table} TO ${reader}`);
   const rows=async()=>(await db.query(`SELECT id,tenant_id,label,private_note FROM ${table} ORDER BY id`)).rows;
   const originalRows=await rows();
   const baseline=await snapshotDisposableCatalog(db,ns,[...ALT0810C10_WAVE1.roles]);
