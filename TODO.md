@@ -484,3 +484,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Certificar CI do HEAD exato; se RED, corrigir.
 - [ ] Validar defaults por coluna, FK por coluna e ação, índices únicos e políticas efetivas com identidades reais; staging requer autorização expressa.
 - [ ] PR DRAFT, sem merge/deploy, produção NO-GO.
+
+### ALT-08.10C.17 — defaults e FKs detalhadas
+
+- [x] Criado `lib/db/operational-default-fk-audit.ts` para detectar defaults ausentes/extras, relações estrangeiras quebradas, FKs não validadas e ações desconhecidas.
+- [x] Integrada comparação `getTableColumns().hasDefault` versus `pg_attrdef`, e registro ordenado `conkey`/`confkey` com `ON UPDATE/DELETE` no PostgreSQL16 descartável.
+- [x] Adicionados testes adversariais `tests/todo-alt0810c-default-fk-audit.test.ts`.
+- [ ] Confirmar CI GREEN no SHA exato; corrigir falhas se RED.
+- [ ] Correlacionar FKs com contratos Drizzle e verificar semântica de defaults e políticas RLS no próximo gate.
+- [ ] PR DRAFT, nenhum merge/deploy; Neon/staging não alterados; produção NO-GO.
