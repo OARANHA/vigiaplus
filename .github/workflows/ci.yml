@@ -174,6 +174,11 @@ jobs:
           ALT0810C18_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c18-legacy-rls-null-context.test.ts
+      - name: "ALT-08.10C.19 candidato de RLS por membership e revogação (PostgreSQL16 descartável)"
+        env:
+          ALT0810C19_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c19-membership-rls.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
