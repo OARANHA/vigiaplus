@@ -5,12 +5,12 @@
 import assert from 'node:assert/strict';
 import { signSession, SESSION_COOKIE } from '../../lib/session';
 
-type Ids={owner:number;analyst:number;clientA:number;clientB:number};
+type Ids={owner:number;analyst:number;clientA:number;clientB:number;revokedOwner:number};
 const ids:Ids=JSON.parse(process.env.ALT083_FIXTURE_IDS||'null');
 const origin='http://127.0.0.1:3199';
 if(process.env.ALT083_EPHEMERAL_HTTP!=='1' || process.env.DATABASE_URL
   || !process.env.CI || !process.env.RUNNER_TEMP
-  || !ids || ![ids.owner,ids.analyst,ids.clientA,ids.clientB].every(Number.isInteger)){
+  || !ids || ![ids.owner,ids.analyst,ids.clientA,ids.clientB,ids.revokedOwner].every(Number.isInteger)){
   throw new Error('ALT083 HTTP check requires isolated CI fixtures');
 }
 async function request(id:number|undefined,headers:Record<string,string>={}){
@@ -53,11 +53,26 @@ async function main(){
   };
   assert.ok(data.queue.pending>=2,'owner observes aggregate of both synthetic tenants');
   assert.ok(data.worker.runs.some(r=>r.summary.tenants===2));
+  // ALT-08.10C.22: real Next.js route must reject a still HMAC-valid
+  // cookie whose session version was superseded in the disposable DB.
+  const revokedCookie=signSession(ids.revokedOwner,0);
+  const stale=await fetch(origin+'/api/console/notifications/operations?tenant_id=999999',{
+    headers:{Cookie:`${SESSION_COOKIE}=${revokedCookie}`},redirect:'manual'
+  });
+  assert.equal(stale.status,401,'DB-revoked session must fail despite valid signature');
+  const currentCookie=signSession(ids.revokedOwner,2);
+  const valid=await fetch(origin+'/api/console/notifications/operations?tenant_id=999999',{
+    headers:{Cookie:`${SESSION_COOKIE}=${currentCookie}`},redirect:'manual'
+  });
+  assert.equal(valid.status,200,'same user with verified current DB session may enter owner-only route');
+  assert.equal(valid.headers.get('cache-control'),'no-store');
+  const ignoredSpoof=await request(ids.clientA,{'x-tenant-id':String(ids.owner)});
+  assert.equal(ignoredSpoof.status,403,'client cannot impersonate owner by forged tenant header');
   const badSignature=await fetch(origin+'/api/console/notifications/operations',{
     headers:{Cookie:`${SESSION_COOKIE}=1.0.${'0'.repeat(64)}`},redirect:'manual'
   });
   assert.equal(badSignature.status,401);
-  process.stdout.write('ALT083 HTTP: owner 200, analyst/client 403, anonymous/forged 401, summary sanitized\n');
+  process.stdout.write('ALT083+ALT0810C22 Next.js: owner 200; analyst/client 403; forged/anonymized/revoked 401; current session 200; summary sanitized\n');
 }
 main().catch(e=>{
   console.error('ALT083 HTTP failure:',e instanceof Error?e.message:'unknown');
