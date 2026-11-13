@@ -621,3 +621,14 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN 6/6 no SHA exato e corrigir RED.
 - [ ] Integrar rotas reais com transportador PostgreSQL de conexão fixa e contratos de roles e migrations auditadas antes de remover NO-GO.
 - [ ] PR #36 DRAFT, sem merge, deploy ou Neon.
+
+### ALT-08.10C.31 — rota real Next HTTP, PG16 e RLS transacional
+
+- [x] Fixture textual inerte e injeção temporária no GET já existente de `/api/me/permissions` exclusivamente no runner CI descartável.
+- [x] HTTP real de Next.js + sessão HMAC + vínculo de tenant derivado do banco, `authorizedTenantRead`, PostgreSQL16 e `FORCE RLS`.
+- [x] Testes A/B positivos, spoof de tenant ignorado, owner/cliente não autenticado negados, revogação de sessão, de assinatura e de feature.
+- [x] Restauração do código original e destruição de schema/role após o ensaio; sem Neon.
+- [x] Novo passo de workflow PostgreSQL16.
+- [ ] Verificar CI 6/6 GREEN no SHA exato e corrigir eventuais falhas.
+- [ ] Gate seguinte: integração versionada da rota real e driver PG transacional seguro, após auditoria de superfície e autorização; sem ativar RLS até homologação.
+- [ ] PR #36 DRAFT, produção NO-GO; sem merge/deploy/Neon.
