@@ -18,7 +18,7 @@ if(e.CI!=='true'||e.GITHUB_ACTIONS!=='true'||e.RUNNER_OS!=='Linux'||
  e.ALT0810C29_SCHEMA!=='alt0810c29_real_route')
  throw Error('ALT0810C29_DISPOSABLE_ONLY');
 const pool=new Pool({host:'127.0.0.1',port:5432,
- database:'vigia_alt081_ci',user:'vigia_ci',password:'isolated_ci_only',
+ database:'vigia_alt081_ci',user:'vigia_alt0810c29_route',password:'ci29_route_only',
  options:'-c search_path=alt0810c29_real_route'});
 const db=drizzle(pool,{schema}) as unknown as DB;
 export async function getDb():Promise<DB>{return db}
