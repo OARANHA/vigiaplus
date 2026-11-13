@@ -39,6 +39,12 @@ jobs:
           RLS_DATABASE_URL: ""
         run: node --import tsx --test tests/todo-alt0810c-bootstrap-dependencies.test.ts
 
+      - name: ALT-08.10C.11 manifesto de dependências, backup e rollback NO-GO (offline)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/operational-evidence-check.ts
+
       - name: ALT-08.10C.3 ensaio de 186 DDL em PGlite descartável com ROLLBACK
         env:
           DATABASE_URL: ""
