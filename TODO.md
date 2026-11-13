@@ -430,3 +430,13 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Comprovar CI GREEN no SHA exato antes de avançar.
 - [ ] Planejar migrations reais para todo schema operacional com dependências, ownership e rollback físico. Somente staging aprovado explicitamente; sem alterações Neon nesta etapa.
 - [ ] Manter PR DRAFT, produção NO-GO, sem merge/deploy.
+
+### ALT-08.10C.11 — evidência offline de migrações, dependências e backup
+
+- [x] Criado `lib/db/operational-migration-evidence.ts` com plano determinístico de 186 passos, hashes SHA-256, predecessores, classificação DDL/DML, necessidade de backup e flags permanentes de não autorização.
+- [x] Criados testes de drift/fail-closed em `tests/todo-alt0810c-operational-evidence.test.ts`.
+- [x] Criado `scripts/operational-evidence-check.ts` como relatório somente offline, integrado ao job build de CI, sem DB nem migração.
+- [x] Documentada matriz futura de backup lógico e PITR, diff de permissões/objetos, restore em banco novo, DDL/compensação e aprovação humana.
+- [ ] Certificar CI GREEN 5/5 no SHA exato deste incremento; corrigir eventuais falhas.
+- [ ] Homologar pg_dump, restore independente, drift, UP/DOWN e política real de roles sobre banco isolado somente com escopo aprovado.
+- [ ] PR DRAFT, sem merge/deploy/DDL no Neon, produção NO-GO.
