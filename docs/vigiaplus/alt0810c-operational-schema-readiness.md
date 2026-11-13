@@ -314,3 +314,15 @@ A proposta requer `app.tenant_id` **e** `app.user_id` positivos, membership ativ
 **Critérios ainda não atendidos:** (a) adaptador PostgreSQL16 transacional usado pelo próprio Next.js sob guarda CI e sem URL operacional; (b) checagem no mesmo banco/transação de sessão, membership e entitlement; (c) papel sem BYPASSRLS e escopo no mesmo socket; (d) proteção contra injeção de `app.user_id`/`app.tenant_id` por clientes SQL; (e) evidência de revogação e rollback sob as rotas HTTP reais. Fazer nova implementação somente no ambiente descartável, mantendo validação e políticas reais imutáveis.
 
 **Status:** ALT-08.10C.23 entrega bloqueio arquitetural verificável, **não** a integração completa. `ready=false`, `migrationAuthorized=false`, `productionAuthorized=false`. PR #36 DRAFT; Neon/staging/produção intactos; CI deve ser checado no SHA exato.
+
+## ALT-08.10C.24 — adaptador PostgreSQL16 transacional descartável (candidato)
+
+A ALT-08.10C.23 foi verificada GREEN 5/5 no CI #436 (run 43440797896), SHA `26d19f888b1b607c10dd3d34ea40235b209b1cad`.
+
+O módulo `lib/db/alt0810c24-disposable-pg-adapter.ts` cria conexão `pg` **somente** no runner CI e no banco `vigia_alt081_ci` em `127.0.0.1:5432`, sob guarda de variáveis de ambiente. Seu método `readAuthorizedFixture` verifica assinatura HMAC do cookie real `sr_session` com `verifySession`, abre `BEGIN` na mesma conexão, consulta a versão da sessão com `FOR SHARE`, consulta membership/contrato/entitlement com `FOR SHARE OF m,c`, executa a pré-autorização fail-closed, assume role mínima `NOBYPASSRLS`, define GUCs locais e faz leitura protegida por `FORCE ROW LEVEL SECURITY`. Todos os caminhos fecham por `ROLLBACK`.
+
+`scripts/tests/alt0810c24-pg-adapter.test.ts` exercita sessões corretas, tenants A/B, tentativas cross-tenant, papel owner, cookie falso/ausente, revogação de membership, entitlement e versão da sessão, além da limpeza de role e contexto por rollback. O job PostgreSQL CI ganhou a etapa correspondente.
+
+**Limites:** é adaptador modular **inerte**, ainda não injetado no `getDb()` nem nas rotas Next.js reais. As permissões, GUCs e contrato de entitlement são somente da fixture, não do banco operacional. A guarda de ambiente impede conexão remota mas não é modelo de autenticação para produção. Cliente SQL com credenciais privilegiadas ainda poderia falsificar GUCs; credenciais do backend nunca devem ser disponibilizadas a clientes finais. O gate próximo exige integrar rotas Next.js reais em CI descartável, com migrações isoladas, sem tocar em Neon.
+
+Status: `operationalEnabled=false`, `stagingAuthorized=false`, `productionAuthorized=false`; PR #36 DRAFT, produção NO-GO. Certificação técnica da ALT-08.10C.24 depende de CI 5/5 GREEN no SHA exato.
