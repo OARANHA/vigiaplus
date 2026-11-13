@@ -184,6 +184,11 @@ jobs:
           ALT0810C20_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c20-pg-authz-scope.test.ts
+      - name: "ALT-08.10C.21 HTTP loopback autenticado com sessão e RLS PG16 descartável"
+        env:
+          ALT0810C21_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c21-http-pg-authz.test.ts
       - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
         env:
           ALT085_EPHEMERAL_RLS: "1"
