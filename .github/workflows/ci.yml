@@ -82,6 +82,13 @@ jobs:
       - name: "ALT-08.10C.26 verificar artefato de produção sem rota de CI"
         run: node --import tsx scripts/alt0810c26-production-isolation-check.ts --postbuild
 
+      - name: "ALT-08.10C.27 smoke HTTP next start e standalone sem banco ou rota de CI"
+        env:
+          ALT0810C27_EPHEMERAL: "1"
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c27-production-http-smoke.ts
+
   postgres-disposable:
     name: ALT-08.1 PostgreSQL descartável
     runs-on: ubuntu-latest
