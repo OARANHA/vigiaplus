@@ -540,3 +540,12 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Confirmar CI GREEN em 5/5 no HEAD exato e corrigir RED pelos logs.
 - [ ] Gate futuro: Next.js real + sessão/membership/entitlement no mesmo PostgreSQL16 com driver transacional e RLS, **sem** acesso operacional até aprovação.
 - [ ] PR #36 DRAFT; sem merge/deploy/Neon. Produção NO-GO.
+
+### ALT-08.10C.23 — auditoria/guardrail do vínculo Next.js–PG16
+
+- [x] Inspecionado adaptador real: Next.js usa Neon HTTP ou PGlite; inexistente adaptador PostgreSQL16 interativo homologado para as rotas.
+- [x] Criado gate puro `lib/tenant/alt0810c23-next-pg-runtime-gate.ts`, fail-closed mesmo que uma fixture sinalize todos os booleans.
+- [x] Acrescentados testes adversariais e inspeção offline de `lib/db/index.ts`, `lib/session-auth.ts`, `lib/tenant/scope.ts` e E2Es; integrado ao job build.
+- [ ] Confirmar CI GREEN em 5/5 no SHA exato; corrigir falhas.
+- [ ] Implementar e homologar em **gate separado** Next.js real + PostgreSQL16 transacional no mesmo processo/connection, sessão real, membership e entitlement no banco, RLS com identidades não falsificáveis.
+- [ ] PR #36 DRAFT. Não existe autorização de merge/deploy/migração no Neon; produção NO-GO.
