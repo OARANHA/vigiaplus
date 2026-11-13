@@ -5,9 +5,15 @@ import { AppError } from '@/lib/tenant/errors';
 import { resolveTenantContext } from '@/lib/tenant/context';
 import { permissionsFingerprint } from '@/lib/tenant/rbac';
 import { enabledFeatures } from '@/lib/tenant/entitlements';
+import { transactionalPermissionsMode, disposableTransactionalPermissions } from '@/lib/tenant/alt0810c32-versioned-route';
 
 export async function GET(request: Request) {
   try {
+    // Versioned ALT-08.10C.32: disabled is the unchanged business path.
+    // 'disposable-ci' requires strict environment checks and never uses Neon.
+    if (transactionalPermissionsMode(process.env) === 'disposable-ci') {
+      return disposableTransactionalPermissions(request);
+    }
   const url = new URL(request.url);
   const surface = url.searchParams.get('surface') ?? 'app';
   const ctx = await resolveTenantContext({ surface: surface as 'app' | 'console' | 'analyst' });
