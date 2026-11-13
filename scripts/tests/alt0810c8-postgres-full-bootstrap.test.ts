@@ -166,10 +166,10 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
      WHERE n.nspname=$1 AND c.relname<>'preexisting' ORDER BY c.relname,a.attname`,[ns]);
     const foreignKeyRows=await client.query(`SELECT c.relname AS table,con.conname AS name,
      referenced.relname AS referenced_table,
-     ARRAY(SELECT a.attname FROM unnest(con.conkey) WITH ORDINALITY AS keys(attnum,ord)
+     ARRAY(SELECT a.attname::text FROM unnest(con.conkey) WITH ORDINALITY AS keys(attnum,ord)
        JOIN pg_attribute a ON a.attrelid=con.conrelid AND a.attnum=keys.attnum
        ORDER BY keys.ord) AS columns,
-     ARRAY(SELECT a.attname FROM unnest(con.confkey) WITH ORDINALITY AS keys(attnum,ord)
+     ARRAY(SELECT a.attname::text FROM unnest(con.confkey) WITH ORDINALITY AS keys(attnum,ord)
        JOIN pg_attribute a ON a.attrelid=con.confrelid AND a.attnum=keys.attnum
        ORDER BY keys.ord) AS referenced_columns,
      con.confupdtype::text AS on_update,con.confdeltype::text AS on_delete,
@@ -179,6 +179,15 @@ test('ALT-08.10C.8: full SQL snapshot in PG16 transaction preserves previous sta
      JOIN pg_namespace n ON n.oid=c.relnamespace
      WHERE n.nspname=$1 AND con.contype='f'
      ORDER BY c.relname,con.conname`,[ns]);
+    // pg_attribute.attname is PostgreSQL type name (OID 19); name[] may be
+    // delivered as an unparsed string by node-postgres. Cast to text[] in SQL
+    // and verify decoding to avoid treating string lengths as FK cardinalities.
+    for(const [index,row] of foreignKeyRows.rows.entries()){
+      if(!Array.isArray(row.columns)||!Array.isArray(row.referenced_columns)||
+         !(row.columns as unknown[]).every(c=>typeof c==='string')||
+         !(row.referenced_columns as unknown[]).every(c=>typeof c==='string'))
+        throw Error('ALT0810C17_FOREIGN_KEY_ARRAY_DECODE_FAILED:'+String(index));
+    }
     const existingTables=[...new Set(pgColumns.map(c=>c.table))];
     const defaultsAndFk=auditDefaultsAndForeignKeys(
       Object.values(drizzleSchema).filter(v=>is(v,PgTable) &&
