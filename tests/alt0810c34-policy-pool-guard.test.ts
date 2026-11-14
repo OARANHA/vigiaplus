@@ -65,8 +65,14 @@ test('ALT-08.10C.34 blocks COMMIT, SQL batching, unsafe statements and mutable G
     await assert.rejects(withDisposableScopedRead(s.pool,{tenantId:101,readerRole:'reader'},
       async db=>db.query(sql)),/ALT0810C34_QUERY_DENIED/);
     assert.deepEqual(s.releases,[false],sql);
-    assert.equal(s.log.at(-1),'ROLLBACK',sql);
-    assert.equal(s.log.some(x=>x===sql),false,sql);
+    // The application statement MUST NOT reach the driver. The one
+    // ROLLBACK below belongs to the wrapper's mandatory cleanup.
+    assert.deepEqual(s.log,[
+      'BEGIN READ ONLY',
+      'SET LOCAL ROLE "reader"',
+      'SELECT set_config($1,$2,true) ["app.tenant_id","101"]',
+      'ROLLBACK',
+    ],sql);
   }
 });
 
