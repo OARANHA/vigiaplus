@@ -145,6 +145,12 @@ test('ALT-08.10C.34 exclusive policy drift, PUBLIC/role inheritance, pool isolat
   await admin.query(`REVOKE ${broad} FROM ${reader}`);
   await preflight();
 
+  // Membership alone is insufficient for SET LOCAL ROLE in PostgreSQL 16.
+  await admin.query(`GRANT ${reader} TO ${executor} WITH SET FALSE`);
+  await mustDeny(activePool,scope);
+  await admin.query(`GRANT ${reader} TO ${executor} WITH SET TRUE`);
+  await preflight();
+
   // Any unexpected policy, even on a different command, needs review.
   await admin.query(`CREATE POLICY c34_write ON ${ns}.evidence
     FOR UPDATE TO ${reader} USING(true)`);
