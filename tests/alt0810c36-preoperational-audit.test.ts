@@ -84,6 +84,10 @@ test('ALT-08.10C.36 catalog audit executes SELECT only in pg_catalog',async()=>{
     assert.doesNotMatch(q,/\b(?:INSERT|UPDATE|DELETE|ALTER|DROP|CREATE|GRANT|REVOKE)\s+\w+/i);
     assert.doesNotMatch(q,/FROM\s+alt0810c36_scope\./i);
   }
+  // Privileges are compared by effective ACL entries (grantee, grantor,
+  // privilege type and grant option), not incidental storage text of pg_acl.
+  assert.equal(queries.filter(q=>q.includes('aclexplode')).length,3);
+  assert.ok(queries.some(q=>q.includes('g.grantee,g.grantor,g.privilege_type,g.is_grantable')));
   assert.deepEqual(params[0],[]);
   assert.deepEqual(params[1],[plan.scope.executorRole,plan.scope.readerRole]);
   assert.deepEqual(params[4],[plan.scope.schema,
