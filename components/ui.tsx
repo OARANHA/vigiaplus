@@ -45,7 +45,8 @@ export function PageHeader({ title, subtitle, info }: {
   info?: React.ReactNode;
 }) {
   return (
-    <header className="mb-6">
+    <header className="vigia-page-header mb-6">
+      <span className="vigia-page-eyebrow">VIGIAPLUS · INTELIGÊNCIA</span>
       <div className="flex items-center gap-2">
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         {info && <InfoTip title={`About: ${title}`}>{info}</InfoTip>}
@@ -61,7 +62,7 @@ export function KpiCard({ label, value, hint, exact }: {
   exact?: string;
 }) {
   return (
-    <div className="panel px-5 py-4" title={exact}>
+    <div className="panel vigia-kpi-card px-5 py-4" title={exact}>
       <p className="text-xs font-medium uppercase tracking-wide text-slate-400">{label}</p>
       <p className="mt-1 cursor-default text-2xl font-bold">{value}</p>
       {hint && <p className="mt-0.5 text-xs text-slate-500">{hint}</p>}
