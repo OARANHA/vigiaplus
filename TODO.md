@@ -733,3 +733,17 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] **Produto online para clientes:** integrar identidade LOGIN NOBYPASSRLS e autorização completa no Neon HML, definir credenciais e hosting, aceitar revisão de política e deploy somente após autorização específica. Não usar o owner Neon BYPASSRLS para tráfego de clientes.
 - [ ] CI para HEAD atualizado deve ser classificado pelo SHA exato. Não reiniciar ciclo infinito de testes; priorizar a entrega de telas e fluxos úteis.
 - [ ] Manter PR #36 **DRAFT**, sem merge/deploy de produção até autorização.
+
+### Auditoria e harmonização UX global — fase 1 (2026-11-14)
+
+- [x] Inspecionar arquitetura de páginas/shells e registrar divergências verificadas em `docs/vigiaplus/ux-consistencia-visual-global.md` (checkout local: 73 páginas; 57 com PageHeader; 42 com .panel; 15 com inline style).
+- [x] Criar `app/vigia-design-tokens.css`: tokens semânticos compartilhados de claro/escuro, cartões, bordas, tipografia, hierarquia e foco.
+- [x] Criar `components/vigia-appearance.tsx` e usar a mesma preferência de tema persistente em proprietário, cliente e analista.
+- [x] Harmonizar `app/layout.tsx`, sidebar analítica, `PageHeader` e KPIs com a paleta e superfícies do layout Vpx.
+- [x] Atualizar o login duas colunas para a identidade verde/teal do VigiaPlus, preservando autenticação e composição.
+- [ ] Verificar CI no SHA exato da PR #36 e resolver falhas sem presumir GREEN.
+- [ ] Ligar e navegar aplicação real em localhost 3199 em dados sintéticos; fotografar as rotas de proprietário, cliente, analista, login e telas especiais em mobile/desktop e tema claro/escuro.
+- [ ] Corrigir contrastes, grids e componentes ainda específicos nas rotas do Radar (principalmente impostazioni, insights, story, tv, vigia e share). Não afirmar que todas as telas foram padronizadas sem capturas.
+- [ ] Reunificar navegação da shell legada e shell Vpx gradualmente, sem quebrar RBAC e funções existentes.
+- [ ] Só após visual QA e validação funcional, gerar aulas reais da Academia VigiaPlus.
+
