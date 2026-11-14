@@ -1,0 +1,40 @@
+{
+  "id": "alt0810c36-prestaging-disposable-v1",
+  "version": 1,
+  "postgresMajor": 16,
+  "scope": {
+    "schema": "alt0810c36_scope",
+    "evidence": "evidence",
+    "readerRole": "alt0810c36_reader",
+    "executorRole": "alt0810c36_executor",
+    "policyName": "c36_tenant_select"
+  },
+  "dependencies": [
+    "users",
+    "memberships",
+    "tenants",
+    "subscriptions",
+    "tenant_features",
+    "plan_features"
+  ],
+  "approvedPredicateSourceSha256": "778e1a77b79ef32bc24281ce6561dafb57584da2772c184a5aaadf2973f93dfe",
+  "fixtureOnly": true,
+  "readOnlyCatalogOnly": true,
+  "postCommitRestoreFixtureOnly": true,
+  "stagingApproved": false,
+  "neonApproved": false,
+  "productionApproved": false,
+  "operationalPolicyApproved": false,
+  "physicalBackupRestoreCertified": false,
+  "migrationExecutionAuthorized": false,
+  "mergeAuthorized": false,
+  "requiredGateEvidence": [
+    "preflight-read-only-transaction",
+    "baseline-catalog-digest",
+    "postcommit-drift-detected",
+    "failed-compensation-rolled-back",
+    "compensating-commit",
+    "catalog-and-data-restored",
+    "six-ci-jobs-green"
+  ]
+}
