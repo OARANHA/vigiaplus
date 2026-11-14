@@ -119,7 +119,7 @@ test('ALT-08.10C.34 positive exclusive catalog contract keeps digest out of C.33
   const db={
     async query(sql:string,params?:unknown[]){
       calls.push(sql);
-      if(sql.includes('FROM pg_policy p')) {
+      if(sql.includes('JOIN pg_policy p')) {
         assert.deepEqual(params,['isolated','evidence','reader']);
         return {rows:policies,rowCount:policies.length};
       }
