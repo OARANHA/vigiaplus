@@ -38,6 +38,9 @@ export type C35Catalog={
   relation:{schema:string;table:string;enabled:boolean;forced:boolean;kind:string};
   roles:{name:string;login:boolean;superuser:boolean;bypassRls:boolean}[];
   member:boolean;setRole:boolean;
+  roleGrants:{role:string;member:string;set:boolean;inherit:boolean;admin:boolean}[];
+  acls:{schema:string;table:string;columns:{name:string;acl:string}[];
+    noPublicAcl:boolean};
   columns:{name:string;type:string;readerSelect:boolean;
     readerInsert:boolean;readerUpdate:boolean}[];
   policies:{name:string;command:string;permissive:boolean;
@@ -124,6 +127,13 @@ export function assertC35Baseline(m:C35Manifest,c:C35Catalog):void{
     {name:m.readerRole,login:false,superuser:false,bypassRls:false},
   ]));
   expect(c.member===true&&c.setRole===true);
+  expect(exactly(c.roleGrants,[{
+    role:m.readerRole,member:m.executorRole,
+    set:true,inherit:true,admin:false,
+  }]));
+  expect(c.acls.noPublicAcl===true &&
+    c.acls.columns.length===m.columns.length &&
+    c.acls.columns.every((x,i)=>x.name===m.columns[i].name));
   expect(exactly(c.columns,m.columns.map(x=>({
     name:x.name,type:x.type,readerSelect:x.readerSelect,
     readerInsert:false,readerUpdate:false,
