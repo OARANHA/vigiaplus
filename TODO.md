@@ -643,3 +643,15 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Verificar CI 6/6 GREEN no SHA exato e corrigir falhas.
 - [ ] Gate futuro: projeto de transporte operacional com role e schema revisados, pool, migrations RLS auditadas, rollback por tabela, aprovação explícita de homologação staging antes de qualquer enable.
 - [ ] PR #36 DRAFT, produção NO-GO, sem merge/deploy/Neon.
+
+### ALT-08.10C.33 — arquitetura de transporte PG, preflight de roles e rollback
+
+- [x] Contrato de cliente exclusivo por requisição com liberação depois de `ROLLBACK` e descarte obrigatório em falha de limpeza; nenhuma ligação ao driver de produção.
+- [x] Preflight estático de catálogo: executor e leitor sem SUPERUSER/BYPASSRLS, membro de role restrita, `FORCE RLS`, SELECT na evidência e proibição de acesso a tabelas de identidade/faturamento.
+- [x] Testes unitários de pool/rollback/default-off, falhas de cleanup e identificadores rejeitados.
+- [x] Teste PostgreSQL16 descartável com Pool real, role LOGIN executor, NOLOGIN leitor, isolamento A/B e negativas de privilégio/policy.
+- [x] Passo adicionado ao job PG16 descartável sem `pg` no lock de produção.
+- [x] Plano de rollout e rollback coordenado registrado na documentação viva; flag OFF não substitui rollback de DDL/policies.
+- [ ] Confirmar CI 6/6 GREEN no SHA exato e corrigir falhas por logs, sem polling infinito.
+- [ ] Auditoria manual das policies reais, isolamento por tenant e concorrência; preparar migration/restore por tabela só após aprovação de staging.
+- [ ] PR #36 DRAFT; staging e produção NO-GO, sem merge/deploy/Neon.
