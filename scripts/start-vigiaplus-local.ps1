@@ -33,7 +33,7 @@ try {
   }
 } finally { $client.Dispose() }
 
-$dir = Join-Path $root (if ($Mode -eq 'demo') { '.data\vigiaplus-demo' } else { '.data\vigiaplus-owner' })
+$dir = Join-Path $root $(if ($Mode -eq 'demo') { '.data\vigiaplus-demo' } else { '.data\vigiaplus-owner' })
 New-Item -ItemType Directory -Force -Path $dir | Out-Null
 
 # Importante: impede herdar conexoes remotas/configuracoes reais da sessao.
@@ -48,7 +48,12 @@ $env:PGLITE_DIR = $dir
 $env:NODE_ENV = 'development'
 $env:HOSTNAME = '127.0.0.1'
 $env:APP_URL = "http://127.0.0.1:$Port"
-$env:SESSION_SECRET = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(48))
+$rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+try {
+  $bytes = New-Object byte[] 48
+  $rng.GetBytes($bytes)
+  $env:SESSION_SECRET = [Convert]::ToBase64String($bytes)
+} finally { $rng.Dispose() }
 $env:ADMIN_EMAIL = $null
 $env:ADMIN_PASSWORD = $null
 $env:ADMIN_NAME = $null
