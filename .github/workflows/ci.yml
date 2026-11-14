@@ -39,6 +39,12 @@ jobs:
           RLS_DATABASE_URL: ""
         run: node --import tsx scripts/alt0810c36-readonly-check.ts
 
+      - name: "ALT-08.10C.37 pacote catalog-only READ ONLY aprovado apenas offline"
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c37-audit-safety-check.ts
+
       - name: ALT-08.10C.3 snapshot DDL de bootstrap (sem banco)
         run: node --import tsx scripts/bootstrap-snapshot-check.ts
 
@@ -266,6 +272,14 @@ jobs:
           ALT0810C36_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c36-pg-postcommit-restore.test.ts
+      - name: "ALT-08.10C.37 dump PRE-COMMIT e restore POS-COMMIT em segundo cluster PG16 isolado"
+        env:
+          ALT0810C37_EPHEMERAL: "1"
+          ALT0810C37_DEST_HOST: "127.0.0.1"
+          ALT0810C37_DEST_PORT: "5433"
+          ALT0810C37_DEST_DATABASE: "vigia_alt0810c13_restore_ci"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c37-postcommit-backup-crosscluster.test.ts
       - name: "ALT-08.10C.32 rota versionada real, ativacao e rollback PG16"
         env:
           ALT0810C32_EPHEMERAL: "1"
