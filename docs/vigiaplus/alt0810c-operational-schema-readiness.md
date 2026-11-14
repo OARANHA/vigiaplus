@@ -468,3 +468,33 @@ Fontes técnicas: [PostgreSQL 16 pg_policy](https://www.postgresql.org/docs/16/c
 **Certificação do gate C.36 em CI descartável:** workflow [#555](https://github.com/OARANHA/vigiaplus/actions/runs/43575935724), SHA `3a573520ac35ee2c0ed17d24896e22ea21d0e7fa`, `completed/success`, **6/6 jobs GREEN**; steps offline e PostgreSQL16 C.36 confirmados. O primeiro ensaio CI #553 detectou diferença na serialização das ACLs após GRANT/REVOKE; o auditor passou a comparar concessões **efetivas** canônicas por grantee/grantor/privilege_type/is_grantable via `aclexplode` + `string_agg`, preservando detecção de grant real. O CI #555 validou a corretiva. A certificação só vale para fixture e runner descartáveis; esta atualização documental gera SHA posterior que exige CI próprio.
 
 Referências: <https://www.postgresql.org/docs/16/catalog-pg-policy.html>, <https://www.postgresql.org/docs/16/ddl-priv.html>, <https://www.postgresql.org/docs/16/app-pgrestore.html>.
+
+## ALT-08.10C.37 — recuperação por arquivo após COMMIT e dossiê de auditoria real (duas fases)
+
+**Natureza:** a fase 1 é executável somente no GitHub Actions descartável; a fase 2 requer autorização **nova e explícita** para identificar o banco real e a role de auditoria. NÃO houve consulta a Neon/produção, exportação de dados reais, alteração em staging, merge ou deploy. Não confundir CI GREEN com liberação operacional.
+
+### Fase 1 — prova de restore em outro cluster
+
+`scripts/tests/alt0810c37-postcommit-backup-crosscluster.test.ts` exige `CI=true`, `GITHUB_ACTIONS=true`, runner Linux, URLs operacionais vazias e dois serviços `postgres:16` fixos em loopback `127.0.0.1:5432` e `127.0.0.1:5433`. Recusa clusters com `system_identifier` igual. Os nomes de schema/roles são somente os de fixture `ALT-08.10C.36`.
+
+1. Cria roles fictícias nos dois clusters, porque **pg_dump não inclui objetos globais/roles**. No cluster de origem, cria sete tabelas sintéticas, policy SELECT tenant-scoped, grants mínimos, `ENABLE/FORCE RLS` e linhas A/B, sem dados reais.
+2. Captura catálogo RLS/ACL/roles e dados sintéticos de baseline; verifica isolamento 101→ID1 e 202→ID2.
+3. Exporta **antes da divergência** o schema de teste com `pg_dump -Fc`. Valida assinatura `PGDMP`, SHA-256, catálogo TOC do archive e rejeição de arquivo deliberadamente corrompido.
+4. Aplica `USING(true)`, policy pública adicional, relaxa `FORCE RLS`, concede leitura a coluna sensível e tabela auth, e altera tenant 101→202; **COMMIT** na origem. Exige que a divergência permaneça visível e não seja aceita como estado seguro.
+5. Somente após o COMMIT danoso, usa `pg_restore --single-transaction --exit-on-error` no **segundo cluster independente**, cujos roles globais foram provisionados separadamente. Compara catálogo inteiro com ACLs canonizadas por **nome de grantee/grantor** (nunca por OID do cluster), policies, role membership, owner, dados e isolamento A/B. Confirma que o cluster original continua intocado pelo restore. Destrói objetos temporários e archive no runner.
+
+Esta prova estende as anteriores C.12/C.13 (dump/restore entre clusters) e C.36 (compensação SQL pós-COMMIT) com a sequência *backup pré-mudança → corrupção comitada → restauração a partir do arquivo em cluster separado*.
+
+**Limites:** não certifica backup físico, PITR do Neon, integridade do cluster operacional, recovery point objective, recovery time objective, segurança de dados pessoais, consistência de processos externos ou workers concorrentes, retenção real de backups, migração operacional de credenciais, e grants globais em infraestrutura real. Restaurar em outro cluster exige correspondência de extensões, owner/roles e configuração revisadas. Não automatizar dump real pelo CI.
+
+### Fase 2 — auditoria real mediante autorização
+
+O arquivo `schema/operational-rls/alt0810c37-authorized-readonly-audit.sql` foi preparado **mas não executado em banco real**. Usa somente uma transação `REPEATABLE READ READ ONLY`, timeout e `SELECT` de `pg_class`, `pg_namespace`, `pg_policy`, `pg_roles`, `pg_auth_members` e ACLs por tabela/coluna. O inventário deriva da `alt085-operational-rls-migration.md` e usa schema `public` como hipótese a confirmar, não como prova de disponibilidade.
+
+`lib/db/alt0810c37-audit-boundary.ts`, `tests/alt0810c37-readonly-audit.test.ts` e `scripts/alt0810c37-audit-safety-check.ts` validam o texto fixo offline e recusam DDL/DML/COMMIT; **não** fornecem execução remota nem substituem inspeção humana.
+
+**Autorização mínima ainda ausente:** confirmar projeto/ambiente, branch e database PostgreSQL de destino, schema correto, identidade de auditoria com acesso SOMENTE de leitura aos catálogos, janela operacional, responsável pela revisão e local **privado** para armazenar as saídas (nunca logs públicos do CI). Qualquer leitura de dados de clientes, `pg_dump` da base operacional, criação de branch no Neon, cópia de dados, restauração, PITR ou alteração de ACL/DDL deve receber autorização separada e plano de proteção de dados. Acesso catalog-only não autoriza backup de dados reais.
+
+**Critérios para encerrar a fase 1:** HEAD exato com 6/6 jobs GREEN; step C.37 de PostgreSQL16 `completed/success`; teste de validação offline do audit SQL aprovado. **Critérios para encerrar a fase 2:** evidências reais coletadas em ambiente autorizado, revisão humana dos predicados de cada policy/roles/ACLs e plano de recuperação baseado em backup autorizado e adequadamente protegido. Até satisfazer a fase 2, o gate **operacional** fica PENDENTE e produção **NO-GO**.
+
+Referências: [pg_dump PostgreSQL 16](https://www.postgresql.org/docs/16/app-pgdump.html), [pg_restore PostgreSQL 16](https://www.postgresql.org/docs/16/app-pgrestore.html).
