@@ -652,6 +652,15 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [x] Teste PostgreSQL16 descartável com Pool real, role LOGIN executor, NOLOGIN leitor, isolamento A/B e negativas de privilégio/policy.
 - [x] Passo adicionado ao job PG16 descartável sem `pg` no lock de produção.
 - [x] Plano de rollout e rollback coordenado registrado na documentação viva; flag OFF não substitui rollback de DDL/policies.
-- [ ] Confirmar CI 6/6 GREEN no SHA exato e corrigir falhas por logs, sem polling infinito.
+- [x] **Gate CI ALT-08.10C.33 aprovado:** SHA `00ccf8902607fadde1581f05bda174fe18328745`, CI #514 (run `43565532050`) `completed/success`, **6/6 jobs GREEN**; step 24 do PostgreSQL16 `ALT-08.10C.33 pool PG16, roles, privileges, FORCE RLS e rollback` `completed/success`. Evidência: https://github.com/OARANHA/vigiaplus/actions/runs/43565532050. Aprovação restrita ao SHA e a fixtures descartáveis.
 - [ ] Auditoria manual das policies reais, isolamento por tenant e concorrência; preparar migration/restore por tabela só após aprovação de staging.
 - [ ] PR #36 DRAFT; staging e produção NO-GO, sem merge/deploy/Neon.
+### ALT-08.10C.34 — auditoria adversarial semântica de policies e lifecycle concorrente do pool (próximo gate)
+
+- [ ] Definir contratos e testes fail-closed para **predicados de policies efetivas**, não apenas presença de uma policy SELECT. Ensaiar políticas permissivas concorrentes (OR), role PUBLIC, herança de memberships/grants e ausência de escopo; impedir leitura cruzada mesmo quando `pg_policies` parece suficiente.
+- [ ] Em PostgreSQL16 **exclusivamente descartável**, provar A/B positivo, tenant ausente, falso/escalado, membership revogada e policy enfraquecida: cada regressão deve causar falha explícita; nunca alterar o schema Neon operacional.
+- [ ] Ensaiar pool pequeno com requisições simultâneas, saturação, timeout, transação abortada, erro no callback, `ROLLBACK` falho, descarte da conexão e reutilização limpa (role e `app.tenant_id` não persistem).
+- [ ] Auditar a possibilidade de o callback sair com `COMMIT` e delimitar por contrato quem controla o ciclo de vida transacional; rollback defensivo pós-callback **não pode** ser apresentado como reversão de transação já confirmada.
+- [ ] Preservar driver legado e `ALT0810C32_MODE=off` por padrão; não adicionar `pg` ao artefato de produção ou conceder credenciais/DDL para staging. Garantir teste adversarial, documentação de recuperação de **policies, roles, grants e tabelas**, além da reversão da flag.
+- [ ] Certificar **novo SHA exato com seis jobs GREEN** após implementação; não transferir CI #514 para commits posteriores.
+- [ ] PR #36 permanece DRAFT; sem merge/deploy/publicação, sem migrations/DDL/ativação RLS em staging ou produção; produção NO-GO.
