@@ -8,6 +8,7 @@ import './vigia-design-tokens.css';
 import './vigia-client-auth.css';
 import './vpx-dashboard.css';
 import { Sidebar } from '@/components/sidebar';
+import { VigiaAnalystTopbar } from '@/components/vigia-analyst-topbar';
 import { getLocale, getT, setServerLocaleTag } from '@/lib/i18n';
 import { AutoRefresh } from '@/components/auto-refresh';
 import { ContextualExportBar } from '@/components/contextual-export-bar';
@@ -88,7 +89,9 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           />
           <div className="vigia-legacy-canvas min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-6">
             <div className="vigia-legacy-main mx-auto max-w-[var(--vigia-content-max)]">
-              <ContextualExportBar locale={locale} canUseStudio={isAdmin(user)} />
+              <VigiaAnalystTopbar>
+                <ContextualExportBar locale={locale} canUseStudio={isAdmin(user)} />
+              </VigiaAnalystTopbar>
               <main>{children}</main>
             </div>
           </div>

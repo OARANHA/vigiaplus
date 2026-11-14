@@ -13,18 +13,26 @@ function readSavedTheme():VigiaTheme {
 export function useVigiaAppearance(){
   const [theme,setTheme] = useState<VigiaTheme>('dark');
   useEffect(()=>{
-    const initial=readSavedTheme();
-    setTheme(initial);
-    // A root attribute shares the same semantics across both app shells.
-    document.documentElement.dataset.vigiaTheme=initial;
+    // Both the sidebar and the topbar (and the Vpx shell) observe one preference.
+    const sync=()=>{
+      const current=readSavedTheme();
+      setTheme(current);
+      document.documentElement.dataset.vigiaTheme=current;
+    };
+    sync();
+    window.addEventListener('storage',sync);
+    window.addEventListener('vigia-theme-change',sync);
+    return ()=>{
+      window.removeEventListener('storage',sync);
+      window.removeEventListener('vigia-theme-change',sync);
+    };
   },[]);
-  useEffect(()=>{
-    document.documentElement.dataset.vigiaTheme=theme;
-  },[theme]);
   function toggle(){
-    const next=theme==='light'?'dark':'light';
+    const next=readSavedTheme()==='light'?'dark':'light';
     setTheme(next);
     try {window.localStorage.setItem(VIGIA_THEME_STORAGE_KEY,next);}catch{}
+    document.documentElement.dataset.vigiaTheme=next;
+    window.dispatchEvent(new Event('vigia-theme-change'));
   }
   return {theme,toggle};
 }

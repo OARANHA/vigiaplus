@@ -201,3 +201,68 @@
     border-radius: 0;
   }
 }
+
+/* Analyst workspace shares the Vpx navigation rhythm without hiding legacy tools. */
+.vigia-legacy-shell .vigia-analyst-topbar{
+  display:flex;align-items:center;gap:16px;min-height:78px;
+  padding:2px 0 16px;margin-bottom:22px;border-bottom:1px solid var(--vigia-line);
+}
+.vigia-analyst-identity{display:flex;flex:0 0 auto;flex-direction:column;gap:3px;min-width:0}
+.vigia-analyst-identity b{font-size:16px;font-weight:780;letter-spacing:-.03em}
+.vigia-analyst-identity small{color:var(--vigia-muted);font-size:10px;line-height:1.45;max-width:205px}
+.vigia-analyst-tabs{display:flex;align-items:center;gap:6px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:thin;padding:7px 1px}
+.vigia-analyst-tab{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0;
+  min-height:40px;padding:9px 12px;border:1px solid var(--vigia-line);border-radius:999px;
+  background:var(--vigia-card);color:var(--vigia-muted);
+  font-size:12px;font-weight:680;white-space:nowrap;text-decoration:none;
+  transition:background .16s,color .16s,border-color .16s;
+}
+.vigia-analyst-tab:hover{color:var(--vigia-ink);border-color:var(--vigia-primary)}
+.vigia-analyst-tab.is-active{background:var(--vigia-primary);color:#142116;border-color:transparent}
+.vigia-analyst-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 auto}
+.vigia-analyst-actions .vigia-export-controls{margin:0}
+.vigia-analyst-actions .vigia-appearance-toggle{min-height:40px;border-radius:999px;white-space:nowrap}
+.vigia-legacy-shell .vigia-export-trigger{
+  min-height:40px;border-radius:999px;color:var(--vigia-ink);background:var(--vigia-card);
+  font-size:12px;font-weight:680;
+}
+.vigia-legacy-shell .vigia-export-trigger:hover{border-color:var(--vigia-primary);background:var(--vigia-elev)}
+.vigia-legacy-shell .vigia-export-trigger svg{color:var(--vigia-primary)}
+.vigia-legacy-shell .vigia-export-dialog{
+  color:var(--vigia-ink);background:var(--vigia-paper);border-color:var(--vigia-line);
+  box-shadow:0 24px 75px rgb(0 0 0 / 28%);
+}
+.vigia-legacy-shell .vigia-export-dialog :where(input,select,textarea){
+  color:var(--vigia-ink);background:var(--vigia-card);border-color:var(--vigia-line)
+}
+.vigia-legacy-shell .vigia-legacy-sidebar .stroke-sky-400{stroke:var(--vigia-primary)}
+.vigia-legacy-shell .vigia-legacy-sidebar .fill-sky-400{fill:var(--vigia-primary)}
+.vigia-legacy-shell .vigia-page-header h1{color:var(--vigia-ink)}
+.vigia-legacy-shell .panel :where(h2,h3){letter-spacing:-.015em}
+@media(max-width:1320px){
+ .vigia-legacy-shell .vigia-analyst-topbar{flex-wrap:wrap;row-gap:8px}
+ .vigia-analyst-tabs{order:3;flex-basis:100%}
+}
+@media(max-width:640px){
+ .vigia-legacy-shell .vigia-analyst-topbar{margin-bottom:14px;padding-bottom:12px}
+ .vigia-analyst-identity b{font-size:14px}
+ .vigia-analyst-identity small{display:none}
+ .vigia-analyst-actions .vigia-appearance-toggle{font-size:0;gap:0;padding:10px}
+ .vigia-analyst-actions .vigia-appearance-toggle svg{width:17px;height:17px}
+ .vigia-analyst-tabs{gap:5px}
+ .vigia-analyst-tab{font-size:11px;padding:8px 10px}
+}
+
+/* Accent and selection states inside export follow the VigiaPlus palette. */
+.vigia-legacy-shell .vigia-export-dialog button[class*="border-sky-500"]{
+  border-color:var(--vigia-primary);
+  background:color-mix(in srgb,var(--vigia-primary) 13%,transparent);
+  color:var(--vigia-ink);
+}
+.vigia-legacy-shell .vigia-export-dialog button[class*="bg-sky-600"]{
+  background:var(--vigia-primary);
+  color:#142116;
+}
+.vigia-legacy-shell .vigia-export-dialog input[type="radio"],
+.vigia-legacy-shell .vigia-export-dialog input[type="checkbox"]{accent-color:var(--vigia-primary)}

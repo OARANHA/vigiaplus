@@ -3,7 +3,7 @@ import { sourceColor, sourceLabel } from '@/lib/source-label';
 import type { mentions } from '@/lib/db/schema';
 import { MentionBody } from '@/components/mention-translate';
 import { ArticleBody } from '@/components/article-body';
-import { clientLocale, tFor } from '@/lib/i18n-dict';
+import { clientLocale, localeTag, tFor } from '@/lib/i18n-dict';
 
 /** Piccola "i" con balloon esplicativo al passaggio del mouse. */
 export function InfoTip({ title, children }: { title?: string; children: React.ReactNode }) {
@@ -49,7 +49,7 @@ export function PageHeader({ title, subtitle, info }: {
       <span className="vigia-page-eyebrow">VIGIAPLUS · INTELIGÊNCIA</span>
       <div className="flex items-center gap-2">
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {info && <InfoTip title={`About: ${title}`}>{info}</InfoTip>}
+        {info && <InfoTip title={`Sobre: ${title}`}>{info}</InfoTip>}
       </div>
       {subtitle && <p className="mt-1 text-sm text-slate-400">{subtitle}</p>}
     </header>
@@ -72,7 +72,7 @@ export function KpiCard({ label, value, hint, exact }: {
 
 /** 1234 → "1.2k", 1250000 → "1.3M" (en-US). */
 export function fmtCompact(n: number): string {
-  return new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
+  return new Intl.NumberFormat(localeTag(clientLocale()), { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 }
 
 export function SourceBadge({ source }: { source: string }) {
@@ -124,7 +124,7 @@ function docLocale(): string {
   if (typeof document !== 'undefined') {
     const l = document.documentElement.lang;
     if (l === 'it') return 'it-IT';
-    if (l === 'pt') return 'pt-BR';
+    if (l === 'pt' || l === 'pt-BR') return 'pt-BR';
     return 'en-US';
   }
   return globalThis.__srLocaleTag ?? 'en-US';
@@ -137,7 +137,7 @@ export function fmtDate(d: Date | string) {
 }
 
 export function fmtNum(n: number) {
-  return n.toLocaleString('en-US');
+  return n.toLocaleString(localeTag(clientLocale()));
 }
 
 type Mention = typeof mentions.$inferSelect;
