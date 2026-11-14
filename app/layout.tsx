@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import localFont from 'next/font/local';
 import './globals.css';
+import './vigia-design-tokens.css';
 import './vigia-client-auth.css';
 import './vpx-dashboard.css';
 import { Sidebar } from '@/components/sidebar';
@@ -75,7 +76,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             <span>🛰️ <strong>{t('demo.live', 'Demonstração')}</strong> — {t('demo.banner', 'Dados de exemplo, somente leitura.')}</span>
           </div>
         )}
-        <div className="flex min-h-screen flex-col lg:flex-row">
+        <div className="vigia-legacy-shell flex min-h-screen flex-col lg:flex-row">
           <Sidebar
             projects={projects.map((p) => ({ id: p.id, name: p.name }))}
             currentId={current?.id ?? null}
@@ -86,7 +87,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             locale={locale}
           />
           <div className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-6">
-            <div className="mx-auto max-w-[1250px]">
+            <div className="vigia-legacy-main mx-auto max-w-[var(--vigia-content-max)]">
               <ContextualExportBar locale={locale} canUseStudio={isAdmin(user)} />
               <main>{children}</main>
             </div>
