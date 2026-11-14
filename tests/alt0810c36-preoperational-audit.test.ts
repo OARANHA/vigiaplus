@@ -10,10 +10,11 @@ import {
 const plan=validateC36Plan(JSON.parse(readFileSync(
   'schema/operational-rls/alt0810c36-prestaging-plan.json','utf8',
 )) as unknown);
-const corrupt=(modify:(p:C36Plan)=>void):unknown=>{
-  const x=structuredClone(plan);modify(x);return x;
+type Mutable<T>={-readonly [K in keyof T]:T[K]};
+const corrupt=(modify:(p:Mutable<C36Plan>)=>void):unknown=>{
+  const x=structuredClone(plan) as Mutable<C36Plan>;modify(x);return x;
 };
-const sample=():C36Catalog=>{
+const sample=():Mutable<C36Catalog>=>{
   const {evidence,readerRole,executorRole,schema,policyName}=plan.scope;
   return {
     pgMajor:16,
