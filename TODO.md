@@ -706,3 +706,17 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] **Fase 2: autorização explícita para auditoria real catalog-only**, identificando projeto/branch/database de destino, schema, role read-only, janela e destino privado das evidências. Nenhuma conexão real antes da autorização.
 - [ ] Backup real/retenção, proteção de dados, PITR ou restore em ambiente isolado não são cobertos por autorização catalog-only; exigir aprovação independente e plano de operação.
 - [ ] PR #36 continua DRAFT, sem merge/deploy/DDL/Neon; produção NO-GO até revisão real dos predicados e recuperação auditada.
+
+### ALT-08.10C.38 — Neon HML operacional isolado, baseline real + RLS wave 1 (projeto autorizado)
+
+- [x] Confirmado projeto Neon `still-heart-81001946`, org única; `main` e CI/staging originais sem tabelas. Criada **apenas** nova branch HML `br-ancient-smoke-bbl8rbm3`, database `vigiaplus_hml_20261114`, PostgreSQL 18.7, sem alteração na `main`.
+- [x] Aplicados numa única transação os **186 statements** do snapshot versionado `schema/operational-bootstrap/00001_legacy_snapshot.sql` (Git blob `068db8eaf3f6dc4ad7fbcf5014ffe687d077ae15`), verificados no catálogo HML: 62 tabelas, 128 índices, 57 FK. Snapshot legado segue **não certificado para produção**.
+- [x] Criada role HML `vigia_hml_reader_20261114` NOLOGIN, NOBYPASSRLS, NOSUPERUSER; grant SELECT por colunas mínimas, 4 policies SELECT fail-closed por `app.tenant_id`, ENABLE/FORCE RLS em `reputation_targets`, `incidents`, `notification_channels`, `invoices`. `public` sem USAGE para PUBLIC; role mantém USAGE explícita.
+- [x] Homologação no banco Neon HML real com A/B sintéticos: 8 verificações tenant A/B, 4 verificações sem tenant, INSERT/memberships/coluna PIX negados; cleanup de duas linhas por tabela e duas tenants, 0 registros sintéticos remanescentes.
+- [x] Criada `vigiaplus_hml_schema_receipts` auditável (code head SHA `4ef54af26baae531f0ae0363eed2b890d8bf759c`, baseline SHA, scope `ISOLATED_HML_ONLY`, `production_ready=false`). Total agora 63 tabelas, 129 índices, 57 FKs, 4 policies, 4 FORCE RLS.
+- [x] Snapshot Neon de branch filha não permitido (`not allowed to snapshot non-root branch`); criada **branch-checkpoint sem compute** `br-soft-fire-bbvvesma` (copy-on-write, NÃO é backup físico nem PITR).
+- [x] Versionados SQL HML-only `schema/operational-homologation/alt0810c38-neon-hml-baseline-wave1.sql`, teste offline de limites `tests/alt0810c38-neon-hml-provisioning.test.ts` e documentação `docs/vigiaplus/alt0810c38-neon-isolated-homologation.md`.
+- [ ] Confirmar **CI exato do HEAD com 6/6 jobs GREEN** após documentação e testes C.38.
+- [ ] Criar matriz de autenticação/entitlements, roles LOGIN NOBYPASSRLS com credenciais seguras, policies reais de leitura e escrita por tabela; validar revogação e sessões HTTP no banco HML.
+- [ ] Conectar aplicação Next.js em homologação aprovada sem utilizar owner BYPASSRLS; preservar ambientes existentes e segredos fora do Git.
+- [ ] Gate backup/restore real e PITR com plano de dados e controles LGPD, antes de qualquer liberação operacional. PR #36 OPEN DRAFT, sem merge/deploy; produção **NO-GO**.
