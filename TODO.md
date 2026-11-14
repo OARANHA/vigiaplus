@@ -693,3 +693,16 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Preparar autorização independente para leitura catalog-only de esquema real e manifesto de policies/ACLs por tabela (nenhuma consulta Neon/staging até aprovação humana explícita).
 - [ ] Restaurar de backup verificado pós-COMMIT em cluster separado, testar PITR e concorrência/revogação antes de homologação operacional — não concluído pela fixture CI.
 - [ ] PR #36 DRAFT, NO-GO operacional, sem merge/deploy ou DDL/ativação de RLS no Neon. `ALT0810C32_MODE=off` não substitui rollback SQL.
+
+### ALT-08.10C.37 — homologação por backup após COMMIT em cluster separado + pacote de auditoria real (duas fases)
+
+- [x] Confirmado baseline C.36 no SHA `ff857d9b9f1be8e87c9e689ed532d6f6ca0e4b85`, CI #557 run `43576534244` 6/6 GREEN, PR #36 OPEN DRAFT.
+- [x] Auditor C.36 passa a canonizar ACLs por **nome** de grantee/grantor, privilege_type e grant option; evita igualdade falsa por OIDs divergentes entre clusters PostgreSQL reais distintos.
+- [x] Teste `scripts/tests/alt0810c37-postcommit-backup-crosscluster.test.ts`: dois clusters PG16 distintos via system_identifier, backup custom PGDMP pré-drift, validação archive/SHA/TOC e rejeição de archive adulterado; desvio de RLS/ACL/dados após COMMIT na origem; `pg_restore --single-transaction --exit-on-error` na segunda instância, compara catálogo, ACL/roles, dados e acesso A/B, sem alterar origem após restore.
+- [x] Pacote `schema/operational-rls/alt0810c37-authorized-readonly-audit.sql`: auditoria **somente de metadados** em transação READ ONLY; ainda **NÃO executada em Neon**.
+- [x] Guarda offline `lib/db/alt0810c37-audit-boundary.ts` + `tests/alt0810c37-readonly-audit.test.ts` + `scripts/alt0810c37-audit-safety-check.ts`: recusa DDL/DML/COMMIT e impede execução operacional automática.
+- [x] Steps C.37 incluídos em build offline e PostgreSQL16 descartável; documentação de autorização, privacidade, escopo e rollback atualizada.
+- [ ] **Fase 1: validar CI 6/6 no SHA exato e step cross-cluster C.37, corrigir somente falhas do runner.**
+- [ ] **Fase 2: autorização explícita para auditoria real catalog-only**, identificando projeto/branch/database de destino, schema, role read-only, janela e destino privado das evidências. Nenhuma conexão real antes da autorização.
+- [ ] Backup real/retenção, proteção de dados, PITR ou restore em ambiente isolado não são cobertos por autorização catalog-only; exigir aprovação independente e plano de operação.
+- [ ] PR #36 continua DRAFT, sem merge/deploy/DDL/Neon; produção NO-GO até revisão real dos predicados e recuperação auditada.
