@@ -45,7 +45,12 @@ export async function preflightExclusiveTenantPolicy(
       !/^[0-9a-f]{64}$/.test(scope.expectedUsingSha256)) {
     throw Error('ALT0810C34_POLICY_CONTRACT_DENIED');
   }
-  await preflightTenantRls(db, scope);
+  // C.33 accepts only SQL identifiers. The reviewed policy digest is metadata,
+  // never an identifier and must not be passed into its identifier guard.
+  await preflightTenantRls(db,{
+    schema:scope.schema,table:scope.table,
+    readerRole:scope.readerRole,executorRole:scope.executorRole,
+  });
   const policies = await db.query(`
     SELECT p.polname::text AS policy_name,
            p.polcmd::text AS policy_command,
