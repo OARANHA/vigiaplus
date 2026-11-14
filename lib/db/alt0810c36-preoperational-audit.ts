@@ -1,6 +1,6 @@
 /**
  * ALT-08.10C.36 — PostgreSQL 16 catalog-only pre-staging audit.
- * No operational connection, migration, table DML, or production opt-in.\n * ACLs normalize their effective grantee/grantor/privilege/grant-option; raw\n * pg_acl textual storage can differ after GRANT+REVOKE without privilege drift.
+ * No operational connection, migration, table DML, or production opt-in.\n * ACLs normalize their effective grantee/grantor/privilege/grant-option; raw\n * pg_acl textual storage can differ after GRANT+REVOKE without privilege drift.\n * Role OIDs are resolved to names so snapshots compare across PG clusters.
  *
  * A catalog snapshot is evidence of configuration, NOT approval of its
  * semantic security or the ability to restore a real post-COMMIT database.
@@ -119,8 +119,8 @@ export async function readC36Catalog(
     pg_get_userbyid(n.nspowner) AS owner,
     COALESCE((
       SELECT string_agg(format('%s:%s:%s:%s',
-        g.grantee,g.grantor,g.privilege_type,g.is_grantable),
-        ',' ORDER BY g.grantee,g.grantor,g.privilege_type,g.is_grantable)
+        CASE WHEN g.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(g.grantee) END,\n        pg_get_userbyid(g.grantor),g.privilege_type,g.is_grantable),
+        ',' ORDER BY CASE WHEN g.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(g.grantee) END,\n        pg_get_userbyid(g.grantor),g.privilege_type,g.is_grantable)
       FROM aclexplode(CASE WHEN cardinality(n.nspacl)=0 THEN NULL::aclitem[] ELSE COALESCE(n.nspacl,acldefault('n',n.nspowner)) END) g
     ),'') AS acl,
     EXISTS(SELECT 1 FROM aclexplode(
@@ -133,8 +133,8 @@ export async function readC36Catalog(
     c.relrowsecurity AS rls,c.relforcerowsecurity AS force,
     COALESCE((
       SELECT string_agg(format('%s:%s:%s:%s',
-        g.grantee,g.grantor,g.privilege_type,g.is_grantable),
-        ',' ORDER BY g.grantee,g.grantor,g.privilege_type,g.is_grantable)
+        CASE WHEN g.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(g.grantee) END,\n        pg_get_userbyid(g.grantor),g.privilege_type,g.is_grantable),
+        ',' ORDER BY CASE WHEN g.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(g.grantee) END,\n        pg_get_userbyid(g.grantor),g.privilege_type,g.is_grantable)
       FROM aclexplode(CASE WHEN cardinality(c.relacl)=0 THEN NULL::aclitem[] ELSE COALESCE(c.relacl,acldefault('r',c.relowner)) END) g
     ),'') AS acl,
     has_any_column_privilege($3,c.oid,'SELECT') AS reader_select,
@@ -154,8 +154,8 @@ export async function readC36Catalog(
     a.attname::text AS name,format_type(a.atttypid,a.atttypmod) AS type,
     COALESCE((
       SELECT string_agg(format('%s:%s:%s:%s',
-        g.grantee,g.grantor,g.privilege_type,g.is_grantable),
-        ',' ORDER BY g.grantee,g.grantor,g.privilege_type,g.is_grantable)
+        CASE WHEN g.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(g.grantee) END,\n        pg_get_userbyid(g.grantor),g.privilege_type,g.is_grantable),
+        ',' ORDER BY CASE WHEN g.grantee=0 THEN 'PUBLIC' ELSE pg_get_userbyid(g.grantee) END,\n        pg_get_userbyid(g.grantor),g.privilege_type,g.is_grantable)
       FROM aclexplode(CASE WHEN cardinality(a.attacl)>0 THEN a.attacl ELSE NULL::aclitem[] END) g
     ),'') AS acl,
     has_column_privilege($3,c.oid,a.attname::text,'SELECT') AS reader_select,
