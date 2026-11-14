@@ -720,3 +720,16 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [ ] Criar matriz de autenticação/entitlements, roles LOGIN NOBYPASSRLS com credenciais seguras, policies reais de leitura e escrita por tabela; validar revogação e sessões HTTP no banco HML.
 - [ ] Conectar aplicação Next.js em homologação aprovada sem utilizar owner BYPASSRLS; preservar ambientes existentes e segredos fora do Git.
 - [ ] Gate backup/restore real e PITR com plano de dados e controles LGPD, antes de qualquer liberação operacional. PR #36 OPEN DRAFT, sem merge/deploy; produção **NO-GO**.
+
+### Entrega utilizável — aplicativo local + Academia VigiaPlus (prioridade após ALT-08.10C.38)
+
+- [x] Validado no código: login, console proprietário, administração de clientes/planos/recursos e portal cliente têm rotas Next.js implementadas (não confundir com deploy real).
+- [x] Entrada Windows `INICIAR-VIGIAPLUS.cmd` para executar localmente na porta **3199** com PGlite isolado, `DATABASE_URL` vazio, credenciais iniciais informadas pelo proprietário e sem derrubar processos que ocupam outras portas. O modo `demo` permanece somente leitura e usa outro diretório.
+- [x] Console do proprietário passou a orientar uma instalação sem clientes com três atalhos reais: cadastrar organização, configurar planos, definir permissões.
+- [x] Criada skill versionada `skills/vigiaplus-screen-academy/SKILL.md`, inventário com **91** estados/telas, capturador `scripts/capture-vigiaplus-academy.py`, perfis público/proprietário/cliente/analista, imagem de tela real e uma aula Markdown por rota/aba, tema claro/escuro quando existir. Capturas são locais em `.data`; não exportar PII.
+- [x] Guia de uso `docs/vigiaplus/aplicacao-local-academia-telas.md` com comandos Windows, login interativo, geração de prints e aulas.
+- [ ] **Usabilidade real no Windows:** executar launcher em `D:\VIGIAPLUS`, abrir `http://127.0.0.1:3199/login`, cadastrar cliente/planos e verificar fluxo completo. Não declarar aplicativo em execução antes dessa evidência.
+- [ ] **Capturas reais:** executar skill com Chromium na máquina que tem acesso ao localhost, autenticar manualmente os perfis, revisar screenshots/Markdown e corrigir telas marcadas PENDENTE.
+- [ ] **Produto online para clientes:** integrar identidade LOGIN NOBYPASSRLS e autorização completa no Neon HML, definir credenciais e hosting, aceitar revisão de política e deploy somente após autorização específica. Não usar o owner Neon BYPASSRLS para tráfego de clientes.
+- [ ] CI para HEAD atualizado deve ser classificado pelo SHA exato. Não reiniciar ciclo infinito de testes; priorizar a entrega de telas e fluxos úteis.
+- [ ] Manter PR #36 **DRAFT**, sem merge/deploy de produção até autorização.
