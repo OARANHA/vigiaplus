@@ -2,6 +2,20 @@
 
 **Tipo de entrega:** experiência local do proprietário e documentação visual da interface existente. **Não é um deploy de produção** e não altera o banco Neon de homologação.
 
+## Atualizar o checkout antes de iniciar
+
+O launcher e a skill estão atualmente na branch de desenvolvimento da PR #36. No PowerShell, com a pasta de trabalho limpa:
+
+```powershell
+cd D:\VIGIAPLUS
+git status --short
+git fetch origin
+git switch feat/todo-alt08-notify-supervisor-20261111
+git pull --ff-only origin feat/todo-alt08-notify-supervisor-20261111
+```
+
+Se `git status --short` listar alterações locais ou `git switch` recusar a troca, preservá-las; não descartar arquivos do usuário.
+
 ## 1. Iniciar a aplicação no Windows
 
 No checkout do repositório em `D:\VIGIAPLUS`, execute por duplo clique `INICIAR-VIGIAPLUS.cmd` ou, no terminal:
