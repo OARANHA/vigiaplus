@@ -242,6 +242,11 @@ jobs:
           ALT0810C33_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c33-pg-privileges-pool.test.ts
+      - name: "ALT-08.10C.34 predicado RLS exclusivo, ACL por coluna e pool concorrente (PG16)"
+        env:
+          ALT0810C34_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c34-pg-policy-pool.test.ts
       - name: "ALT-08.10C.32 rota versionada real, ativacao e rollback PG16"
         env:
           ALT0810C32_EPHEMERAL: "1"
