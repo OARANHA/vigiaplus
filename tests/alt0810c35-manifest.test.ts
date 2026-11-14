@@ -22,6 +22,11 @@ const snapshot=():C35Catalog=>({
     {name:manifest.readerRole,login:false,superuser:false,bypassRls:false},
   ],
   member:true,setRole:true,
+  roleGrants:[{role:manifest.readerRole,member:manifest.executorRole,
+    set:true,inherit:true,admin:false}],
+  acls:{schema:'{reader=U/admin}',table:'{reader=r/admin}',
+    columns:manifest.columns.map(x=>({name:x.name,acl:''})),
+    noPublicAcl:true},
   columns:manifest.columns.map(x=>({...x,readerInsert:false,readerUpdate:false})),
   policies:[{name:manifest.policy.name,command:'r',permissive:true,
     roles:[manifest.readerRole],
@@ -77,8 +82,8 @@ test('ALT-08.10C.35 any manifest drift fails before DB access',()=>{
 test('ALT-08.10C.35 fixture catalog requires exact minimum-privilege state',()=>{
   assert.doesNotThrow(()=>assertC35Baseline(manifest,snapshot()));
   const invalid:(keyof C35Catalog)[]=[
-    'relation','roles','member','setRole','columns','policies',
-    'dependencies','data',
+    'relation','roles','member','setRole','roleGrants','acls','columns',
+    'policies','dependencies','data',
   ];
   for(const key of invalid){
     const s=snapshot();
@@ -86,6 +91,8 @@ test('ALT-08.10C.35 fixture catalog requires exact minimum-privilege state',()=>
     if(key==='roles')s.roles[1].bypassRls=true;
     if(key==='member')s.member=false;
     if(key==='setRole')s.setRole=false;
+    if(key==='roleGrants')s.roleGrants[0].set=false;
+    if(key==='acls')s.acls.noPublicAcl=false;
     if(key==='columns')s.columns[2].readerSelect=true;
     if(key==='policies')s.policies[0].usingExpression='true';
     if(key==='dependencies')s.dependencies[0].readerAccess=true;
@@ -104,10 +111,12 @@ test('ALT-08.10C.35 catalog digest and rollback compare full snapshots',()=>{
   const clone=structuredClone(baseline);
   assert.doesNotThrow(()=>assertC35Restored(baseline,clone));
   assert.equal(c35CatalogDigest(baseline),c35CatalogDigest(clone));
-  for(const key of ['relation','roles','columns','policies','dependencies','data'] as const){
+  for(const key of ['relation','roles','roleGrants','acls','columns','policies','dependencies','data'] as const){
     const altered=structuredClone(baseline);
     if(key==='relation')altered.relation.forced=false;
     if(key==='roles')altered.roles[0].bypassRls=true;
+    if(key==='roleGrants')altered.roleGrants[0].set=false;
+    if(key==='acls')altered.acls.table+=",=r/admin";
     if(key==='columns')altered.columns[0].readerSelect=false;
     if(key==='policies')altered.policies[0].usingExpression='true';
     if(key==='dependencies')altered.dependencies[0].readerAccess=true;
