@@ -59,18 +59,21 @@ export async function preflightExclusiveTenantPolicy(
            p.polwithcheck IS NULL AS without_write_check,
            pg_get_expr(p.polqual,p.polrelid) AS using_expression,
            NOT EXISTS (
-             SELECT 1 FROM aclexplode(COALESCE(c.relacl,acldefault('r',c.relowner))) a
+             SELECT 1 FROM aclexplode(CASE WHEN cardinality(c.relacl)=0 THEN NULL::aclitem[]
+               ELSE COALESCE(c.relacl,acldefault('r',c.relowner)) END) a
              WHERE a.grantee=0 AND a.privilege_type IN ('SELECT','INSERT','UPDATE','DELETE')
            ) AS no_public_table_access,
            NOT EXISTS (
              SELECT 1 FROM pg_attribute col
-             CROSS JOIN LATERAL aclexplode(COALESCE(col.attacl,'{}'::aclitem[])) a
+             CROSS JOIN LATERAL aclexplode(CASE WHEN cardinality(col.attacl)>0 THEN col.attacl
+               ELSE NULL::aclitem[] END) a
              WHERE col.attrelid=c.oid AND col.attnum>0
                AND NOT col.attisdropped AND a.grantee=0
                AND a.privilege_type IN ('SELECT','INSERT','UPDATE')
            ) AS no_public_column_access,
            NOT EXISTS (
-             SELECT 1 FROM aclexplode(COALESCE(n.nspacl,acldefault('n',n.nspowner))) a
+             SELECT 1 FROM aclexplode(CASE WHEN cardinality(n.nspacl)=0 THEN NULL::aclitem[]
+               ELSE COALESCE(n.nspacl,acldefault('n',n.nspowner)) END) a
              WHERE a.grantee=0 AND a.privilege_type='USAGE'
            ) AS no_public_schema_usage
     FROM pg_class c
