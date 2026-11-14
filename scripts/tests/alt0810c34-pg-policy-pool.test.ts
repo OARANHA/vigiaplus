@@ -92,6 +92,12 @@ test('ALT-08.10C.34 exclusive policy drift, PUBLIC/role inheritance, pool isolat
   await preflight();
   assert.deepEqual(await ids(activePool,101),[1]);
   assert.deepEqual(await ids(activePool,202),[2]);
+  await assert.rejects(
+    withDisposableScopedRead(activePool,{tenantId:101,readerRole:reader},
+      async db=>db.query(`SELECT private_text FROM ${ns}.evidence`)),
+    /permission denied/i,
+    'the read role must not access private_text through a column grant',
+  );
   const missing=await withDedicatedTenantClient(activePool,async db=>{
     await db.query('BEGIN READ ONLY');
     await db.query(`SET LOCAL ROLE "${reader}"`);
@@ -159,6 +165,12 @@ test('ALT-08.10C.34 exclusive policy drift, PUBLIC/role inheritance, pool isolat
   await admin.query(`GRANT SELECT ON ${ns}.evidence TO PUBLIC`);
   await mustDeny(activePool,scope);
   await admin.query(`REVOKE SELECT ON ${ns}.evidence FROM PUBLIC`);
+  await admin.query(`GRANT SELECT (private_text) ON ${ns}.evidence TO PUBLIC`);
+  await mustDeny(activePool,scope);
+  await admin.query(`REVOKE SELECT (private_text) ON ${ns}.evidence FROM PUBLIC`);
+  await admin.query(`GRANT UPDATE (id) ON ${ns}.evidence TO ${reader}`);
+  await mustDeny(activePool,scope);
+  await admin.query(`REVOKE UPDATE (id) ON ${ns}.evidence FROM ${reader}`);
   await admin.query(`GRANT USAGE ON SCHEMA ${ns} TO PUBLIC`);
   await mustDeny(activePool,scope);
   await admin.query(`REVOKE USAGE ON SCHEMA ${ns} FROM PUBLIC`);
