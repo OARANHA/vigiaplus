@@ -58,6 +58,13 @@ export async function preflightExclusiveTenantPolicy(
              WHERE a.grantee=0 AND a.privilege_type IN ('SELECT','INSERT','UPDATE','DELETE')
            ) AS no_public_table_access,
            NOT EXISTS (
+             SELECT 1 FROM pg_attribute col
+             CROSS JOIN LATERAL aclexplode(COALESCE(col.attacl,'{}'::aclitem[])) a
+             WHERE col.attrelid=c.oid AND col.attnum>0
+               AND NOT col.attisdropped AND a.grantee=0
+               AND a.privilege_type IN ('SELECT','INSERT','UPDATE')
+           ) AS no_public_column_access,
+           NOT EXISTS (
              SELECT 1 FROM aclexplode(COALESCE(n.nspacl,acldefault('n',n.nspowner))) a
              WHERE a.grantee=0 AND a.privilege_type='USAGE'
            ) AS no_public_schema_usage
@@ -76,6 +83,7 @@ export async function preflightExclusiveTenantPolicy(
       policy.only_reader!==true ||
       policy.without_write_check!==true ||
       policy.no_public_table_access!==true ||
+      policy.no_public_column_access!==true ||
       policy.no_public_schema_usage!==true ||
       typeof policy.using_expression!=='string' ||
       policyExpressionDigest(policy.using_expression)!==scope.expectedUsingSha256) {
