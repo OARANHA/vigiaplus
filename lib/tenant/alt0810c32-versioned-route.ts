@@ -47,8 +47,7 @@ export async function disposableTransactionalPermissions(
   // pg is not a production dependency and this path is disabled otherwise.
   const { createRequire } = await import('node:module');
   const require = createRequire(import.meta.url);
-  const driverModuleName: string = ['p', 'g'].join('');
-  const { Client } = require(driverModuleName) as {
+  const { Client } = require('pg') as {
     Client: new (configuration: Record<string, unknown>) => {
       connect(): Promise<void>;
       query(sql: string, params?: unknown[]): Promise<{
