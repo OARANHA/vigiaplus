@@ -47,7 +47,10 @@ export async function disposableTransactionalPermissions(
   // pg is not a production dependency and this path is disabled otherwise.
   const { createRequire } = await import('node:module');
   const require = createRequire(import.meta.url);
-  const { Client } = require('pg') as {
+  // Keep the disposable-only driver outside Turbopack's static dependency graph.
+  // The module is resolved by Node only after the strict ephemeral CI gate.
+  const disposableDriverName = ['p', 'g'].join('');
+  const { Client } = require(disposableDriverName) as {
     Client: new (configuration: Record<string, unknown>) => {
       connect(): Promise<void>;
       query(sql: string, params?: unknown[]): Promise<{
