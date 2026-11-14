@@ -86,7 +86,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             user={user ? { name: user.name, role: user.role, globalRole: user.globalRole } : null}
             locale={locale}
           />
-          <div className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-6">
+          <div className="vigia-legacy-canvas min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-10 lg:py-6">
             <div className="vigia-legacy-main mx-auto max-w-[var(--vigia-content-max)]">
               <ContextualExportBar locale={locale} canUseStudio={isAdmin(user)} />
               <main>{children}</main>
