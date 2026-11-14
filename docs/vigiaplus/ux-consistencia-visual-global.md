@@ -27,7 +27,7 @@ Essas contagens são **marcadores estáticos**, não reprovação automática ne
 | P0 | Global | Shell legado de analista separado da shell Vpx do proprietário/cliente | Tokens e hierarquia comuns; migrar gradualmente cabeçalho, navegação e superfícies | Base implementada; estrutura ainda dupla |
 | P0 | Tema | Modo claro/escuro era gerenciado dentro da shell Vpx; a área analítica mantinha tema fixo escuro | Estado localStorage único, variações de superfícies/contrastes e controle visível | Preferência compartilhada e botão analista implementados; validar telas |
 | P0 | Componentes | `.panel`/KPI e `.vpx-card` não compartilhavam semântica de card | Mesmos tokens para superfície, borda, raio, foco, contraste, espaçamento | Tokens e headers/KPI analítico implementados; componentes secundários pendentes |
-| P1 | Login, convite, recuperação | Composição e paleta violeta em CSS próprio | Preservar duas colunas, incorporar tipografia, marca, tokens e acessibilidade | Pendente |
+| P1 | Login, convite, recuperação | Composição e paleta violeta em CSS próprio | Preservar duas colunas, incorporar tipografia, marca, tokens e acessibilidade | Login recebeu base verde/teal compartilhada; convite/recuperação e inspeção visual pendentes |
 | P1 | Analista | Sidebar/nav legada sky/slate difere da topbar/tabs Vpx | Harmonizar branding e seleção, decidir navegação responsiva por função sem duplicar shell | Superfície e toggle atualizados; navegação a harmonizar |
 | P1 | `/impostazioni` e demais legadas | Parte da UX, nomes e microcopy herdadas do Radar italiano/inglês | Redirecionamentos, rótulos e ajuda em português; não quebrar URLs antigas sem migration | Pendente |
 | P1 | `/story`, `/tv`, `/insights/geo`, `/vigia` | Ausência de PageHeader em estrutura legada; telas com componentes próprios | Revisão caso a caso; TV e share podem ser full-screen por função | Pendente de inspeção visual |
@@ -56,6 +56,7 @@ Essas contagens são **marcadores estáticos**, não reprovação automática ne
 - `app/layout.tsx`: injeta design tokens e classes de escopo nas rotas analíticas.
 - `app/vpx-dashboard.css`: consome os tokens semânticos de proprietário/cliente.
 - `components/ui.tsx`: cabeçalho e KPI analíticos com identidade comum.
+- `app/vigia-client-auth.css`: login de duas colunas harmonizado com a paleta compartilhada sem mudança do fluxo de autenticação.
 
 **Ainda não certificado:** compatibilidade final de todas as páginas com modo claro, 390px/mobile, contraste, gráficos e páginas especiais; não existe captura comprobatória neste marco. Não classificar 73 páginas como visivelmente padronizadas.
 
