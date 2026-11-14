@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "policy": "Screenshots only of explicitly authorized local development sessions with synthetic data; never commit or upload screen captures.",
+  "routes": [
+    {
+      "id": "login",
+      "path": "/login",
+      "roles": [
+        "public"
+      ],
+      "goal": "Identificar-se com uma conta autorizada."
+    },
+    {
+      "id": "recuperar-senha",
+      "path": "/recuperar",
+      "roles": [
+        "public"
+      ],
+      "goal": "Solicitar recuperação de acesso."
+    },
+    {
+      "id": "console-proprietario",
+      "path": "/console",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Acompanhar os indicadores gerais da plataforma e acessar a gestão."
+    },
+    {
+      "id": "administracao",
+      "path": "/console/admin",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Administrar clientes, planos e configurações permitidas ao proprietário."
+    },
+    {
+      "id": "portal-visao-geral",
+      "path": "/portal",
+      "tab": "Visão geral",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Consultar os indicadores e o estado do monitoramento."
+    },
+    {
+      "id": "portal-publicacoes",
+      "path": "/portal",
+      "tab": "Publicações",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Visualizar as evidências e publicações disponibilizadas para a conta."
+    },
+    {
+      "id": "portal-crises",
+      "path": "/portal",
+      "tab": "Crises e alertas",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Acompanhar os incidentes e alertas autorizados."
+    },
+    {
+      "id": "portal-plano",
+      "path": "/portal",
+      "tab": "Meu plano",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Consultar o plano contratado e informações comerciais visíveis."
+    },
+    {
+      "id": "dashboard-analista",
+      "path": "/dashboard",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Consultar métricas e tendências do projeto."
+    },
+    {
+      "id": "listening",
+      "path": "/listening",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Consultar as menções capturadas pelas fontes."
+    },
+    {
+      "id": "vigia",
+      "path": "/vigia",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Operar o módulo de monitoramento Vigia."
+    },
+    {
+      "id": "projetos",
+      "path": "/settings",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Configurar projetos de monitoramento."
+    },
+    {
+      "id": "fontes",
+      "path": "/impostazioni/fonti",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Configurar fontes disponíveis."
+    },
+    {
+      "id": "relatorios",
+      "path": "/report",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Visualizar relatórios do projeto."
+    },
+    {
+      "id": "alertas",
+      "path": "/alerts",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Visualizar alertas do projeto."
+    },
+    {
+      "id": "configuracoes",
+      "path": "/impostazioni",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Consultar configurações do usuário e do projeto."
+    }
+  ]
+}
