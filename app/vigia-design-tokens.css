@@ -127,3 +127,30 @@
 @media (prefers-reduced-motion: reduce) {
   .vigia-legacy-shell *, .vpx-app * {scroll-behavior:auto!important}
 }
+
+.vigia-legacy-shell .vigia-page-header {
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--vigia-line);
+}
+.vigia-legacy-shell .vigia-page-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--vigia-primary);
+}
+.vigia-legacy-shell .vigia-kpi-card {
+  position: relative;
+  min-height: 112px;
+  padding: 20px;
+  overflow: hidden;
+}
+.vigia-legacy-shell .vigia-kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--vigia-primary);
+}
