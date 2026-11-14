@@ -1,0 +1,129 @@
+/* VigiaPlus · visual tokens shared by owner, client, analyst and auth screens.
+   Phase 1: keep both shells functional while the older Radar pages are migrated.
+   The source-of-truth palette mirrors the approved Vpx dashboard. */
+:root {
+  --vigia-light-page: #e6ebeb;
+  --vigia-light-paper: #fafbfa;
+  --vigia-light-panel: #ffffff;
+  --vigia-light-elev: #f4f6f4;
+  --vigia-light-ink: #141a19;
+  --vigia-light-muted: #64716e;
+  --vigia-light-line: #e0e6e2;
+  --vigia-light-primary: #a2fd53;
+  --vigia-light-hero: linear-gradient(128deg,#d6f4fa 0%,#e7f5ef 52%,#f1f8d7 100%);
+  --vigia-dark-page: #0a1116;
+  --vigia-dark-paper: #111b22;
+  --vigia-dark-panel: #18262d;
+  --vigia-dark-elev: #203038;
+  --vigia-dark-ink: #f5f8f6;
+  --vigia-dark-muted: #b7c3c1;
+  --vigia-dark-line: #34444c;
+  --vigia-dark-primary: #b7f56a;
+  --vigia-dark-hero: linear-gradient(130deg,#22434e 0%,#233e3d 52%,#3c422b 100%);
+  --vigia-radius-card: 20px;
+  --vigia-radius-control: 12px;
+  --vigia-content-max: 1440px;
+  --vigia-page: var(--vigia-dark-page);
+  --vigia-paper: var(--vigia-dark-paper);
+  --vigia-card: var(--vigia-dark-panel);
+  --vigia-elev: var(--vigia-dark-elev);
+  --vigia-ink: var(--vigia-dark-ink);
+  --vigia-muted: var(--vigia-dark-muted);
+  --vigia-line: var(--vigia-dark-line);
+  --vigia-primary: var(--vigia-dark-primary);
+  --background: var(--vigia-page);
+  --foreground: var(--vigia-ink);
+  --panel: var(--vigia-card);
+  --panel-2: var(--vigia-elev);
+  --border: var(--vigia-line);
+  --muted: var(--vigia-muted);
+  --accent: var(--vigia-primary);
+  color-scheme: dark;
+}
+:root[data-vigia-theme="light"] {
+  --vigia-page: var(--vigia-light-page);
+  --vigia-paper: var(--vigia-light-paper);
+  --vigia-card: var(--vigia-light-panel);
+  --vigia-elev: var(--vigia-light-elev);
+  --vigia-ink: var(--vigia-light-ink);
+  --vigia-muted: var(--vigia-light-muted);
+  --vigia-line: var(--vigia-light-line);
+  --vigia-primary: var(--vigia-light-primary);
+  color-scheme: light;
+}
+:root[data-vigia-theme="dark"] {color-scheme:dark}
+.vigia-legacy-shell {
+  background: var(--vigia-page);
+  color: var(--vigia-ink);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+.vigia-legacy-shell .panel {
+  background: var(--vigia-card);
+  border: 1px solid var(--vigia-line);
+  border-radius: var(--vigia-radius-card);
+  box-shadow: 0 10px 32px rgb(0 0 0 / 7%);
+}
+.vigia-legacy-shell :where(button,a,input,select,textarea):focus-visible {
+  outline: 3px solid #78bd46;
+  outline-offset: 3px;
+}
+.vigia-legacy-shell .vigia-legacy-sidebar {
+  background: var(--vigia-paper);
+  border-color: var(--vigia-line);
+}
+.vigia-legacy-shell .vigia-legacy-main {
+  width: 100%;
+  max-width: var(--vigia-content-max);
+}
+.vigia-legacy-shell .vigia-legacy-main main > header:first-child h1 {
+  font-size: clamp(24px, 2.1vw, 32px);
+  font-weight: 760;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+}
+.vigia-appearance-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid var(--vigia-line);
+  background: var(--vigia-elev);
+  color: var(--vigia-ink);
+  border-radius: var(--vigia-radius-control);
+  padding: 7px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.vigia-appearance-toggle:hover {border-color:var(--vigia-primary)}
+/* Temporary contrast bridge for existing Tailwind utility colors, scoped
+   to analyst pages only. These should disappear when page components migrate. */
+:root[data-vigia-theme="light"] .vigia-legacy-shell {
+  --background:var(--vigia-light-page);
+  --panel:var(--vigia-light-panel);
+  --panel-2:var(--vigia-light-elev);
+  --border:var(--vigia-light-line);
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.text-slate-100,.text-slate-200,.text-slate-300) {
+  color: #26352e;
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.text-slate-400,.text-slate-500,.text-slate-600) {
+  color: #52615c;
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.text-sky-200,.text-sky-300,.text-sky-400) {
+  color: #125b50;
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.bg-slate-900,.bg-slate-950) {
+  background-color: var(--vigia-light-elev);
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.border-slate-700,.border-slate-800) {
+  border-color: var(--vigia-light-line);
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell .vigia-legacy-sidebar {
+  --muted:var(--vigia-light-muted);
+}
+@media (max-width: 640px) {
+  .vigia-legacy-shell .vigia-legacy-main {padding:0}
+}
+@media (prefers-reduced-motion: reduce) {
+  .vigia-legacy-shell *, .vpx-app * {scroll-behavior:auto!important}
+}
