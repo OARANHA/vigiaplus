@@ -658,7 +658,7 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 ### ALT-08.10C.34 — auditoria adversarial semântica de policies e lifecycle concorrente do pool (candidata, CI por confirmar)
 
 - [x] Criado `lib/db/alt0810c34-policy-pool-guard.ts`: exige policy SELECT **única**, permissiva e da role leitora exata, bloqueia políticas extras/PUBLIC, grants públicos de tabela/colunas/schema, mudança no fingerprint `pg_get_expr`, sem manifesto operacional aprovado.
-- [x] Corrigido preflight da C.33 para inspecionar privilégios **por coluna** com `has_any_column_privilege` em evidência e tabelas de auth; não confiar apenas em `has_table_privilege`.
+- [x] Corrigido preflight C.33: `has_any_column_privilege` em evidência e tabelas de auth; exige `pg_has_role(..., 'SET')` além de `MEMBER`, com caso adversarial `GRANT ... WITH SET FALSE` no PG16.
 - [x] Implementado `withDisposableScopedRead` com `BEGIN READ ONLY`, `SET LOCAL ROLE`, GUC transacional, callback SELECT único, `ROLLBACK` obrigatório; rejeita COMMIT, batch SQL, GUC mutável e instruções não SELECT.
 - [x] Testes unitários e PG16 descartável adversarial: tenant A/B, ausência de GUC, coluna privada sem privilégio, policies permissivas concorrentes, PUBLIC, roles herdadas, `USING(true)`, DML policy, grants por coluna e privilégio auth indireto.
 - [x] Teste de pool max=2: simultaneidade A/B, terceira conexão com timeout, estado de role/GUC limpo após rollback; teste unitário de descarte em falha de cleanup.
