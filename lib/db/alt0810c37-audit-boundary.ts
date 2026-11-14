@@ -26,7 +26,7 @@ export function validateC37ReadOnlyAudit(raw:string):void{
      !/FROM pg_roles/i.test(sql)||
      !/FROM pg_auth_members/i.test(sql)||
      !/aclexplode\s*\(/i.test(sql)||
-     !/pg_get_expr\s*\(/i.test(sql)||
+     (sql.match(/\bpg_get_expr\s*\(/gi)??[]).length!==2||
      !/current_setting\s*\(\s*'transaction_read_only'\s*\)/i.test(sql)||
      /\b(?:ALTER|CREATE|DROP|INSERT|UPDATE|DELETE|TRUNCATE|GRANT|REVOKE|CALL|COPY|DO|EXECUTE|VACUUM|ANALYZE|MERGE)\b/i.test(sql)||
      /\b(?:pg_authid|set_config|dblink|pg_sleep|pg_terminate_backend)\b/i.test(sql)||
