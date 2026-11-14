@@ -60,6 +60,14 @@ Essas contagens são **marcadores estáticos**, não reprovação automática ne
 
 **Ainda não certificado:** compatibilidade final de todas as páginas com modo claro, 390px/mobile, contraste, gráficos e páginas especiais; não existe captura comprobatória neste marco. Não classificar 73 páginas como visivelmente padronizadas.
 
+## Evidência de execução visual em localhost (prévia isolada)
+
+Em 2026-11-14, foi levantado um **git worktree descartável de revisão** em `D:\VIGIAPLUS\.data\ux-review-20261114` com o HEAD da PR #36, usando somente `DEMO_MODE=1`, banco PGlite isolado e `DATABASE_URL` ausente. O checkout principal não foi trocado. A prévia Next.js escuta em `127.0.0.1:3199`.
+
+O Playwright Chromium executou inspeção **real** de 12 rotas em 1440×900, com ambos os temas, e quatro rotas em 390×844, também nos dois temas: **32 estados fotografados / 32 HTTP 200 / 0 erros de captura / 0 overflow horizontal detectado**. O atributo global de tema coincidiu com o tema solicitado nos 32 estados. Destinos `/story` e `/insights/geo` redirecionaram respectivamente a `/narratives` e `/graph?preset=map`: são redirecionamentos funcionais, não necessariamente falta de layout.
+
+As imagens e os resultados ficam **somente no Windows**, fora do Git: `D:\VIGIAPLUS\.data\ux-visual-qa-20261114\` (com prévia anterior em `ux-visual-qa-20261114-before-stage`). Os screenshots confirmam que o painel do proprietário e o portal do cliente compartilham visual Vpx, enquanto a área analítica continua com sidebar/densidade herdadas do Radar, agora dentro de um estágio visual com tokens similares. A diferença de navegação entre essas áreas ainda é **P0 pendente de consolidação**. Prints não comprovam gravação, autorização de produção nem funcionamento das integrações.
+
 ## Ordem recomendada de execução
 
 **Fase 1 (em progresso):** unificar paleta, semântica de superfície, estado de tema e cabeçalhos. Homologar renderização após CI do exato HEAD.
