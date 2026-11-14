@@ -1,0 +1,742 @@
+{
+  "version": 1,
+  "policy": "Screenshots only of explicitly authorized local development sessions with synthetic data; never commit or upload screen captures.",
+  "routes": [
+    {
+      "id": "alertas",
+      "path": "/alerts",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Visualizar alertas do projeto."
+    },
+    {
+      "id": "tela-ask",
+      "path": "/ask",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /ask utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-audience",
+      "path": "/audience",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /audience utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-benchmark",
+      "path": "/benchmark",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /benchmark utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-brief",
+      "path": "/brief",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /brief utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-changes",
+      "path": "/changes",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /changes utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-content",
+      "path": "/content",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /content utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "dashboard-analista",
+      "path": "/dashboard",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Consultar métricas e tendências do projeto."
+    },
+    {
+      "id": "tela-emv",
+      "path": "/emv",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /emv utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-evidenze",
+      "path": "/evidenze",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /evidenze utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-graph",
+      "path": "/graph",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /graph utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-import",
+      "path": "/import",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /import utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "configuracoes",
+      "path": "/impostazioni",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Consultar configurações do usuário e do projeto."
+    },
+    {
+      "id": "tela-impostazioni-account",
+      "path": "/impostazioni/account",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /impostazioni/account utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-impostazioni-budget",
+      "path": "/impostazioni/budget",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /impostazioni/budget utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-impostazioni-credits",
+      "path": "/impostazioni/credits",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /impostazioni/credits utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "fontes",
+      "path": "/impostazioni/fonti",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Configurar fontes disponíveis."
+    },
+    {
+      "id": "tela-impostazioni-team",
+      "path": "/impostazioni/team",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /impostazioni/team utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights",
+      "path": "/insights",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-causal",
+      "path": "/insights/causal",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/causal utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-clusters",
+      "path": "/insights/clusters",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/clusters utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-constellation",
+      "path": "/insights/constellation",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/constellation utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-crisis",
+      "path": "/insights/crisis",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/crisis utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-emotions",
+      "path": "/insights/emotions",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/emotions utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-flow",
+      "path": "/insights/flow",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/flow utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-galaxy",
+      "path": "/insights/galaxy",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/galaxy utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-geo",
+      "path": "/insights/geo",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/geo utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-health",
+      "path": "/insights/health",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/health utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-heatmap",
+      "path": "/insights/heatmap",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/heatmap utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-momentum",
+      "path": "/insights/momentum",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/momentum utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-network",
+      "path": "/insights/network",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/network utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-owned",
+      "path": "/insights/owned",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/owned utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-pyramid",
+      "path": "/insights/pyramid",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/pyramid utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-sov",
+      "path": "/insights/sov",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/sov utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-topics",
+      "path": "/insights/topics",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/topics utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-insights-waterfall",
+      "path": "/insights/waterfall",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /insights/waterfall utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-kpi",
+      "path": "/kpi",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /kpi utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "listening",
+      "path": "/listening",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Consultar as menções capturadas pelas fontes."
+    },
+    {
+      "id": "tela-mcp",
+      "path": "/mcp",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /mcp utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-measures",
+      "path": "/measures",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /measures utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-media",
+      "path": "/media",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /media utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-messages",
+      "path": "/messages",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /messages utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-narratives",
+      "path": "/narratives",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /narratives utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-people",
+      "path": "/people",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /people utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-podcast",
+      "path": "/podcast",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /podcast utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-pov",
+      "path": "/pov",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /pov utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-query",
+      "path": "/query",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /query utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "relatorios",
+      "path": "/report",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Visualizar relatórios do projeto."
+    },
+    {
+      "id": "tela-report-periodic",
+      "path": "/report/periodic",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /report/periodic utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-reviews",
+      "path": "/reviews",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /reviews utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-riscontri",
+      "path": "/riscontri",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /riscontri utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "projetos",
+      "path": "/settings",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Configurar projetos de monitoramento."
+    },
+    {
+      "id": "tela-sport",
+      "path": "/sport",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /sport utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-stakeholders",
+      "path": "/stakeholders",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /stakeholders utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-story",
+      "path": "/story",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /story utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-studio",
+      "path": "/studio",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /studio utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-timeline",
+      "path": "/timeline",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /timeline utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-tv",
+      "path": "/tv",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /tv utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "tela-verifiche",
+      "path": "/verifiche",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /verifiche utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "vigia",
+      "path": "/vigia",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Operar o módulo de monitoramento Vigia."
+    },
+    {
+      "id": "tela-wikipedia",
+      "path": "/wikipedia",
+      "roles": [
+        "analyst"
+      ],
+      "goal": "Explicar a página /wikipedia utilizando somente os elementos visíveis na captura."
+    },
+    {
+      "id": "portal-visao-geral",
+      "path": "/portal",
+      "tab": "Visão geral",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Consultar os indicadores e o estado do monitoramento."
+    },
+    {
+      "id": "portal-publicacoes",
+      "path": "/portal",
+      "tab": "Publicações",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Visualizar as evidências e publicações disponibilizadas para a conta."
+    },
+    {
+      "id": "portal-crises",
+      "path": "/portal",
+      "tab": "Crises e alertas",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Acompanhar os incidentes e alertas autorizados."
+    },
+    {
+      "id": "portal-plano",
+      "path": "/portal",
+      "tab": "Meu plano",
+      "roles": [
+        "client",
+        "owner"
+      ],
+      "goal": "Consultar o plano contratado e informações comerciais visíveis."
+    },
+    {
+      "id": "console-proprietario",
+      "path": "/console",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Acompanhar os indicadores gerais da plataforma e acessar a gestão."
+    },
+    {
+      "id": "console-clientes",
+      "path": "/console?tab=clientes",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Explorar a aba clientes da console do proprietário e documentar os dados mostrados."
+    },
+    {
+      "id": "console-config",
+      "path": "/console?tab=config",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Explorar a aba config da console do proprietário e documentar os dados mostrados."
+    },
+    {
+      "id": "console-financeiro",
+      "path": "/console?tab=financeiro",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Explorar a aba financeiro da console do proprietário e documentar os dados mostrados."
+    },
+    {
+      "id": "console-inicio",
+      "path": "/console?tab=inicio",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Explorar a aba inicio da console do proprietário e documentar os dados mostrados."
+    },
+    {
+      "id": "console-operacao",
+      "path": "/console?tab=operacao",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Explorar a aba operacao da console do proprietário e documentar os dados mostrados."
+    },
+    {
+      "id": "administracao",
+      "path": "/console/admin",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Administrar clientes, planos e configurações permitidas ao proprietário."
+    },
+    {
+      "id": "admin-acessos",
+      "path": "/console/admin?section=acessos",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção acessos do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-auditoria",
+      "path": "/console/admin?section=auditoria",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção auditoria do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-clientes",
+      "path": "/console/admin?section=clientes",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção clientes do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-coleta",
+      "path": "/console/admin?section=coleta",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção coleta do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-consumo",
+      "path": "/console/admin?section=consumo",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção consumo do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-contratos",
+      "path": "/console/admin?section=contratos",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção contratos do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-crises",
+      "path": "/console/admin?section=crises",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção crises do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-financeiro",
+      "path": "/console/admin?section=financeiro",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção financeiro do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-fontes",
+      "path": "/console/admin?section=fontes",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção fontes do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-ia",
+      "path": "/console/admin?section=ia",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção ia do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-integridade",
+      "path": "/console/admin?section=integridade",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção integridade do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-marca",
+      "path": "/console/admin?section=marca",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção marca do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-planos",
+      "path": "/console/admin?section=planos",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção planos do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-privacidade",
+      "path": "/console/admin?section=privacidade",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção privacidade do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-recursos",
+      "path": "/console/admin?section=recursos",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção recursos do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-relatorios",
+      "path": "/console/admin?section=relatorios",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção relatorios do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "admin-sistema",
+      "path": "/console/admin?section=sistema",
+      "roles": [
+        "owner"
+      ],
+      "goal": "Consultar a seção sistema do painel de administração e explicar apenas os controles observados."
+    },
+    {
+      "id": "login",
+      "path": "/login",
+      "roles": [
+        "public"
+      ],
+      "goal": "Identificar-se com uma conta autorizada."
+    },
+    {
+      "id": "recuperar-senha",
+      "path": "/recuperar",
+      "roles": [
+        "public"
+      ],
+      "goal": "Solicitar recuperação de acesso."
+    }
+  ]
+}

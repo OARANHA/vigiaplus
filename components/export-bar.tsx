@@ -103,9 +103,9 @@ export function ExportBar({ locale = 'en', canUseStudio = false }: { locale?: Lo
 
   return (
     <>
-      <div className="mb-5 flex justify-end">
+      <div className="vigia-export-controls mb-5 flex justify-end">
         <button onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10">
+          className="vigia-export-trigger flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-white/10">
           <Download className="size-4 text-sky-400" /> {t('ui.export', 'Export')}
         </button>
       </div>
@@ -114,7 +114,7 @@ export function ExportBar({ locale = 'en', canUseStudio = false }: { locale?: Lo
       {open && (
         <div className="fixed inset-0 z-[80] flex items-end justify-center sm:items-center">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !busy && setOpen(false)} />
-          <div className="relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl border border-[var(--border)] bg-[#0c1226] shadow-2xl sm:max-w-lg sm:rounded-2xl">
+          <div className="relative flex max-h-[92vh] w-full flex-col overflow-hidden rounded-t-2xl border border-[var(--border)] vigia-export-dialog bg-[var(--vigia-paper)] shadow-2xl sm:max-w-lg sm:rounded-2xl">
             <div className="flex items-center gap-2 border-b border-[var(--border)] px-5 py-3.5">
               <Download className="size-4 text-sky-400" />
               <h2 className="text-sm font-semibold">{t('export.title', 'Export report')}</h2>

@@ -104,6 +104,27 @@ export function ConsoleOwnerDashboard(){
   {errors.length>0&&<div role="alert" className="vpx-alert">
    Dados temporariamente indisponíveis: {errors.join(', ')}. Não foram substituídos por zero.
   </div>}
+  {!loading&&tenants!==null&&tenants.length===0&&<section className="vpx-card"
+   aria-label="Primeiros passos para configurar o VigiaPlus" style={{marginBottom:18}}>
+   <div className="vpx-section-top">
+    <div><h2>Seu VigiaPlus está pronto para receber o primeiro cliente</h2>
+     <p className="vpx-card-sub">Comece por aqui. Nenhum cliente, contrato ou cobrança é criado automaticamente.</p></div>
+   </div>
+   <div className="vpx-stat-grid" style={{marginTop:16}}>
+    <Link className="vpx-stat-tile" href="/console/admin?section=clientes">
+     <span className="vpx-tile-label">1. Cadastrar organização</span>
+     <small className="vpx-muted">Registre o cliente e seus dados básicos.</small>
+     <b className="vpx-tile-arrow">↗</b></Link>
+    <Link className="vpx-stat-tile" href="/console/admin?section=planos">
+     <span className="vpx-tile-label">2. Configurar planos</span>
+     <small className="vpx-muted">Revise preços e capacidades antes de contratar.</small>
+     <b className="vpx-tile-arrow">↗</b></Link>
+    <Link className="vpx-stat-tile" href="/console/admin?section=recursos">
+     <span className="vpx-tile-label">3. Definir permissões</span>
+     <small className="vpx-muted">Habilite somente recursos autorizados por cliente.</small>
+     <b className="vpx-tile-arrow">↗</b></Link>
+   </div>
+  </section>}
   {tab==='inicio'&&<div className="vpx-workspace">
    <div className="vpx-left">
     <section>

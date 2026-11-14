@@ -7,6 +7,10 @@ import { resolveTenantContext } from '@/lib/tenant/context';
 import { requireAction, requireSurface } from '@/lib/tenant/rbac';
 import { requireFeature } from '@/lib/tenant/entitlements';
 import { AppError } from '@/lib/tenant/errors';
+import { isAlt084EvidencePilotEnabled, selectRlsEvidence } from '@/lib/tenant/rls-evidence';
+import { withNeonRlsPool } from '@/lib/tenant/neon-rls-adapter';
+import { withAuthenticatedClientRls } from '@/lib/tenant/rls-runtime';
+import {alt0810StagingRequested,alt0810NextStagingEvidence} from '@/lib/tenant/alt0810-next-staging';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +31,8 @@ export async function listTenantEvidence(db: DB, tenantId: number, limit = 12) {
 }
 
 export async function GET(request: Request) {
+  // ALT-08.10: rota Next REAL; piloto CI isolado; se configurado errado, falha fechado.
+  if (alt0810StagingRequested(process.env)) return alt0810NextStagingEvidence(request);
   const url = new URL(request.url);
   const requested = Number(url.searchParams.get('tenant_id'));
   const ctx = await resolveTenantContext({
@@ -46,6 +52,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: error.code, message: error.message }, { status: error.status });
     }
     throw error;
+  }
+  // ALT-08.4: opt-in exclusivo de CI — sem fallback ao driver sem RLS
+  // se a verificação do banco experimental falhar. Nunca habilitar em prod.
+  if (isAlt084EvidencePilotEnabled(process.env)) {
+    const items = await withNeonRlsPool(process.env, pool =>
+      withAuthenticatedClientRls(ctx, pool, query => selectRlsEvidence(query)));
+    return NextResponse.json({
+      tenantId: ctx.tenantId,
+      items: items.map(m => ({
+        ...m,
+        url: safePublicHttpUrl(m.url),
+        publishedAt: m.publishedAt == null ? null : new Date(m.publishedAt).toISOString(),
+      })),
+    }, { headers: { 'Cache-Control': 'no-store' } });
   }
   const db = await getDb();
   const items = await listTenantEvidence(db, ctx.tenantId);

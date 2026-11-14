@@ -1,0 +1,77 @@
+{
+  "id": "alt0810c35-pg16-disposable-v1",
+  "version": 1,
+  "postgresMajor": 16,
+  "target": "disposable-github-actions-only",
+  "stagingAuthorized": false,
+  "productionAuthorized": false,
+  "operationalRlsAuthorized": false,
+  "reviewedOperationalPolicy": false,
+  "schema": "alt0810c35_scope",
+  "table": "evidence",
+  "executorRole": "alt0810c35_executor",
+  "readerRole": "alt0810c35_reader",
+  "policy": {
+    "name": "c35_tenant_select",
+    "command": "SELECT",
+    "permissive": true,
+    "roles": [
+      "alt0810c35_reader"
+    ],
+    "usingSql": "tenant_id = NULLIF(current_setting('app.tenant_id',true),'')::integer",
+    "usingSqlSha256": "778e1a77b79ef32bc24281ce6561dafb57584da2772c184a5aaadf2973f93dfe"
+  },
+  "columns": [
+    {
+      "name": "id",
+      "type": "integer",
+      "readerSelect": true
+    },
+    {
+      "name": "tenant_id",
+      "type": "integer",
+      "readerSelect": true
+    },
+    {
+      "name": "private_text",
+      "type": "text",
+      "readerSelect": false
+    }
+  ],
+  "dependencies": [
+    "users",
+    "memberships",
+    "tenants",
+    "subscriptions",
+    "tenant_features",
+    "plan_features"
+  ],
+  "privileges": {
+    "readerSchema": [
+      "USAGE"
+    ],
+    "readerTable": [
+      "SELECT_COLUMNS_ONLY"
+    ],
+    "readerDml": [],
+    "readerAuth": [],
+    "public": [],
+    "executorSetRole": true
+  },
+  "rollback": {
+    "requiresCatalogSnapshot": true,
+    "requiresNoDriftAfterRollback": true,
+    "steps": [
+      "disable-route",
+      "drain-pool",
+      "rollback-policy",
+      "restore-force-rls",
+      "restore-acl",
+      "restore-roles",
+      "restore-schema-and-data",
+      "verify-catalog"
+    ],
+    "stagingMigrationAuthorized": false,
+    "productionMigrationAuthorized": false
+  }
+}

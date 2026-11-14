@@ -1,0 +1,268 @@
+/* VigiaPlus · visual tokens shared by owner, client, analyst and auth screens.
+   Phase 1: keep both shells functional while the older Radar pages are migrated.
+   The source-of-truth palette mirrors the approved Vpx dashboard. */
+:root {
+  --vigia-light-page: #e6ebeb;
+  --vigia-light-paper: #fafbfa;
+  --vigia-light-panel: #ffffff;
+  --vigia-light-elev: #f4f6f4;
+  --vigia-light-ink: #141a19;
+  --vigia-light-muted: #64716e;
+  --vigia-light-line: #e0e6e2;
+  --vigia-light-primary: #a2fd53;
+  --vigia-light-hero: linear-gradient(128deg,#d6f4fa 0%,#e7f5ef 52%,#f1f8d7 100%);
+  --vigia-dark-page: #0a1116;
+  --vigia-dark-paper: #111b22;
+  --vigia-dark-panel: #18262d;
+  --vigia-dark-elev: #203038;
+  --vigia-dark-ink: #f5f8f6;
+  --vigia-dark-muted: #b7c3c1;
+  --vigia-dark-line: #34444c;
+  --vigia-dark-primary: #b7f56a;
+  --vigia-dark-hero: linear-gradient(130deg,#22434e 0%,#233e3d 52%,#3c422b 100%);
+  --vigia-radius-card: 20px;
+  --vigia-radius-control: 12px;
+  --vigia-content-max: 1440px;
+  --vigia-page: var(--vigia-dark-page);
+  --vigia-paper: var(--vigia-dark-paper);
+  --vigia-card: var(--vigia-dark-panel);
+  --vigia-elev: var(--vigia-dark-elev);
+  --vigia-ink: var(--vigia-dark-ink);
+  --vigia-muted: var(--vigia-dark-muted);
+  --vigia-line: var(--vigia-dark-line);
+  --vigia-primary: var(--vigia-dark-primary);
+  --background: var(--vigia-page);
+  --foreground: var(--vigia-ink);
+  --panel: var(--vigia-card);
+  --panel-2: var(--vigia-elev);
+  --border: var(--vigia-line);
+  --muted: var(--vigia-muted);
+  --accent: var(--vigia-primary);
+  color-scheme: dark;
+}
+:root[data-vigia-theme="light"] {
+  --vigia-page: var(--vigia-light-page);
+  --vigia-paper: var(--vigia-light-paper);
+  --vigia-card: var(--vigia-light-panel);
+  --vigia-elev: var(--vigia-light-elev);
+  --vigia-ink: var(--vigia-light-ink);
+  --vigia-muted: var(--vigia-light-muted);
+  --vigia-line: var(--vigia-light-line);
+  --vigia-primary: var(--vigia-light-primary);
+  color-scheme: light;
+}
+:root[data-vigia-theme="dark"] {color-scheme:dark}
+.vigia-legacy-shell {
+  background: var(--vigia-page);
+  color: var(--vigia-ink);
+  font-family: var(--font-geist-sans), Arial, sans-serif;
+}
+.vigia-legacy-shell .panel {
+  background: var(--vigia-card);
+  border: 1px solid var(--vigia-line);
+  border-radius: var(--vigia-radius-card);
+  box-shadow: 0 10px 32px rgb(0 0 0 / 7%);
+}
+.vigia-legacy-shell :where(button,a,input,select,textarea):focus-visible {
+  outline: 3px solid #78bd46;
+  outline-offset: 3px;
+}
+.vigia-legacy-shell .vigia-legacy-sidebar {
+  background: var(--vigia-paper);
+  border-color: var(--vigia-line);
+}
+.vigia-legacy-shell .vigia-legacy-main {
+  width: 100%;
+  max-width: var(--vigia-content-max);
+}
+.vigia-legacy-shell .vigia-legacy-main main > header:first-child h1 {
+  font-size: clamp(24px, 2.1vw, 32px);
+  font-weight: 760;
+  letter-spacing: -.045em;
+  line-height: 1.15;
+}
+.vigia-appearance-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 36px;
+  border: 1px solid var(--vigia-line);
+  background: var(--vigia-elev);
+  color: var(--vigia-ink);
+  border-radius: var(--vigia-radius-control);
+  padding: 7px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.vigia-appearance-toggle:hover {border-color:var(--vigia-primary)}
+/* Temporary contrast bridge for existing Tailwind utility colors, scoped
+   to analyst pages only. These should disappear when page components migrate. */
+:root[data-vigia-theme="light"] .vigia-legacy-shell {
+  --background:var(--vigia-light-page);
+  --panel:var(--vigia-light-panel);
+  --panel-2:var(--vigia-light-elev);
+  --border:var(--vigia-light-line);
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.text-slate-100,.text-slate-200,.text-slate-300) {
+  color: #26352e;
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.text-slate-400,.text-slate-500,.text-slate-600) {
+  color: #52615c;
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.text-sky-200,.text-sky-300,.text-sky-400) {
+  color: #125b50;
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.bg-slate-900,.bg-slate-950) {
+  background-color: var(--vigia-light-elev);
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell :where(.border-slate-700,.border-slate-800) {
+  border-color: var(--vigia-light-line);
+}
+:root[data-vigia-theme="light"] .vigia-legacy-shell .vigia-legacy-sidebar {
+  --muted:var(--vigia-light-muted);
+}
+@media (max-width: 640px) {
+  .vigia-legacy-shell .vigia-legacy-main {padding:0}
+}
+@media (prefers-reduced-motion: reduce) {
+  .vigia-legacy-shell *, .vpx-app * {scroll-behavior:auto!important}
+}
+
+.vigia-legacy-shell .vigia-page-header {
+  padding: 4px 0 8px;
+  border-bottom: 1px solid var(--vigia-line);
+}
+.vigia-legacy-shell .vigia-page-eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 780;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--vigia-primary);
+}
+.vigia-legacy-shell .vigia-kpi-card {
+  position: relative;
+  min-height: 112px;
+  padding: 20px;
+  overflow: hidden;
+}
+.vigia-legacy-shell .vigia-kpi-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: var(--vigia-primary);
+}
+
+/* Unified dashboard stage: preserve the analyst sidebar's information
+   architecture while using the same framed workspace as Vpx. */
+.vigia-legacy-shell {
+  max-width: 1540px;
+  min-height: calc(100vh - 40px);
+  margin: 20px auto;
+  background: var(--vigia-paper);
+  border: 1px solid var(--vigia-line);
+  border-radius: 24px;
+  box-shadow: 0 22px 80px rgb(0 0 0 / 13%);
+}
+.vigia-legacy-shell .vigia-legacy-sidebar {
+  border-color: var(--vigia-line);
+  background: var(--vigia-paper);
+}
+.vigia-legacy-shell .vigia-legacy-canvas {
+  min-height: calc(100vh - 42px);
+  background: var(--vigia-paper);
+  border-radius: 0 24px 24px 0;
+}
+.vigia-legacy-shell .vigia-legacy-sidebar :where(a[aria-current="page"],a[aria-current="true"]) {
+  background: var(--vigia-primary);
+  color: #132216;
+}
+.vigia-legacy-shell .vigia-legacy-sidebar :where(a[aria-current="page"],a[aria-current="true"]) svg {
+  color: #132216;
+}
+@media (max-width: 1023px) {
+  .vigia-legacy-shell .vigia-legacy-canvas {
+    min-height: calc(100vh - 110px);
+    border-radius: 0 0 24px 24px;
+  }
+}
+@media (max-width: 640px) {
+  .vigia-legacy-shell {
+    margin: 0;
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .vigia-legacy-shell .vigia-legacy-canvas {
+    min-height: calc(100vh - 60px);
+    border-radius: 0;
+  }
+}
+
+/* Analyst workspace shares the Vpx navigation rhythm without hiding legacy tools. */
+.vigia-legacy-shell .vigia-analyst-topbar{
+  display:flex;align-items:center;gap:16px;min-height:78px;
+  padding:2px 0 16px;margin-bottom:22px;border-bottom:1px solid var(--vigia-line);
+}
+.vigia-analyst-identity{display:flex;flex:0 0 auto;flex-direction:column;gap:3px;min-width:0}
+.vigia-analyst-identity b{font-size:16px;font-weight:780;letter-spacing:-.03em}
+.vigia-analyst-identity small{color:var(--vigia-muted);font-size:10px;line-height:1.45;max-width:205px}
+.vigia-analyst-tabs{display:flex;align-items:center;gap:6px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:thin;padding:7px 1px}
+.vigia-analyst-tab{
+  display:inline-flex;align-items:center;justify-content:center;gap:7px;flex-shrink:0;
+  min-height:40px;padding:9px 12px;border:1px solid var(--vigia-line);border-radius:999px;
+  background:var(--vigia-card);color:var(--vigia-muted);
+  font-size:12px;font-weight:680;white-space:nowrap;text-decoration:none;
+  transition:background .16s,color .16s,border-color .16s;
+}
+.vigia-analyst-tab:hover{color:var(--vigia-ink);border-color:var(--vigia-primary)}
+.vigia-analyst-tab.is-active{background:var(--vigia-primary);color:#142116;border-color:transparent}
+.vigia-analyst-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 auto}
+.vigia-analyst-actions .vigia-export-controls{margin:0}
+.vigia-analyst-actions .vigia-appearance-toggle{min-height:40px;border-radius:999px;white-space:nowrap}
+.vigia-legacy-shell .vigia-export-trigger{
+  min-height:40px;border-radius:999px;color:var(--vigia-ink);background:var(--vigia-card);
+  font-size:12px;font-weight:680;
+}
+.vigia-legacy-shell .vigia-export-trigger:hover{border-color:var(--vigia-primary);background:var(--vigia-elev)}
+.vigia-legacy-shell .vigia-export-trigger svg{color:var(--vigia-primary)}
+.vigia-legacy-shell .vigia-export-dialog{
+  color:var(--vigia-ink);background:var(--vigia-paper);border-color:var(--vigia-line);
+  box-shadow:0 24px 75px rgb(0 0 0 / 28%);
+}
+.vigia-legacy-shell .vigia-export-dialog :where(input,select,textarea){
+  color:var(--vigia-ink);background:var(--vigia-card);border-color:var(--vigia-line)
+}
+.vigia-legacy-shell .vigia-legacy-sidebar .stroke-sky-400{stroke:var(--vigia-primary)}
+.vigia-legacy-shell .vigia-legacy-sidebar .fill-sky-400{fill:var(--vigia-primary)}
+.vigia-legacy-shell .vigia-page-header h1{color:var(--vigia-ink)}
+.vigia-legacy-shell .panel :where(h2,h3){letter-spacing:-.015em}
+@media(max-width:1320px){
+ .vigia-legacy-shell .vigia-analyst-topbar{flex-wrap:wrap;row-gap:8px}
+ .vigia-analyst-tabs{order:3;flex-basis:100%}
+}
+@media(max-width:640px){
+ .vigia-legacy-shell .vigia-analyst-topbar{margin-bottom:14px;padding-bottom:12px}
+ .vigia-analyst-identity b{font-size:14px}
+ .vigia-analyst-identity small{display:none}
+ .vigia-analyst-actions .vigia-appearance-toggle{font-size:0;gap:0;padding:10px}
+ .vigia-analyst-actions .vigia-appearance-toggle svg{width:17px;height:17px}
+ .vigia-analyst-tabs{gap:5px}
+ .vigia-analyst-tab{font-size:11px;padding:8px 10px}
+}
+
+/* Accent and selection states inside export follow the VigiaPlus palette. */
+.vigia-legacy-shell .vigia-export-dialog button[class*="border-sky-500"]{
+  border-color:var(--vigia-primary);
+  background:color-mix(in srgb,var(--vigia-primary) 13%,transparent);
+  color:var(--vigia-ink);
+}
+.vigia-legacy-shell .vigia-export-dialog button[class*="bg-sky-600"]{
+  background:var(--vigia-primary);
+  color:#142116;
+}
+.vigia-legacy-shell .vigia-export-dialog input[type="radio"],
+.vigia-legacy-shell .vigia-export-dialog input[type="checkbox"]{accent-color:var(--vigia-primary)}

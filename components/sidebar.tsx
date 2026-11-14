@@ -7,6 +7,7 @@ import { Settings, Menu, X, UserCog, LogOut, UserCircle2, ShieldCheck } from 'lu
 import { RefreshButton } from './refresh-button';
 import { Brand } from './brand';
 import { LocaleSwitch } from './locale-switch';
+import { VigiaAppearanceToggle } from './vigia-appearance';
 import { tFor, localeTag, type Locale } from '@/lib/i18n-dict';
 import { NAV, type NavItem } from '@/lib/nav';
 import { CommandPalette, CommandHint } from './command-palette';
@@ -71,6 +72,7 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
         </Link>
         <LocaleSwitch current={locale} compact />
       </div>
+      <div className="px-2 py-1"><VigiaAppearanceToggle /></div>
       <button onClick={logout}
         className="flex w-full items-center gap-2.5 rounded-lg px-3 py-1.5 text-sm text-slate-400 transition hover:bg-white/5 hover:text-red-300">
         <LogOut className="size-4" /> {t('nav.logout', 'Sair')}
@@ -83,7 +85,7 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
       <CommandPalette locale={locale} />
 
       {/* Header mobile/tablet (sotto lg) */}
-      <header className="sticky top-0 z-40 flex flex-wrap items-center gap-3 border-b border-[var(--border)] bg-[#0c1226]/95 px-4 py-2.5 backdrop-blur lg:hidden">
+      <header className="vigia-legacy-sidebar sticky top-0 z-40 flex flex-wrap items-center gap-3 border-b border-[var(--border)] bg-[#0c1226]/95 px-4 py-2.5 backdrop-blur lg:hidden">
         <button onClick={() => setOpen(true)} aria-label="Abrir menu"
           className="rounded-lg p-1.5 text-slate-300 hover:bg-white/10">
           <Menu className="size-5" />
@@ -99,7 +101,7 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col gap-4 overflow-y-auto bg-[#0c1226] px-3 py-4 shadow-2xl">
+          <div className="vigia-legacy-sidebar absolute inset-y-0 left-0 flex w-72 max-w-[85vw] flex-col gap-4 overflow-y-auto bg-[#0c1226] px-3 py-4 shadow-2xl">
             <div className="flex items-center gap-2 px-2">
               <Brand />
               <button onClick={() => setOpen(false)} aria-label="Fechar menu"
@@ -117,7 +119,7 @@ export function Sidebar({ projects, currentId, lastIngest, alertCount = 0, peopl
       )}
 
       {/* Sidebar desktop (da lg in su) */}
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col gap-3 border-r border-[var(--border)] bg-[#0c1226] px-3 py-5 lg:flex">
+      <aside className="vigia-legacy-sidebar sticky top-0 hidden h-screen w-60 shrink-0 flex-col gap-3 border-r border-[var(--border)] bg-[#0c1226] px-3 py-5 lg:flex">
         <div className="px-2 [&_span_span_span:last-child]:block">
           <Brand />
         </div>

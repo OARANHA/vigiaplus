@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - feat/todo-alt08-notify-supervisor-20261111
   pull_request:
     branches: [main]
 
@@ -25,8 +27,335 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
+      - name: ALT-08.10C manifesto offline de migrações (sem banco)
+        run: node --import tsx scripts/schema-manifest-check.ts
+
+      - name: "ALT-08.10C.35 manifesto imutavel de predicate, ACL e rollback (offline)"
+        run: node --import tsx scripts/alt0810c35-manifest-check.ts
+
+      - name: "ALT-08.10C.36 plano de auditoria catalog-only e NO-GO (offline)"
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c36-readonly-check.ts
+
+      - name: "ALT-08.10C.37 pacote catalog-only READ ONLY aprovado apenas offline"
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c37-audit-safety-check.ts
+
+      - name: ALT-08.10C.3 snapshot DDL de bootstrap (sem banco)
+        run: node --import tsx scripts/bootstrap-snapshot-check.ts
+
+      - name: ALT-08.10C.5 inventário offline de dependências e DML (NO-GO)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test tests/todo-alt0810c-bootstrap-dependencies.test.ts
+
+      - name: ALT-08.10C.11 manifesto de dependências, backup e rollback NO-GO (offline)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/operational-evidence-check.ts
+
+      - name: ALT-08.10C.14 auditoria Drizzle, bootstrap e RLS (NO-GO offline)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/operational-compatibility-check.ts
+
+      - name: ALT-08.10C.23 gate arquitetural Next.js e PostgreSQL16 sem banco
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c23-database-routing-check.ts
+
+      - name: ALT-08.10C.3 ensaio de 186 DDL em PGlite descartável com ROLLBACK
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/tests/alt0810c-bootstrap-disposable.test.ts
+
+      - name: ALT-08.10C.4 rollback preserva ACL e policies preexistentes (PGlite)
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+          PGLITE_DIR: ""
+        run: node --import tsx scripts/tests/alt0810c-preexisting-rollback.test.ts
+
       - name: Test
         run: node --import tsx --test tests/*.test.ts
 
+      - name: "ALT-08.10C.26 isolamento de rota CI e dependências no build limpo"
+        run: node --import tsx scripts/alt0810c26-production-isolation-check.ts
+
       - name: Build
         run: npm run build
+
+      - name: "ALT-08.10C.26 verificar artefato de produção sem rota de CI"
+        run: node --import tsx scripts/alt0810c26-production-isolation-check.ts --postbuild
+
+      - name: "ALT-08.10C.27 smoke HTTP next start e standalone sem banco ou rota de CI"
+        env:
+          ALT0810C27_EPHEMERAL: "1"
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c27-production-http-smoke.ts
+
+  docker-disposable:
+    name: ALT-08.10C.28 Docker standalone isolado
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      ALT0810C28_EPHEMERAL: "1"
+      DATABASE_URL: ""
+      RLS_DATABASE_URL: ""
+    steps:
+      - uses: actions/checkout@v4
+      - name: "ALT-08.10C.28 build Docker real, network none e HTTP 404 sem banco"
+        run: bash scripts/tests/alt0810c28-docker-isolated-ci.sh
+
+  postgres-disposable:
+    name: ALT-08.1 PostgreSQL descartável
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vigia_ci
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: vigia_alt081_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U vigia_ci -d vigia_alt081_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+      postgres_restore:
+        image: postgres:16
+        env:
+          POSTGRES_USER: vigia_ci
+          POSTGRES_PASSWORD: isolated_ci_only
+          POSTGRES_DB: vigia_alt0810c13_restore_ci
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U vigia_ci -d vigia_alt0810c13_restore_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 15
+    env:
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: vigia_ci
+      PGPASSWORD: isolated_ci_only
+      PGDATABASE: vigia_alt081_ci
+      DATABASE_URL: ""
+      ALT081_EPHEMERAL_POSTGRES: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Instalar driver somente para teste efêmero
+        run: npm install --no-save --package-lock=false pg
+      - name: Executar testes PostgreSQL com pools independentes
+        run: node --import tsx --test scripts/tests/alt081-postgres.test.ts
+      - name: "ALT-08.3 RLS adversarial com roles mínimas e dois tenants"
+        env:
+          ALT083_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt083-postgres-rls.test.ts
+      - name: "ALT-08.3 RLS adversarial na tabela operacional real"
+        env:
+          ALT083_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt083-operational-rls.test.ts
+      - name: "ALT-08.3 transação SET LOCAL na tabela operacional"
+        env:
+          ALT083_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt083-transactional-rls.test.ts
+      - name: "ALT-08.4 policies de leitura projects+mentions (PostgreSQL efêmero)"
+        env:
+          ALT084_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt084-evidence-rls.test.ts
+      - name: "ALT-08.10C.6 snapshot ACL, policies, ownership e ROLLBACK (PostgreSQL 16)"
+        env:
+          ALT0810C6_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c6-postgres-catalog-rollback.test.ts
+      - name: "ALT-08.10C.7 restauração pós-COMMIT e roles mínimas (PostgreSQL 16)"
+        env:
+          ALT0810C7_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c7-postcommit-restore.test.ts
+      - name: "ALT-08.10C.8 186 statements operacionais em PostgreSQL 16 com rollback"
+        env:
+          ALT0810C8_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts
+      - name: "ALT-08.10C.10 papéis e RLS tenant A/B reversíveis (PostgreSQL 16)"
+        env:
+          ALT0810C10_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c10-postgres-roles-wave.test.ts
+      - name: "ALT-08.10C.12 pg_dump + pg_restore em outro banco PostgreSQL 16 descartável"
+        env:
+          ALT0810C12_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c12-pg-dump-restore.test.ts
+      - name: "ALT-08.10C.13 pg_dump/restore entre dois clusters PostgreSQL16 isolados"
+        env:
+          ALT0810C13_EPHEMERAL: "1"
+          ALT0810C13_DEST_HOST: "127.0.0.1"
+          ALT0810C13_DEST_PORT: "5433"
+          ALT0810C13_DEST_DATABASE: "vigia_alt0810c13_restore_ci"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c13-pg-cross-instance-restore.test.ts
+      - name: "ALT-08.10C.18 RLS legado com contexto tenant ausente (PostgreSQL descartável)"
+        env:
+          ALT0810C18_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c18-legacy-rls-null-context.test.ts
+      - name: "ALT-08.10C.19 candidato de RLS por membership e revogação (PostgreSQL16 descartável)"
+        env:
+          ALT0810C19_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c19-membership-rls.test.ts
+      - name: "ALT-08.10C.20 autorização sessão/membership/entitlement + escopo PG16 descartável"
+        env:
+          ALT0810C20_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c20-pg-authz-scope.test.ts
+      - name: "ALT-08.10C.21 HTTP loopback autenticado com sessão e RLS PG16 descartável"
+        env:
+          ALT0810C21_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c21-http-pg-authz.test.ts
+      - name: "ALT-08.10C.24 adaptador transacional PG16 descartável e revogação"
+        env:
+          ALT0810C24_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C24_Disposable_Only_Secret_2026"
+        run: node --import tsx --test scripts/tests/alt0810c24-pg-adapter.test.ts
+      - name: "ALT-08.10C.25 Next.js real + PostgreSQL16 descartável com sessão, contrato e FORCE RLS"
+        env:
+          ALT0810C24_EPHEMERAL: "1"
+          ALT0810C25_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C25_Disposable_Signed_Cookie_Secret_2026"
+        run: node --import tsx --test scripts/tests/alt0810c25-next-pg-e2e.test.ts
+      - name: "ALT-08.10C.33 pool PG16, roles, privileges, FORCE RLS e rollback"
+        env:
+          ALT0810C33_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c33-pg-privileges-pool.test.ts
+      - name: "ALT-08.10C.34 predicado RLS exclusivo, ACL por coluna e pool concorrente (PG16)"
+        env:
+          ALT0810C34_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c34-pg-policy-pool.test.ts
+      - name: "ALT-08.10C.35 manifesto versionado PG16, drift e rollback transacional"
+        env:
+          ALT0810C35_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c35-pg-manifest-rollback.test.ts
+      - name: "ALT-08.10C.36 catalog-only READ ONLY e restauração após COMMIT (PG16 isolado)"
+        env:
+          ALT0810C36_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c36-pg-postcommit-restore.test.ts
+      - name: "ALT-08.10C.37 dump PRE-COMMIT e restore POS-COMMIT em segundo cluster PG16 isolado"
+        env:
+          ALT0810C37_EPHEMERAL: "1"
+          ALT0810C37_DEST_HOST: "127.0.0.1"
+          ALT0810C37_DEST_PORT: "5433"
+          ALT0810C37_DEST_DATABASE: "vigia_alt0810c13_restore_ci"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c37-postcommit-backup-crosscluster.test.ts
+      - name: "ALT-08.10C.32 rota versionada real, ativacao e rollback PG16"
+        env:
+          ALT0810C32_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C32_Only_Disposable_Http_Session_2026"
+        run: node --import tsx --test scripts/tests/alt0810c32-versioned-http-pg.test.ts
+      - name: "ALT-08.10C.31 rota Next real HTTP com transacao autorizada e FORCE RLS"
+        env:
+          ALT0810C31_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C31_Only_Disposable_Http_Session_2026"
+        run: node --import tsx --test scripts/tests/alt0810c31-real-next-pg-rls.test.ts
+      - name: "ALT-08.10C.30 transacao unica autenticada, contrato e FORCE RLS PG16"
+        env:
+          ALT0810C30_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C30_Only_Disposable_Session_2026_Strong_Key"
+        run: node --import tsx --test scripts/tests/alt0810c30-pg-transactions.test.ts
+      - name: "ALT-08.10C.29 rota de negocio real: sessao, membership, contrato e RLS PG16"
+        env:
+          ALT0810C29_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+          SESSION_SECRET: "ALT0810C29_Disposable_Signed_Cookie_2026_Only"
+        run: node --import tsx --test scripts/tests/alt0810c29-real-business-pg.test.ts
+      - name: "ALT-08.5 migração RLS reversível por tabela (PostgreSQL efêmero)"
+        env:
+          ALT085_EPHEMERAL_RLS: "1"
+        run: node --import tsx --test scripts/tests/alt085-operational-wave1-rls.test.ts
+
+  dryrun-isolated:
+    name: ALT-08.2 dry-run isolado
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Três execuções dry-run com PGlite descartável
+        run: node --import tsx --test scripts/tests/alt082-scheduler-dryrun.test.ts
+
+  systemd-scheduler-ephemeral:
+    name: ALT-08.2 systemd real no runner descartável
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ""
+      DEMO_MODE: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verificar timer systemd real com três disparos automáticos
+        run: bash scripts/tests/alt082-systemd-ci.sh
+
+  authenticated-http-ephemeral:
+    name: ALT-08.3 HTTP autenticado (PGlite descartável)
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ""
+      DEMO_MODE: "0"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: "Autenticação HTTP real: owner, analyst, clientes A/B e proteção de PII"
+        run: bash scripts/tests/alt083-http-ci.sh

@@ -1,12 +1,33 @@
 # VIGIAPLUS — TODO mestre de produto, segurança e operação
 
-**Atualizado:** 2026-11-10 · **Repositório:** `OARANHA/vigiaplus` · **Dono da decisão de merge/deploy:** proprietário  
+**Atualizado:** 2026-11-12 (reconciliação dos gates) · **Repositório:** `OARANHA/vigiaplus` · **Dono da decisão de merge/deploy:** proprietário  
 **Estado comercial:** **NÃO HOMOLOGADO para clientes externos**  
-**Base verificada antes deste TODO:** PR #24 DRAFT, commit `57b82de9497ade909b8f6e222df5d8f3af66081f`, empilhada sobre #23; `main` em `d2d9eafe7667b21a4badc14a3161501f5c72513d`.  
+**Histórico da criação deste TODO (não é o HEAD atual):** PR #24 DRAFT, commit `57b82de9497ade909b8f6e222df5d8f3af66081f`, empilhada sobre #23; `main` em `d2d9eafe7667b21a4badc14a3161501f5c72513d`.  
 **Ambiente de prévia:** `D:\VIGIAPLUS`, porta **3199**. Porta **3100 encerrada** (antigo `D:\CRISE_APP`).  
 **Auditoria de origem:** 2026-11-10, proprietário + cliente + notificações + segurança. Este documento é o backlog executável dessa auditoria.
 
 > **Regra operacional:** nenhuma tarefa pode ser marcada `[x]` somente porque existe código, tela, PR ou CI de outro SHA. Fechar apenas após evidência do critério de aceite. Não executar merge, deploy, migrações de banco remoto, cobrança real nem exclusão de dados sem autorização explícita do proprietário.
+
+## Checkpoint consolidado — 2026-11-12
+
+**PR corrente:** [#36](https://github.com/OARANHA/vigiaplus/pull/36) DRAFT, branch `feat/todo-alt08-notify-supervisor-20261111`, base encadeada ALT-07. **SHA CERTIFICADO ANTES desta atualização de documentação:** `9ec57ea09252f21e439c0d9731a32857c52c1707`. CI [43229064782](https://github.com/OARANHA/vigiaplus/actions/runs/43229064782) GREEN 5/5 e homologação manual Neon [43230539688](https://github.com/OARANHA/vigiaplus/actions/runs/43230539688) GREEN; steps ALT-08.7, ALT-08.8, ALT-08.9 realmente executados. **NÃO atribuir esses runs aos commits novos deste lote.**
+
+- **Validação técnica confirmada:** cookies HMAC no harness HTTP Node, sessão revogável, membership/entitlement sintéticos no mesmo staging, RLS WebSocket A/B e rollback completo 0/0/0.
+- **Não homologado:** autenticação da aplicação Next.js operacional no mesmo banco, schema integral, sessão/identidade dos papéis internos owner/analyst/worker/webhook, E2E completo dos clientes, QA visual, entrega de alertas real e autorização de produção.
+- **Próxima etapa:** ALT-08.10; antes disso, arquitetura, protocolo e agentes em `AGENTS.md`, `docs/architecture/README.md`, `docs/engineering/CHANGE_PROTOCOL.md`, ADR-0001. Documentação viva exige revisão em cada alteração; não afirmar sincronização automática ainda.
+- **Gate comercial:** GO-01 a GO-07 **abertos**; produção NO-GO. PR #36 DRAFT, sem merge/deploy.
+
+### Estado dos gates e natureza da prova
+
+| Gate | Estado da prova | Status da implantação |
+|---|---|---|
+| ALT-08.3/08.4 | CI Neon/PGlite e HTTP experimental GREEN no SHA certificado | não operacional |
+| ALT-08.5/08.6 | Contratos de RLS e matriz de papéis, testes descartáveis | não operacional |
+| ALT-08.7 | Neon WS staging + rollback sintético GREEN | produção NO-GO |
+| ALT-08.8 | memberships/entitlements + quatro tabelas sintéticas no mesmo staging GREEN | produção NO-GO |
+| ALT-08.9 | HTTP Node real, cookie assinado/revogação e staging Neon em schema sintético GREEN | rota Next operacional pendente |
+| ALT-08.10 | **a implementar**: rota Next real, usuários, planos e papéis de serviço no mesmo staging | pendente |
+
 
 ## Legenda e rotina de acompanhamento
 
@@ -73,6 +94,10 @@
 - [ ] **ALT-07 — Fuso horário e regras de crise.** Silêncio com timezone por tenant, rate de alertas, severidade e SLA de reação; só considerar fatura `open` vencida pela data civil correta. Aceite: testes em `America/Sao_Paulo`, virada de dia e quiet hours atravessando meia-noite.
   - [ ] PR #35 DRAFT: timezone IANA `America/Sao_Paulo` por tenant, UI/API owner auditadas, faturas pelo dia civil, silêncio diferido até a próxima janela (inclusive DST), exceção crítica configurável, SLA como previsão e priorização. Cota do transporte **por tentativa**, inclusive retries, ledger aditivo `notification_dispatch_attempts`, claim atômico por item e limite de lote, com testes PGlite de dois tenants e concorrência. Regras com silêncio integral/horários inválidos não podem ser cadastradas, legado fica retido sem derrubar worker. **Não marcar concluído até CI no HEAD exato e homologação de execução programada/Neon descartável.** Ver `docs/vigiaplus/alertas-timezone-sla.md`.
 - [ ] **ALT-08 — Worker agendado e observável.** Integrar scheduler de envio, health e métricas de atraso; permitir execução de teste segura e limitada ao owner. Aceite: execução periódica registrada, falhas visíveis, sem processo dependente de terminal aberto.
+  - [ ] Candidata PR #36 DRAFT: supervisor opt-in, lock local, timeout, checkpoint JSON sanitizado, ledger `notification_worker_runs`, endpoint owner agregado, painel de saúde/fila e testes PGlite. **Ainda não atende aceite:** falta CI no HEAD exato, execução programada comprovada sem terminal, teste com dois workers e PostgreSQL/Neon descartável, RLS e E2E autenticado; sem envio real/deploy. Ver `docs/vigiaplus/alertas-scheduler-observability.md`.
+  - [ ] **ALT-08.1 — Resiliência:** testes PGlite acrescentados em `tests/todo-alt081-resilience-db.test.ts`: concorrência de 2 workers no mesmo DB, lease expirado/fencing do worker antigo, retry/backoff até dead-letter e ledger de tentativas. **Suíte CI PostgreSQL 16 com pools e subprocessos Node/SIGKILL já GREEN no SHA `ad75e3466ca9`; multi-host ainda não homologado**; testes não provam exactly-once no provedor nem a segurança de lock local órfão.
+  - [ ] **ALT-08.2 — Scheduler autônomo seguro:** candidato com `VIGIA_NOTIFY_DRY_RUN=1` (sem fila/transporte), ledger separado `notify_dry_run`, API/UI owner diferenciando simulado de real, scripts Windows Task Scheduler e templates systemd não instalados, teste de três passadas em PGlite (job `dryrun-isolated`) com restart independente e recuperação conservadora de lock órfão apenas em dry-run; locks recentes/ativos permanecem bloqueados e entrega real não autorrecupera. **Timer systemd transitório no GitHub CI GREEN 4/4 no SHA `c8b42cb041c4`; Windows e reboot de host-alvo ainda pendentes.** Ainda faltam host-alvo, reboot real e QA owner. Sem ativar mensagens reais.
+  - [ ] **ALT-08.3 — Homologação operacional e segurança:** iniciado com funções fail-closed de saúde do worker (nunca saudável se relógio futuro, execução ausente/atrasada ou dry-run), allowlist dos contadores da API e testes de owner/analyst/cliente em `tests/todo-alt083-operations-security.test.ts`. **CI 5/5 GREEN no SHA `3f7005312f35` (run `43153762544`) para adaptador Neon WS isolado. Próxima etapa: teste E2E remoto Neon WS `scripts/tests/alt083-neon-ws-e2e.test.ts` e workflow manual `.github/workflows/alt083-neon-e2e.yml`, ambos com gate fail-closed: CI real, URL Neon de banco CI exclusivo `vigia_alt083_ci_*`, sem tabelas pré-existentes, role sem BYPASSRLS/SUPERUSER, RLS A/B, rollback e limpeza. **Teste remoto NÃO EXECUTADO: requer URL/secret de banco Neon descartável criado separadamente.** CI principal no novo HEAD a verificar. Produto permanece `neon-http`, RLS operacional NO-GO, reboot de host pendente**. Não houve instalação no host nem envio.
 - [ ] **ALT-09 — Telas de alertas.** Configurar regra, destinatários, verificação, último disparo, histórico, falhas, reconhecimento e responsável no owner e no portal do cliente (conforme papel). Aceite: usuário distingue “evento encontrado”, “notificação pendente”, “aceita pelo provedor” e “entregue”.
 
 **Gate Fase 2:** disparar evento real em ambiente de teste → 2 e-mails + 1 canal alternativo → comprovar 3 registros, idempotência, retry e pelo menos um estado de entrega real, sem misturar clientes.
@@ -137,3 +162,588 @@ Estado: PENDENTE | GREEN | RED
 ELUS Memory Admin (vigiaelus): checkpoint registrado?
 Merge/deploy: não autorizado
 ```
+
+### ALT-08.4 — integração gradual RLS por rota e tabela (piloto em CI)
+
+- [x] Piloto **desativado por padrão** em `/api/app/evidence`: rota preserva o caminho atual, opt-in apenas com `VIGIA_ALT084_EVIDENCE_MODE=ci-read-only` e guardas de CI/não-produção; no piloto não existe fallback para consultas sem RLS.
+- [x] SQL de leitura com projeção fixa e LIMIT parametrizado em `lib/tenant/rls-evidence.ts` e políticas SELECT-only, ENABLE/FORCE RLS em `projects` / `mentions`, com rollback explícito em `lib/tenant/rls-evidence-policies.ts`.
+- [x] Suíte unitária `tests/todo-alt084-rls-evidence.test.ts` e prova adversarial em schema real no PostgreSQL descartável `scripts/tests/alt084-evidence-rls.test.ts`, integrada a `postgres-disposable`.
+- [x] CI principal GREEN 5/5 no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707` (run 43229064782; **evidência histórica, não válida para novos commits**).
+- [ ] Homologar HTTP real do caminho opt-in usando banco Neon descartável, incluindo autenticação e feature gate.
+- [ ] Projetar políticas/grants e fluxo de rollback para as demais tabelas operacionais; homologar owner/analyst/worker e migração por etapa antes de ativar em produção.
+
+**Gate de implantação:** NO-GO. `getDb()` continua `neon-http`, sem policies no banco operacional e sem migração/merge/deploy. Prova de reboot físico do host ainda pendente.
+
+### ALT-08.4 — gate HTTP autenticado e Neon WebSocket em base descartável
+
+- [x] Adicionado `scripts/tests/alt084-http-neon-setup.ts` com preflight sem escrita em DB `vigia_alt083_ci_*` vazio, role sem BYPASSRLS, fixtures sintéticas `public.projects` + `public.mentions`, `ENABLE/FORCE RLS`, rollback de policies e cleanup que sinaliza falha.
+- [x] Adicionados `scripts/tests/alt084-http-fixture.ts` (sessões/vínculos/entitlements em PGlite temporário), `alt084-http-verify.ts` (HTTP real, clientes A/B, cookies assinados, spoofing, no-store) e `alt084-http-ci.sh` para orquestração isolada no GitHub Actions.
+- [x] Workflow manual `alt083-neon-e2e.yml` na branch da PR passa a executar também o HTTP experimental (arquivo já registrado na `main`, porém versão atualizada apenas na branch).
+- [x] Leitura `selectRlsEvidence` falha fechada se `FORCE RLS`, políticas SELECT exatas ou role sem bypass não forem comprovadas; testes unitários da barreira adicionados.
+- [ ] Confirmar CI normal GREEN no SHA atual.
+- [x] Workflow manual 43230539688 no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`: ALT084 HTTP Neon WS e limpeza verificados nos logs.
+- [ ] Reavaliar arquitetura de identidade/entitlements em banco comum antes de implantação operacional.
+
+**Produção segue NO-GO:** sem merge, sem deploy, sem alteração de policies/tabelas reais e sem troca do driver `getDb()`.
+
+### ALT-08.5 — preparação da migração RLS operacional (NÃO ativada)
+
+- [x] Inventário e matriz de superfícies `docs/vigiaplus/alt085-operational-rls-migration.md`, distinguindo tenant direto, relacionamento por projeto e tabelas globais/sensíveis.
+- [x] Catálogo **inerte** `lib/tenant/rls-operational-wave1.ts` com role CI somente leitura, `GRANT SELECT`, `ENABLE/FORCE RLS`, `CREATE POLICY`, `DROP POLICY`, `REVOKE SELECT` e reversão individual para `reputation_targets`, `incidents`, `notification_channels`, `invoices`.
+- [x] Prova adversarial integrada ao job PostgreSQL efêmero `scripts/tests/alt085-operational-wave1-rls.test.ts`: baseline, role sem bypass, tenants sintéticos A/B, ausência de escopo, SELECT só do tenant, UPDATE negado, sem vazamento de SET LOCAL, rollback e remoção de grants por tabela.
+- [ ] Confirmar CI GREEN no HEAD exato, especialmente o passo ALT-08.5 no runner PostgreSQL.
+- [ ] Revisar query/colunas PII e política específica de cada rota real; não liberar SELECT indiscriminado em dados sensíveis.
+- [ ] Planejar papéis separados para owner/analyst/worker/webhook e integração com auth+billing+entitlements em Neon no mesmo contexto de confiança.
+- [ ] Preparar rollback de staging que restaure **baseline real**, não aplique rollback CI em bases já protegidas, e ensaio completo antes de autorização de produção.
+
+**Gate final: NO-GO para RLS operacional/produção; nenhum merge/deploy e nenhuma tabela real foi alterada.**
+
+### ALT-08.6 — gate de homologação em pré-produção (sem ativação operacional)
+
+- [x] Matriz declarativa de papéis: clientes `client_admin`/`client_viewer` somente leitura; `owner`/`analyst`/`worker`/`webhook` explicitamente NO-GO em `lib/tenant/rls-preproduction-gate.ts`.
+- [x] Regressão fail-closed de superfície, tenant autenticado, sessão do cliente e URLs de banco proibidas: `tests/todo-alt086-preproduction-gate.test.ts`.
+- [x] Testes do contrato de pool pinado: BEGIN, SET LOCAL, COMMIT, ROLLBACK, release, falhas injetadas e tenant inválido em `tests/todo-alt086-transaction-contract.test.ts`.
+- [x] Protocolo detalhado de snapshot, preflight, rollout e rollback **por tabela** e homologação E2E real: `docs/vigiaplus/alt086-preproduction-rls-gate.md`.
+- [ ] Verificar CI completo no SHA exato, sem aprovar um SHA anterior.
+- [ ] Provisionar e identificar staging realmente isolado (somente após autorização); não usar Neon operacional nem outros projetos.
+- [ ] Executar migração reversível e restaurar policies/ACLs a partir de baseline capturado no staging real.
+- [ ] Homologar `owner`, `analyst`, serviços `worker`/`webhook`, escopos múltiplos e transação WebSocket com runtime de auth+billing+entitlements no mesmo domínio de dados.
+- [ ] Obter autorização explícita antes de deploy/merge/ativação de RLS operacional.
+
+**Produção: NO-GO. Contratos de CI NÃO equivalem a homologação em staging.**
+
+### ALT-08.7 — Staging Neon isolado real (integração WebSocket pendente)
+
+- [x] Provisionar branch Neon isolada `br-super-star-bbc317wq`, banco `vigia_alt086_staging_20261112` (0 tabelas/policies na criação), sem acessar bases de produção.
+- [x] Criar role dedicada `vigia_alt087_staging_reader` (`rolsuper=false`, `rolbypassrls=false`). O owner do banco tem BYPASSRLS e não pode certificar isolamento.
+- [x] Executar transação SQL real sob role restrita: `set_config('app.tenant_id', ..., true)` e reset confirmado em consulta independente.
+- [x] Guard + teste Neon WebSocket `scripts/tests/alt087-staging-ws-preflight.ts` com checagem do DB exato, role exata, commit/rollback/contexto isolado e recusas de produção.
+- [x] Conectar passo opcional ao workflow manual `alt083-neon-e2e.yml`; executa somente após configurar secret `VIGIA_ALT087_STAGING_URL`.
+- [x] Secrets dedicados reader/migrator configurados e testados sem exposição; workflow manual 43230539688 executou etapas ALT-08.7 com sucesso no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
+- [ ] Migrar schema operacional e autenticação no **mesmo staging**; verificar policies A/B, papéis, HTTP WebSocket E2E, reversão de cada tabela e restauração de grants/ACLs/policies.
+- [ ] Fazer aprovação de staging e autorização específica antes de qualquer efeito em produção.
+
+Status atualizado: **staging sintético, WebSocket e rollback 0/0/0 certificados no run 43230539688; migração de schema operacional preexistente não certificada.** Ver `docs/vigiaplus/alt087-isolated-staging.md`.
+
+### ALT-08.7B — ensaio de migração reversível no staging Neon dedicado
+
+- [x] Implementar `scripts/tests/alt087-staging-reversible-e2e.ts`: guards DB/role/host, schema sintético exclusivo, RLS real para A/B, grants de SELECT por coluna, leitura PII e escrita negadas, transações WebSocket 771→882→771, rollback de transação e remoção física de schema/policies/grants em finally.
+- [x] Adicionar passo opcional ao workflow manual `alt083-neon-e2e.yml` condicionado a credenciais exclusivas de reader `VIGIA_ALT087_STAGING_URL` e migrator `VIGIA_ALT087_STAGING_MIGRATOR_URL`; migrator ausente produz RED (não um GREEN enganoso).
+- [x] Documentar contratos, cleanup e separação total do staging operacional em `docs/vigiaplus/alt087-isolated-staging.md`.
+- [x] CI 5/5 concluído com sucesso no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707` (run 43229064782); novo HEAD exige novo CI.
+- [x] Dois secrets dedicados configurados; passos ALT-08.7 executados e GREEN no run 43230539688, SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
+- [ ] Certificar staging de verdade com schema operacional/memberships/entitlements/HTTP no mesmo banco: o ensaio sintético NÃO satisfaz esse gate.
+- [ ] Migrar cada tabela operacional em staging sob baseline completo de ACL/policies e rollback comprovado; nenhum deploy sem autorização.
+
+### ALT-08.7C — prova real de rollback RLS no staging (somente objetos sintéticos)
+
+- [x] Em banco Neon staging isolado, antes de DDL: schema `alt087_staging_e2e` inexistente, zero policies/tabelas.
+- [x] Migração real transacional: schema+tabela sintética, grants de SELECT por coluna, FORCE RLS e policy de tenant para reader sem BYPASSRLS.
+- [x] Testes SQL reais reader: sem tenant zero; tenant 771 somente A; tenant 882 somente B; sem escopo após transação zero; `private_payload` e `UPDATE` negados com SQLSTATE 42501.
+- [x] Rollback físico real transacional: policy, flags de RLS, grants, tabela e schema removidos; baseline 0/0/0 restaurado.
+- [x] Driver Node WS e workflow manual staging executados com sucesso no run 43230539688 e SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
+- [ ] Autenticação HTTP, memberships, entitlement e dados operacionais no mesmo staging; incluir owner/analyst/worker sob papéis operacionais separados.
+
+### ALT-08.8 — contratos operacionais sintéticos no mesmo Neon staging
+
+- [x] Revisão de `lib/db/schema.ts`: distinguir auth `users/memberships`, comercial `plans/subscriptions/tenant_features` e Wave 1 `reputation_targets/incidents/notification_channels/invoices`.
+- [x] Criar `scripts/tests/alt088-staging-operational-rls-e2e.ts`: ambiente CI protegido, URL/role staging exatas, onze tabelas sintéticas no namespace `alt088_operational_ci`, role reader mínima, validação de membership+entitlement A/B no mesmo banco e leitura RLS das quatro tabelas.
+- [x] Ensaiar rollback SQL por tabela em `finally` e exigir catálogo final 0/0/0.
+- [x] Adicionar etapa explícita ALT-08.8 ao workflow manual Neon staging atrás dos mesmos dois secrets.
+- [x] Documentar limites em `docs/vigiaplus/alt088-operational-staging-gate.md`.
+- [x] CI run 43229064782 GREEN 5/5 e etapa ALT-08.8 realmente executada e GREEN no workflow manual 43230539688, ambos SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
+- [ ] Homologar autenticação HTTP verdadeira + memberships e entitlements no próprio banco operacional de staging (não fixture/consulta privilegiada).
+- [ ] Positivar papéis internos owner/analyst/worker/webhook com roles e privilégios separados, e proteger ambientes com roles herdadas/PUBLIC.
+- [ ] Validar schema integral, múltiplos vínculos, assinaturas vencidas/revogadas, rollback preservando ACL/policies preexistentes e aprovação explícita antes de qualquer deploy.
+
+Produção **NO-GO**, PR #36 DRAFT, nenhum merge ou deploy.
+
+### ALT-08.9 — autenticação HTTP assinada no mesmo Neon staging (harness)
+
+- [x] Inspecionar `lib/session.ts`, `lib/session-auth.ts`, `lib/tenant/context.ts`, `rls-runtime.ts` e rota Next `/api/app/evidence`; autenticação produtiva ainda usa `getDb()` (PGlite/neon-http), não a sessão WebSocket do staging.
+- [x] Criar `scripts/tests/alt089-staging-http-auth-e2e.ts`: servidor HTTP Node efêmero + cookies `sr_session` reais assinados por `signSession/verifySession`, leitura do mesmo banco Neon por role migradora, `withTenantRlsTransaction` com role sem BYPASS, políticas e escopo A/B, revogação de sessão e membership, cancelamento de plano e desabilitação de feature.
+- [x] Operar exclusivamente em namespace `alt089_http_ci` com sete tabelas sintéticas, migração e rollback integral reversível `0/0/0`, nunca em `public`.
+- [x] Exigir URL/host/role/banco exatos, CI manual, flags específicas e dois secrets de staging; adicionar passo no workflow `alt083-neon-e2e.yml`.
+- [x] Documentar restrições em `docs/vigiaplus/alt089-staging-http-auth-gate.md`.
+- [x] CI do SHA `9ec57ea09252f21e439c0d9731a32857c52c1707` GREEN 5/5 (run 43229064782); não reutilizar para SHA posterior.
+- [x] Workflow 43230539688 executou passo ALT-08.9 (GREEN): cookie assinado + session revocation + memberships + entitlements + RLS A/B e rollback `0/0/0`, no SHA `9ec57ea09252f21e439c0d9731a32857c52c1707`.
+- [ ] Homologar rota Next real com `resolveTenantContext`/`authenticateSession`/entitlements apontando para **mesmo banco**, schema integral e papéis internos positivos com identidades separadas.
+- [ ] Certificar múltiplos memberships, revogação simultânea, expiração de planos e políticas reais com snapshot/rollback preservando ACLs preexistentes.
+
+O harness não substitui a autenticação Next operacional. **Produção NO-GO; sem merge/deploy.**
+
+### ALT-08.10 — Next.js operacional, memberships e papéis de serviço (em andamento)
+
+- [x] Auditar `lib/auth.ts`, `lib/session-auth.ts`, `lib/db/index.ts`, `lib/tenant/context.ts`, `entitlements.ts` e `app/api/app/evidence/route.ts`: Next autentica cookie no banco `getDb()`; a leitura Neon WebSocket em staging permanece apenas no piloto/CI, ainda fora da transação de auth operacional.
+- [x] ALT-08.10A: criar `lib/tenant/authorized-membership.ts` e integrar na **rota real** de `resolveTenantContext()`: nunca escolher primeira membership arbitrária; múltiplos vínculos exigem seleção explícita conferida contra memberships; negar duplicidade/role estranha/cliente sem vínculo; preservar auditoria de spoof para usuário com apenas um vínculo.
+- [x] Testes adversariais `tests/todo-alt0810-authorized-membership.test.ts`: zero/um/múltiplos vínculos, seleção legítima, spoof, duplicidade, role interna e IDs inseguros.
+- [ ] Confirmar CI GREEN no **SHA exato** após commits ALT-08.10; não reutilizar run 43232263465 do SHA histórico `1f8c6af...`.
+- [ ] Executar **servidor Next real**, com autenticação, membership e entitlement no **mesmo banco operacional de staging**: atualmente `getDb()` ainda usa PGlite/neon-http e esquema local/operacional diferente da fixture Neon do ALT-08.9.
+- [ ] Implementar e certificar seleção de tenant multi-membership na UI/contrato HTTP; testar todas as rotas e exports.
+- [ ] Testar owner/analyst/worker/webhook positivamente com identidades e roles PostgreSQL distintas; sem usar role DB owner para leitura RLS.
+- [ ] Snapshot/rollback restaurando ACL/policies preexistentes do schema operacional completo, dois tenants reais de teste, sessão revogada e assinatura vencida.
+- [ ] Homologar em staging e obter aprovação explícita antes de merge/deploy ou política RLS operacional.
+
+Referência: `docs/vigiaplus/alt0810-next-operational-auth-gate.md`. **Status: implementação parcial; produção NO-GO.**
+
+### ALT-08.10B — rota Next real com auth/entitlement no mesmo staging (candidato)
+
+- [x] Criar `lib/tenant/alt0810-next-staging.ts`: piloto CI somente opt-in, autenticação pelo cookie real do VIGIAPLUS, leitura `users.session_version/must_change_password`, membership, tenant, assinaturas e feature no mesmo banco Neon WS, reader sem BYPASSRLS e consulta RLS transacional à fixture `incidents`.
+- [x] Conectar piloto à **rota Next real** `app/api/app/evidence/route.ts`, sem alterar fluxo padrão nem usar fallback quando o piloto é solicitado de forma incorreta.
+- [x] Criar `scripts/tests/alt0810-next-http-staging-e2e.ts` com **servidor Next real** e HTTP cookies A/B, spoof, multi-membership, owner/analyst negados, senha temporária, revogação de sessão e membership, assinatura cancelada e override negativo, mais reversão integral 0/0/0 do schema sintético reservado `alt0810_next_ci`.
+- [x] Criar `tests/todo-alt0810-next-staging-gate.test.ts` para ambiente fail-closed; anexar passo manual isolado ao workflow Neon.
+- [x] CI principal do SHA `ef0730e086e6e5e8107f873bd151be9dd6b45b76` aprovado 5/5 ([run 43237972979](https://github.com/OARANHA/vigiaplus/actions/runs/43237972979)); resultado histórico, não reutilizar em novos commits.
+- [x] Workflow manual [43239412881](https://github.com/OARANHA/vigiaplus/actions/runs/43239412881) no mesmo SHA: ALT-08.10 Next real HTTP, auth/entitlements/RLS A/B e revogações VERIFIED; rollback sintético 0/0/0 VERIFIED.
+- [ ] Substituir fixture por schema operacional completo em staging, com snapshot/restore de ACLs/policies preexistentes, e integrar `getCurrentUser/resolveTenantContext/requireFeature` em unidade de confiança no banco real (não apenas piloto).
+- [ ] Homologar papéis internos positivos owner/analyst/worker/webhook com credenciais e roles SQL distintas. Cobrir múltiplos vínculos, expiração, carência e cobrança integral.
+- [ ] Obter autorização do proprietário antes de migração de produção/merge/deploy.
+
+O piloto usa **rota Next real + banco staging isolado**, mas a autorização/DDL ainda operam sobre **schema sintético**. **Produção NO-GO.**
+
+### ALT-08.10C — staging com schema integral: preflight e homologação pendentes
+
+- [x] Inspeção **somente leitura** do catálogo Neon staging `vigia_alt086_staging_20261112`: schema `public` possui **zero tabelas**, logo não é um banco operacional migrado.
+- [x] ALT-08.10B certificado no SHA histórico `ef0730e086e6e5e8107f873bd151be9dd6b45b76`: CI 5/5 e workflow manual 43239412881 GREEN (passo Next realmente executado).
+- [ ] Elaborar migração controlada do schema operacional completo neste staging isolado; snapshot real de ACL/policies/constraints e baseline antes de escrita.
+- [ ] Conectar os handlers Next operacionais ao mesmo banco de identidade/planos/entitlements com roles PostgreSQL mínimas e regras completas; pilotar sem fallback.
+- [ ] Testar owner/analyst/worker/webhook positivamente por credenciais/roles separadas, dois tenants, vínculo múltiplo, expiração/grace, revogação e exports.
+- [ ] Homologar rollback para estado anterior **sem destruir objetos preexistentes**, CI/WS/HTTP no mesmo SHA e autorização explícita antes de produção.
+
+**Status:** ALT-08.10B GREEN em staging sintético; ALT-08.10C operacional **PENDENTE**. Nenhum merge/deploy.
+
+
+### ALT-08.10C.1 — preflight read-only de schema Neon staging (sem bootstrap)
+
+- [x] Criar contrato `lib/db/staging-schema-preflight.ts` com DB/role exatos, reader sem SUPERUSER/BYPASSRLS, falha fechada para CI/produção/URL inválida e estados `EMPTY_STAGING` / `MIGRATION_REVIEW_REQUIRED` (nenhum certifica readiness operacional).
+- [x] Criar `scripts/tests/alt0810c-neon-readonly-preflight.ts` com transação `BEGIN READ ONLY` no Neon reader, inventário de tabelas, políticas, índices, constraints, grants e ledger, rollback sem DDL/bootstrap.
+- [x] Adicionar testes `tests/todo-alt0810c-staging-preflight.test.ts` e etapa manual no workflow Neon com secret reader.
+- [ ] Confirmar CI no SHA exato e execução **real** do step manual ALT-08.10C sem falhas.
+- [ ] Gerar manifesto completo e versionado do DDL real (não apenas Drizzle schema), separar criação/migração de `getDb()` e do `migrate:check` antes de usar o banco de staging para runtime operacional.
+- [ ] Provisionar schema operacional no staging isolado com snapshot e rollback que preservem grants e policies originais; testar papéis e rotas Next sem adapters sintéticos.
+- [ ] Bloqueio de produção e merge permanece em vigor.
+
+Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstrap; **não usar como preflight read-only remoto**.
+
+
+### ALT-08.10C.2 — manifesto SQL e `migrate:check` sem bootstrap
+
+- [x] CI anterior `4c877ac6bdf84bb9de0049071e36ff58a8b6b372` GREEN 5/5 (43243469407) e manual staging GREEN (43244800898); etapa READ ONLY executada no mesmo SHA, banco staging vazio `publicTables=0`, reader sem BYPASSRLS.
+- [x] `migrations/manifest.json`: quatro migrações SQL legadas inventariadas por Git blob SHA-1; flag explícita de schema operacional **não completo**.
+- [x] `lib/db/migration-manifest.ts` + `scripts/schema-manifest-check.ts`: conferência de hashes Git e SHA-256 local sem acessar banco; testes de adulteração, arquivos extras e catálogo incorreto.
+- [x] CI com passo offline `ALT-08.10C manifesto offline de migrações (sem banco)`.
+- [x] `scripts/migrate.ts --check` separado do `getDb()`: usa conexão PostgreSQL direta com transação `BEGIN READ ONLY`, consulta ledger e `ROLLBACK`; não executa `ensureSchema()`/seeds. Se `DATABASE_URL` ausente, falha fechado.
+- [ ] Confirmar CI no SHA novo (e logs do passo offline) antes de GREEN.
+- [ ] Migrar o **bootstrap operacional completo** (`lib/db/index.ts` com dezenas de CREATE/ALTER e seeds) para migrações versionadas auditadas, sem alterar comportamento produtivo sem aceite.
+- [ ] Staging: snapshot ACL/policies, aplicação explícita com role migradora, rollback por objeto, auth/entitlements completos, autorização positiva dos papéis internos e testes de duas organizações em rotas Next.
+- [ ] Aprovação explícita para merge/deploy ou mudanças na base operacional.
+
+**Não confundir:** manifesto atual cobre só os quatro arquivos `migrations/*.sql`; `npm run migrate` legado continua usando `getDb()` e **não está autorizado no staging operacional**. ALT-08.10C ainda PENDENTE.
+
+
+### ALT-08.10C.3 — extração integral do bootstrap legado (sem ativação)
+
+- [x] CI anterior ALT-08.10C.2: `40a256a3791996d416aa1ea91d1de4a9e0adc84f` GREEN 5/5 ([run 43247137019](https://github.com/OARANHA/vigiaplus/actions/runs/43247137019)).
+- [x] Inventariar `lib/db/index.ts`: `const DDL` contém **186 comandos estáticos** em ordem; há uma atualização de dados legada, não somente CREATE/ALTER.
+- [x] Extrair comandos para `schema/operational-bootstrap/00001_legacy_snapshot.sql` (fora do runner de migrações), com manifesto de hash Git em `schema/operational-bootstrap/manifest.json`; **não habilitar em produção**.
+- [x] Criar extrator/validador AST TypeScript `lib/db/bootstrap-snapshot.ts` e CLI `scripts/bootstrap-snapshot-check.ts`, impedindo divergência silenciosa do snapshot, SQL dinâmico e alegações falsas de deploy.
+- [x] Testes unitários de integridade e ensaio com os 186 DDL em PGlite **in-memory** dentro de transação, seguido de `ROLLBACK` e catálogo 0 tabelas.
+- [x] Adicionar etapas de validação e ensaio ao CI; não configurar conexão remota nem import de `getDb()` no ensaio.
+- [ ] Certificar CI do **HEAD exato** no workflow, incluindo TypeScript, manifesto, snapshot, teste PGlite e 5/5 jobs.
+- [ ] Converter o snapshot em migrações operacionais com dependências, seeding seguro, ACLs, RLS e rollback real de estado preexistente; **não executar** o snapshot diretamente no Neon.
+- [ ] Migrar schema real no staging isolado somente após procedimento de snapshot, autorização e ensaio completo com dois tenants; homologar papéis internos positivos.
+- [ ] Release/merge/deploy condicionado à autorização do proprietário.
+
+**Estado:** snapshot técnico versionado e ensaio descartável em implementação/validação, ALT-08.10C ainda aberta, produção NO-GO.
+
+
+### ALT-08.10C.4 — separação do bootstrap em runtime (candidato)
+
+- [x] CI ALT-08.10C.3 no SHA `6ce456c6b0480d2131654725bc8a2feb93c3d244` GREEN 5/5 ([run 43252707174](https://github.com/OARANHA/vigiaplus/actions/runs/43252707174)). Snapshot AST e ensaio dos 186 DDL com rollback em PGlite confirmados.
+- [x] Adicionar `lib/db/bootstrap-mode.ts` com modo opt-in `preprovisioned-staging-ci`, somente CI/GitHub Actions, Neon staging exato, reader sem privilégio de DDL, sem modo DEMO/produção e confirmação explícita.
+- [x] Integrar `resolveDbBootstrapMode` em `lib/db/index.ts`: modo CI pré-provisionado não executa `ensureSchema`, seedDemo/seedUsers/seedVigiaPlus, catálogo comercial ou índices; apenas `to_regclass` dos contratos fundamentais, retornando conexão sem escrita ou falhando fechado.
+- [x] Preservar comportamento `legacy-bootstrap` por padrão em instalações existentes (sem alteração global de produção).
+- [x] Testes adversariais em `tests/todo-alt0810c-bootstrap-mode.test.ts`.
+- [ ] Verificar CI GREEN no SHA exato atual; testes de integração comprovando ausência de DDL no novo modo ainda não executados no Neon.
+- [x] Acrescentar ensaio descartável PGlite de rollback com baseline preexistente (tabela, registro, role, ACL, policy FORCE RLS), cobrindo aplicação integral e interrupção parcial. Teste anexado ao CI; resultado do SHA novo ainda pendente.
+- [ ] Manifesto operacional completo com dependências/constraints e autenticação separada por role PostgreSQL, snapshot/rollback preservando baseline e integração das rotas.
+- [ ] Remover bootstrap de produção somente por migração planejada, ADR, compatibilidade, homologação e aprovação explícita.
+
+**Status:** implementação de guardas feita, CI do novo HEAD pendente, produção NO-GO. Nenhum merge/deploy ou escrita Neon operacional.
+
+### ALT-08.10C.5 — inventário de dependências do bootstrap (candidato)
+
+- [x] Criado inventário offline em `lib/db/bootstrap-dependencies.ts` com 186 comandos classificados por CREATE TABLE / ALTER TABLE / CREATE INDEX / UPDATE, FKs explícitas, hash e referência à tabela já existente; `readyForMigration=false` obrigatório.
+- [x] Testes adversariais em `tests/todo-alt0810c-bootstrap-dependencies.test.ts` e etapa CI, incluindo suporte a índices GIN.
+- [x] Documentado contrato lógico de roles distintas migrador/runtime/reader/worker (não provisionadas).
+- [ ] Comprovar CI GREEN nos cinco jobs para o SHA exato.
+- [ ] Gerar e certificar snapshot de ACL/policies/ownership/constraints, plano reversível por objeto e teste PostgreSQL 16 descartável com falha pós-commit.
+- [ ] E2E real por credenciais e papéis distintos em staging autorizado antes de qualquer operação de migração.
+
+**Não é migração executável:** snapshot e inventário são inertes; PR DRAFT, sem merge/deploy/banco operacional, produção NO-GO.
+
+### ALT-08.10C.6 — snapshot ACL/policies/ownership e rollback PostgreSQL (candidato)
+
+- [x] Módulo `lib/db/disposable-catalog-snapshot.ts`: snapshot determinístico e limitado ao namespace de ensaio de schema, relações, owners, grants por tabela/coluna/schema, RLS, policies, constraints, índices, roles e memberships.
+- [x] Script `scripts/tests/alt0810c6-postgres-catalog-rollback.test.ts`: fixture pré-existente, falha SQL em transação, rollback e comparação estrutural/dados sob PostgreSQL 16 efêmero; recusa DB remoto e colisões.
+- [x] Etapa adicionada ao job `postgres-disposable` de `.github/workflows/ci.yml`.
+- [ ] Verificar CI GREEN no SHA exato incluindo esta etapa; sem inferir sucesso a partir do código.
+- [ ] Cobrir rollback após COMMIT, cópia/restauração de dados reais e ACL/owners preexistentes do schema operacional completo em ambiente descartável antes de preparar migrador autorizado de staging.
+- [ ] Homologar roles distintas migrator/runtime/reader e papéis internos na mesma base de staging com aprovação explícita.
+
+**Status:** apenas ensaio descartável e snapshot de catálogo; PR DRAFT; sem merge/deploy/migração operacional; produção NO-GO.
+
+### ALT-08.10C.7 — compensação pós-COMMIT (candidato)
+
+- [x] Script `scripts/tests/alt0810c7-postcommit-restore.test.ts` com fixture descartável: três roles NOLOGIN, tenant A/B, ownership, ACL de coluna, políticas FORCE RLS, constraints, índice e dados.
+- [x] Teste executa COMMIT real após mudanças sintéticas e uma segunda transação de compensação com COMMIT, comparando snapshot de catálogo e linhas preexistentes.
+- [x] Negativas de privilégio do reader e isolamento de atualização do runtime incluídas.
+- [x] Etapa `ALT-08.10C.7` adicionada ao workflow `postgres-disposable`.
+- [ ] Confirmar CI GREEN no SHA exato, inclusive novo teste e cinco jobs do workflow.
+- [ ] Homologar plano versionado de migração/rollback com backups físicos, drift, crash e dependências do schema operacional integral.
+- [ ] Provisionar roles migradora/runtime/reader em staging isolado **somente após autorização específica**, com restauração verificável e E2E Next positivo e negativo.
+
+**Estado:** proposta codificada para CI efêmero, sem alteração Neon/produção; PR DRAFT, produção NO-GO.
+
+### ALT-08.10C.8 — bootstrap integral PostgreSQL 16 em namespace isolado
+
+- [x] Criado ensaio `scripts/tests/alt0810c8-postgres-full-bootstrap.test.ts` com os 186 comandos SQL estáticos no PostgreSQL 16 descartável, dentro de `BEGIN` + `SET LOCAL search_path`, seguido de `ROLLBACK` e comparação de dados/ACL/roles/policies/índices/constraints preexistentes.
+- [x] Valida contagem 62 tabelas operacionais, sete tabelas centrais de identidade/billing e RLS ainda ausente no bootstrap legado; nunca declara readiness produtiva.
+- [x] Etapa ALT-08.10C.8 adicionada ao job PostgreSQL 16 CI.
+- [ ] Confirmar 5/5 jobs GREEN no HEAD deste incremento e investigar logs se RED.
+- [ ] Validar contratos operacionais completos com migrações e seeds revisados, banco com schema existente, constraints RLS/entitlements, roles separadas e autorização explícita para qualquer staging real.
+- [ ] Produção segue NO-GO. PR DRAFT, sem merge/deploy e sem escrita no Neon.
+
+### ALT-08.10C.9 — prontidão operacional é sempre NO-GO sem E2E
+
+- [x] Criado `lib/db/operational-readiness.ts` (relatório puro e fail-closed do catálogo descartável).
+- [x] Adicionada verificação no ensaio PostgreSQL16 da ALT-08.10C.8, rejeitando RLS/ledger/policies ausentes mesmo após 186 comandos SQL aplicados.
+- [x] Criados testes adversariais em `tests/todo-alt0810c-operational-readiness.test.ts`, executados pelo `tests/*.test.ts` no CI.
+- [ ] Confirmar CI completo GREEN do SHA exato deste incremento.
+- [ ] Próximo: preparar migrações operacionais versionadas, role migradora mínima, políticas e grants por tenant, homologação HTTP com revogação e rollback físico em banco descartável.
+- [ ] Só depois avaliar staging com autorização expressa; produção NO-GO, PR DRAFT, sem merge/deploy.
+
+### ALT-08.10C.10 — roles/ACL/RLS versionadas em PostgreSQL descartável
+
+- [x] Criado plano proposto e inerte `lib/db/alt0810c10-roles-wave.ts` com versão fixa, `UP_SQL`/`DOWN_SQL`, `operationalMigrationAuthorized=false`, schema e roles isoladas.
+- [x] Teste `scripts/tests/alt0810c10-postgres-roles-wave.test.ts`: migrador, runtime A/B e reader, tenant isolation, bloqueio de PII/INSERT/DDL, aplicação COMMIT e compensação separada após COMMIT com baseline igual.
+- [x] Integrado ao job PostgreSQL16 descartável do CI e documentado risco/limites.
+- [ ] Comprovar CI GREEN no SHA exato antes de avançar.
+- [ ] Planejar migrations reais para todo schema operacional com dependências, ownership e rollback físico. Somente staging aprovado explicitamente; sem alterações Neon nesta etapa.
+- [ ] Manter PR DRAFT, produção NO-GO, sem merge/deploy.
+
+### ALT-08.10C.11 — evidência offline de migrações, dependências e backup
+
+- [x] Criado `lib/db/operational-migration-evidence.ts` com plano determinístico de 186 passos, hashes SHA-256, predecessores, classificação DDL/DML, necessidade de backup e flags permanentes de não autorização.
+- [x] Criados testes de drift/fail-closed em `tests/todo-alt0810c-operational-evidence.test.ts`.
+- [x] Criado `scripts/operational-evidence-check.ts` como relatório somente offline, integrado ao job build de CI, sem DB nem migração.
+- [x] Documentada matriz futura de backup lógico e PITR, diff de permissões/objetos, restore em banco novo, DDL/compensação e aprovação humana.
+- [ ] Certificar CI GREEN 5/5 no SHA exato deste incremento; corrigir eventuais falhas.
+- [ ] Homologar pg_dump, restore independente, drift, UP/DOWN e política real de roles sobre banco isolado somente com escopo aprovado.
+- [ ] PR DRAFT, sem merge/deploy/DDL no Neon, produção NO-GO.
+
+### ALT-08.10C.12 — backup custom e restore PostgreSQL16 entre bancos descartáveis
+
+- [x] Criado `scripts/tests/alt0810c12-pg-dump-restore.test.ts` com `pg_dump` real (formato custom), `pg_restore --single-transaction --exit-on-error` em segundo database efêmero e SHA-256 do arquivo; bloqueio de URL remota e colisões prévias.
+- [x] Testa fixture de dados tenants A/B, owner, schema ACL, grants por coluna, RLS/FORCE, policy, índice, constraints e igualdade integral de baseline catalogado/dados após restore.
+- [x] Integrado ao job PostgreSQL16 descartável do CI; sem `migrate.ts`, Neon, staging ou produção.
+- [ ] Verificar CI GREEN 5/5 no SHA exato **e confirmar passo ALT-08.10C.12** em execução real.
+- [ ] Ampliar teste com restore entre instâncias, drift e backup completo do schema operacional somente em infraestrutura aprovada, com PITR comprovado separadamente.
+- [ ] PR #36 DRAFT; produção NO-GO, sem merge/deploy.
+
+### ALT-08.10C.13 — restore entre dois clusters PostgreSQL16 descartáveis
+
+- [x] Criado `scripts/tests/alt0810c13-pg-cross-instance-restore.test.ts`: dois clusters independentes verificados por system_identifier, backup lógico custom com `pg_dump`, restore com `pg_restore --single-transaction`, baseline de catálogo/dados, owner, ACL por coluna, policy RLS, restrições e índice.
+- [x] Testes adversariais de divergência após restore: desligar RLS e alterar dado no destino deve modificar snapshots e ser detectado; restauração de fixture deve recompor baseline.
+- [x] CI `postgres-disposable` ganhou segundo serviço PostgreSQL16 `postgres_restore` (porta 5433) e etapa ALT-08.10C.13, sem credenciais Neon.
+- [ ] Confirmar CI GREEN 5/5 no SHA exato, inclusive o passo cross-cluster; corrigir logs se necessário.
+- [ ] Elaborar pré-homologação de schema operacional integral, catálogo/Drizzle, roles, backup/PITR do provedor e matriz E2E de auth; staging somente com autorização humana específica.
+- [ ] PR #36 DRAFT, sem merge/deploy/DDL no Neon, produção NO-GO.
+
+### ALT-08.10C.14 — comparação estática ORM versus DDL e RLS
+
+- [x] `lib/db/operational-compatibility-audit.ts`: AST Drizzle `pgTable`, inventário de bootstrap e cobertura RLS das migrations legadas com hash e flags NO-GO.
+- [x] Testes adversariais, relatório offline e etapa CI adicionados sem conexão de banco.
+- [ ] Confirmar CI GREEN 5/5 no HEAD exato; inspecionar e corrigir falhas.
+- [ ] Comparação real de colunas, tipos, defaults e constraints em PostgreSQL descartável; revisão do comportamento de políticas com contexto de tenant ausente.
+- [ ] PR DRAFT, sem merge/deploy/migração, produção NO-GO.
+
+### ALT-08.10C.15 — diff Drizzle x catálogo PG16 descartável
+
+- [x] Criado comparador puro de colunas por tabela: faltas, extras, tipos e nulabilidade, com relatório determinístico e status NO-GO.
+- [x] Integrada inspeção `pg_attribute` no teste do bootstrap completo PostgreSQL16 para comparar com `getTableColumns` do Drizzle, antes de ROLLBACK.
+- [x] Criados testes adversariais para gaps e duplicação.
+- [ ] Confirmar CI GREEN no SHA exato e inspecionar possíveis erros TS/PG.
+- [ ] Extender comparação para defaults, constraints, FK, índices e policies; staging somente após autorização humana específica.
+- [ ] PR DRAFT, sem merge/deploy, produção NO-GO.
+
+### ALT-08.10C.16 — defaults, constraints e índices PostgreSQL16
+
+- [x] Criado `lib/db/operational-structural-audit.ts` com hash determinístico e detecção de índices declarados/FKs ausentes, contagens de defaults, PK/FK/UNIQUE/CHECK.
+- [x] Incorporadas consultas `pg_index`, `pg_constraint`, `pg_attrdef` ao ensaio 186 DDL PostgreSQL16, antes de `ROLLBACK`.
+- [x] Testes adversariais de inconsistência e duplicação.
+- [ ] Certificar CI do HEAD exato; se RED, corrigir.
+- [ ] Validar defaults por coluna, FK por coluna e ação, índices únicos e políticas efetivas com identidades reais; staging requer autorização expressa.
+- [ ] PR DRAFT, sem merge/deploy, produção NO-GO.
+
+### ALT-08.10C.17 — defaults e FKs detalhadas
+
+- [x] Criado `lib/db/operational-default-fk-audit.ts` para detectar defaults ausentes/extras, relações estrangeiras quebradas, FKs não validadas e ações desconhecidas.
+- [x] Integrada comparação `getTableColumns().hasDefault` versus `pg_attrdef`, e registro ordenado `conkey`/`confkey` com `ON UPDATE/DELETE` no PostgreSQL16 descartável.
+- [x] Adicionados testes adversariais `tests/todo-alt0810c-default-fk-audit.test.ts`.
+- [ ] Confirmar CI GREEN no SHA exato; corrigir falhas se RED.
+- [ ] Correlacionar FKs com contratos Drizzle e verificar semântica de defaults e políticas RLS no próximo gate.
+- [ ] PR DRAFT, nenhum merge/deploy; Neon/staging não alterados; produção NO-GO.
+
+### ALT-08.10C.18 — contratos FK Drizzle e RLS contexto ausente
+
+- [x] Comparador puro de FKs Drizzle versus `pg_constraint`, inclusive ordem de colunas, ações referenciais e hash.
+- [x] Integrado ao PostgreSQL16 descartável dentro de transação com rollback dos 186 DDL.
+- [x] Testes adversariais de FKs, drift e validação da identidade de tuplas.
+- [x] Teste adversarial de RLS legado `app.tenant_id IS NULL`: comprova leitura cross-tenant em fixture e alternativa fail-closed isolada.
+- [ ] Verificar CI GREEN no SHA exato e analisar falhas se RED.
+- [ ] Corrigir desenho RLS legado com identidade autenticada e matrizes de papéis em gate separado, após revisão e aprovação; não aplicar diretamente no Neon.
+- [ ] PR #36 DRAFT, produção NO-GO, sem merge/deploy.
+
+### ALT-08.10C.19 — candidato RLS com membership e identidade
+
+- [x] Criada proposta SQL versionada **inerte**, isolada e fail-closed com `app.tenant_id`, `app.user_id`, membership ativa e papéis `client_viewer/client_admin/owner`.
+- [x] Novo ensaio PG16 efêmero: contexto ausente, tenants A/B, tenant indevido, membership revogada, papel interno desativado, role sem BYPASSRLS.
+- [x] Testes offline para ausência de política permissiva, flags NO-GO e guarda de ambiente.
+- [x] CI PostgreSQL descartável recebeu ensaio ALT-08.10C.19.
+- [ ] Certificar CI GREEN 5/5 no SHA exato; corrigir quaisquer falhas.
+- [ ] Projetar vínculo **não falsificável** entre sessão HTTP e conexão/escopo PostgreSQL, validar entitlements e matriz de papéis, garantir rollback/backup, homologar apenas mediante autorização explícita.
+- [ ] PR #36 DRAFT. Sem merge/deploy/DDL operacional; produção NO-GO.
+
+### ALT-08.10C.20 — pré-validação de sessão/entitlement + escopo PostgreSQL
+
+- [x] Criada decisão fail-closed inerte com sessão verificada, membership exata, tenant/assinatura ativos e entitlement habilitado.
+- [x] Testes negativos: sessão revogada, tentativa cross-tenant, membership inativa, assinatura suspensa, feature desligada, role interna.
+- [x] Teste PG16 efêmero de `BEGIN`, role mínima, `set_config` transacional e limpeza por ROLLBACK; integrado ao CI.
+- [ ] Confirmar CI GREEN de 5/5 no SHA exato; corrigir eventuais RED.
+- [ ] Gate posterior: verificar cookie/sessão HTTP real e memberships/entitlements transacionais no mesmo PostgreSQL; distinguir consulta via driver Neon HTTP sem transação interativa.
+- [ ] PR #36 DRAFT; produção NO-GO, sem merge/deploy/DDL no Neon.
+
+### ALT-08.10C.21 — HTTP autenticado e autorização na mesma transação PG16
+
+- [x] Implementado ensaio HTTP loopback em CI com cookie HMAC de fixture, sessão/versionamento no PostgreSQL16, memberships, contrato/entitlements e FORCE RLS na mesma conexão/transação.
+- [x] Testes adversariais: acesso cross-tenant, cookie adulterado, anonimato, membership revogada, entitlement desligado, sessão revogada e isolamento de sessão B.
+- [x] Passo no job PostgreSQL16 descartável; guarda de ambiente local, sem credenciais Neon.
+- [ ] Confirmar CI GREEN 5/5 no HEAD exato e corrigir RED pelos logs se necessário.
+- [ ] Integrar autenticação das rotas Next.js reais e banco operacional de staging somente mediante autorização específica e protocolo de rollback; revisar risco de GUC falsificável.
+- [ ] PR #36 DRAFT, sem merge/deploy, produção NO-GO.
+
+### ALT-08.10C.22 — rota Next.js real + revogação por session_version
+
+- [x] Reutilizado ensaio HTTP já existente com Next.js real e PGlite isolado, sem criar rota pública de teste.
+- [x] Adicionada identidade owner sintética com versão de sessão 2 e verificações de cookie válido antigo 401, cookie atual 200 e cabeçalho de tenant falsificado 403.
+- [x] Mantidos testes de isolamento owner/analyst/cliente e proteção de dados privados, usando DB efêmero.
+- [ ] Confirmar CI GREEN em 5/5 no HEAD exato e corrigir RED pelos logs.
+- [ ] Gate futuro: Next.js real + sessão/membership/entitlement no mesmo PostgreSQL16 com driver transacional e RLS, **sem** acesso operacional até aprovação.
+- [ ] PR #36 DRAFT; sem merge/deploy/Neon. Produção NO-GO.
+
+### ALT-08.10C.23 — auditoria/guardrail do vínculo Next.js–PG16
+
+- [x] Inspecionado adaptador real: Next.js usa Neon HTTP ou PGlite; inexistente adaptador PostgreSQL16 interativo homologado para as rotas.
+- [x] Criado gate puro `lib/tenant/alt0810c23-next-pg-runtime-gate.ts`, fail-closed mesmo que uma fixture sinalize todos os booleans.
+- [x] Acrescentados testes adversariais e inspeção offline de `lib/db/index.ts`, `lib/session-auth.ts`, `lib/tenant/scope.ts` e E2Es; integrado ao job build.
+- [ ] Confirmar CI GREEN em 5/5 no SHA exato; corrigir falhas.
+- [ ] Implementar e homologar em **gate separado** Next.js real + PostgreSQL16 transacional no mesmo processo/connection, sessão real, membership e entitlement no banco, RLS com identidades não falsificáveis.
+- [ ] PR #36 DRAFT. Não existe autorização de merge/deploy/migração no Neon; produção NO-GO.
+
+### ALT-08.10C.24 — adaptador PostgreSQL transacional descartável
+
+- [x] Criado `lib/db/alt0810c24-disposable-pg-adapter.ts` com guarda CI, sessão HMAC verdadeira, verificação de versão no banco, membership e entitlement sob `FOR SHARE`, escopo `SET LOCAL ROLE` e `set_config` na mesma conexão PG16, leitura RLS e ROLLBACK.
+- [x] Criado `scripts/tests/alt0810c24-pg-adapter.test.ts` com duas identidades, tenants isolados, revogação de sessão/membership/feature, tentativas de spoof e limpeza do contexto.
+- [x] Registrado ensaio no CI PostgreSQL16 descartável.
+- [ ] Confirmar 5/5 GREEN no SHA exato e corrigir RED pelos logs, se ocorrer.
+- [ ] Próximo gate: conectar o adaptador **somente em CI descartável** à rota Next.js real, comprovando sessão, memberships, contratos, roles e RLS no mesmo PostgreSQL16 com isolamento end-to-end.
+- [ ] PR #36 DRAFT, produção NO-GO; nenhum merge/deploy/migração no Neon.
+
+### ALT-08.10C.25 — Next.js real e PostgreSQL16 na mesma transação descartável
+
+- [x] Nova rota `app/api/ci/alt0810c25/route.ts`, habilitada somente no runner GitHub com guarda dupla e indisponível em outros ambientes.
+- [x] Reutilizado adaptador `readAuthorizedFixture` de ALT-08.10C.24 para cookie real, sessão, membership, entitlement e RLS na mesma conexão/transação PG16.
+- [x] Criado E2E HTTP Next.js real com clientes A/B, tentativas de spoof e owner, cookies inválidos, revogações de sessão, membership e feature, cleanup de fixture.
+- [x] Integrado ao CI PG16 efêmero sem Neon.
+- [ ] Validar CI #441 da etapa anterior e CI atual 5/5 no SHA exato; corrigir RED, se necessário.
+- [ ] Gate seguinte: refatorar e homologar **rotas de negócio existentes** contra esquema operacional PG16, com mapeamento de roles, entitlements e identidade não falsificável; exige arquitetura e revisão independentes antes de staging.
+- [ ] PR #36 DRAFT; sem merge, deploy ou alterações no Neon; produção NO-GO.
+
+### ALT-08.10C.26 — produção sem dependências temporárias nem rota de CI
+
+- [x] Removida rota `app/api/ci/alt0810c25/route.ts` do App Router versionado; preservada como fixture textual inerte.
+- [x] E2E Next.js+PG16 CI cria a rota somente no checkout efêmero após guarda de ambiente e faz cleanup.
+- [x] Retirado `pg` de `serverExternalPackages` e retirada instalação `npm install --no-save pg` do job build.
+- [x] Inspeção antes/depois de `npm run build` exige `npm ci`, ausência de `pg` no lock e ausência de rota CI no manifesto/artefato.
+- [ ] Confirmar 5/5 GREEN no SHA atual e reparar falhas comprovadas pelos logs.
+- [ ] Auditar se a rota de fixture permanece ausente em `next start` empacotado, e validar separadamente o artefato Docker com dependências de produção.
+- [ ] PR #36 DRAFT; sem merge, deploy ou Neon; produção NO-GO.
+
+### ALT-08.10C.27 — smoke artefato produção e rota CI inacessível
+
+- [x] Criado smoke de `next start` e `.next/standalone/server.js` com `NODE_ENV=production`, cookie HMAC sintético válido, banco remoto desativado e HTTP 404 obrigatório para rota CI.
+- [x] Verificação estática de Dockerfile standalone e `.dockerignore` sem dependência temporária `pg`; inspeção da árvore/manifesto e cleanup de processos.
+- [x] Novo passo pós-build em CI.
+- [ ] Confirmar CI GREEN em 5/5 no SHA exato e corrigir eventuais falhas.
+- [ ] Gate posterior: construir e executar a imagem Docker em runner isolado, verificar rota CI 404 e comportamento sem credenciais operacionais.
+- [ ] PR #36 DRAFT, sem merge/deploy/Neon; produção NO-GO.
+
+### ALT-08.10C.28 — imagem Docker real e ausência de banco operacional
+
+- [x] Script de execução restrito ao GitHub CI: build da imagem usando Dockerfile real; nenhuma publicação da imagem.
+- [x] Container isolado com `--network none`, usuário não root e sem credenciais PostgreSQL/Neon.
+- [x] Inspeção da imagem/manifesto e HTTP localhost `404 not_found` para rota CI excluída.
+- [x] Cleanup de imagem/container por `trap`, permissões mínimas, timeout do job.
+- [x] Job `docker-disposable` adicionado ao CI como sexto gate.
+- [ ] Confirmar **6/6 jobs GREEN no HEAD exato** e corrigir falhas por logs.
+- [ ] Homologação de rotas de negócio reais contra banco operacional descartável continua pendente; produção NO-GO.
+- [ ] Sem merge, deploy, publicação GHCR ou alteração Neon sem autorização.
+
+### ALT-08.10C.29 — rota de negócio real + PostgreSQL16 efêmero
+
+- [x] Preparada rota existente `GET /api/me/permissions` no ensaio Next.js HTTP real, sem adicionar rota de teste à produção.
+- [x] Preparado transporte Drizzle PostgreSQL CI-only como fixture textual, aplicado somente ao checkout do runner e restaurado em `finally`.
+- [x] Testes de sessão HMAC, membership A/B, tentativas de falsificar tenant, entitlement do plano, override negado e revogação de sessão.
+- [x] Diagnóstico `FORCE RLS`: recurso deve falhar fechado na falta de `app.tenant_id` transacional; não alegar RLS operacional certificado.
+- [x] Teste adicionado ao job PostgreSQL16 descartável sem novos secrets ou acesso ao Neon.
+- [ ] Validar 6/6 jobs GREEN no HEAD exato, corrigir RED por logs.
+- [ ] Gate seguinte: resolver a arquitetura das rotas de negócio para contexto de tenant **não falsificável** no mesmo PostgreSQL/tx antes de habilitar RLS de produção.
+- [ ] PR #36 DRAFT, sem merge/deploy/Neon, produção NO-GO.
+
+- [x] Incluída segunda rota real `GET /api/console/tenants`: owner com acesso à carteira A/B, cliente e analista negados; classificação HTTP 500 vs 403 permanece diagnóstico separado.
+
+### ALT-08.10C.30 — identidade + membership + entitlement + FORCE RLS em uma transação PG16
+
+- [x] Candidato isolado que valida sessão versionada, membership, contrato/assinatura e feature antes de `SET LOCAL ROLE` e `set_config(...,true)` na mesma conexão.
+- [x] Leitura por callback SQL definido pelo servidor, sem seleção de role ou SQL de origem HTTP, e `ROLLBACK` de toda transação.
+- [x] Ensaio PG16 `FORCE RLS` A/B positivo, falsificação entre tenants, sessões e contratos revogados, RLS sem `BYPASSRLS`, isolamento do estado entre requisições.
+- [x] Novo passo de CI PostgreSQL descartável.
+- [ ] Confirmar CI GREEN 6/6 no SHA exato e corrigir RED.
+- [ ] Integrar rotas reais com transportador PostgreSQL de conexão fixa e contratos de roles e migrations auditadas antes de remover NO-GO.
+- [ ] PR #36 DRAFT, sem merge, deploy ou Neon.
+
+### ALT-08.10C.31 — rota real Next HTTP, PG16 e RLS transacional
+
+- [x] Fixture textual inerte e injeção temporária no GET já existente de `/api/me/permissions` exclusivamente no runner CI descartável.
+- [x] HTTP real de Next.js + sessão HMAC + vínculo de tenant derivado do banco, `authorizedTenantRead`, PostgreSQL16 e `FORCE RLS`.
+- [x] Testes A/B positivos, spoof de tenant ignorado, owner/cliente não autenticado negados, revogação de sessão, de assinatura e de feature.
+- [x] Restauração do código original e destruição de schema/role após o ensaio; sem Neon.
+- [x] Novo passo de workflow PostgreSQL16.
+- [ ] Verificar CI 6/6 GREEN no SHA exato e corrigir eventuais falhas.
+- [ ] Gate seguinte: integração versionada da rota real e driver PG transacional seguro, após auditoria de superfície e autorização; sem ativar RLS até homologação.
+- [ ] PR #36 DRAFT, produção NO-GO; sem merge/deploy/Neon.
+
+### ALT-08.10C.32 — rota versionada com opt-in estrito e rollback
+
+- [x] Criado `lib/tenant/alt0810c32-versioned-route.ts` com modo desativado por padrão e permissão somente no CI PostgreSQL16 descartável.
+- [x] `GET /api/me/permissions` chama o transporte transacional apenas após validação da flag; código legacy intacto quando off.
+- [x] Criados testes de ativação negada para produção/staging, desligamento e retorno ao fluxo existente.
+- [x] Criado ensaio HTTP Next.js **sem injeção de código** com sesssão, membership, assinatura, entitlement e `FORCE RLS` em duas organizações.
+- [x] Novo passo de CI PostgreSQL descartável; documentação viva atualizada.
+- [ ] Verificar CI 6/6 GREEN no SHA exato e corrigir falhas.
+- [ ] Gate futuro: projeto de transporte operacional com role e schema revisados, pool, migrations RLS auditadas, rollback por tabela, aprovação explícita de homologação staging antes de qualquer enable.
+- [ ] PR #36 DRAFT, produção NO-GO, sem merge/deploy/Neon.
+
+### ALT-08.10C.33 — arquitetura de transporte PG, preflight de roles e rollback
+
+- [x] Contrato de cliente exclusivo por requisição com liberação depois de `ROLLBACK` e descarte obrigatório em falha de limpeza; nenhuma ligação ao driver de produção.
+- [x] Preflight estático de catálogo: executor e leitor sem SUPERUSER/BYPASSRLS, membro de role restrita, `FORCE RLS`, SELECT na evidência e proibição de acesso a tabelas de identidade/faturamento.
+- [x] Testes unitários de pool/rollback/default-off, falhas de cleanup e identificadores rejeitados.
+- [x] Teste PostgreSQL16 descartável com Pool real, role LOGIN executor, NOLOGIN leitor, isolamento A/B e negativas de privilégio/policy.
+- [x] Passo adicionado ao job PG16 descartável sem `pg` no lock de produção.
+- [x] Plano de rollout e rollback coordenado registrado na documentação viva; flag OFF não substitui rollback de DDL/policies.
+- [x] **Gate CI ALT-08.10C.33 aprovado:** SHA `00ccf8902607fadde1581f05bda174fe18328745`, CI #514 (run `43565532050`) `completed/success`, **6/6 jobs GREEN**; step 24 do PostgreSQL16 `ALT-08.10C.33 pool PG16, roles, privileges, FORCE RLS e rollback` `completed/success`. Evidência: https://github.com/OARANHA/vigiaplus/actions/runs/43565532050. Aprovação restrita ao SHA e a fixtures descartáveis.
+- [ ] Auditoria manual das policies reais, isolamento por tenant e concorrência; preparar migration/restore por tabela só após aprovação de staging.
+- [ ] PR #36 DRAFT; staging e produção NO-GO, sem merge/deploy/Neon.
+### ALT-08.10C.34 — auditoria adversarial semântica de policies e lifecycle concorrente do pool (candidata, CI por confirmar)
+
+- [x] Criado `lib/db/alt0810c34-policy-pool-guard.ts`: exige policy SELECT **única**, permissiva e da role leitora exata, bloqueia políticas extras/PUBLIC, grants públicos de tabela/colunas/schema, mudança no fingerprint `pg_get_expr`, sem manifesto operacional aprovado.
+- [x] Corrigido preflight C.33: `has_any_column_privilege` em evidência e tabelas de auth; exige `pg_has_role(..., 'SET')` além de `MEMBER`, com caso adversarial `GRANT ... WITH SET FALSE` no PG16.
+- [x] Implementado `withDisposableScopedRead` com `BEGIN READ ONLY`, `SET LOCAL ROLE`, GUC transacional, callback SELECT único, `ROLLBACK` obrigatório; rejeita COMMIT, batch SQL, GUC mutável e instruções não SELECT.
+- [x] Testes unitários e PG16 descartável adversarial: tenant A/B, ausência de GUC, coluna privada sem privilégio, policies permissivas concorrentes, PUBLIC, roles herdadas, `USING(true)`, DML policy, grants por coluna e privilégio auth indireto.
+- [x] Teste de pool max=2: simultaneidade A/B, terceira conexão com timeout, estado de role/GUC limpo após rollback; teste unitário de descarte em falha de cleanup.
+- [x] Novo step `ALT-08.10C.34` no job PG16 com guarda `ALT0810C34_EPHEMERAL=1`; docs de rollback coordenado e limites atualizadas.
+- [x] **C.34 certificada em CI descartável:** #533 (run `43571609742`), SHA `9c804be802a7ca1b65c9169434302bedff34b6ab`, 6/6 jobs GREEN; step C.34 PostgreSQL16 `completed/success`. Não transfere aprovação para SHA posterior.
+- [ ] Revisar policy SQL operacional completa e registrar `expectedUsingSha256` em manifesto versionado **com aprovação independente**, não usar fingerprint gerado de fixture como prova operacional.
+- [ ] Homologação multi-host, failover, competição com revogação e migrations/restore por tabela somente em ambiente aprovado; CI descartável não comprova staging/produção.
+- [ ] Preservar PR #36 DRAFT, sem merge/deploy/publicação, sem DDL ou alterações no Neon, sem ativar RLS operacional. `ALT0810C32_MODE=off` não desfaz policies.
+
+### ALT-08.10C.35 — manifesto versionado de RLS, privilégios, dependências e rollback (CI-only)
+
+- [x] Criado `schema/operational-rls/alt0810c35-disposable-manifest.json`: predicado SQL com SHA-256 do texto-fonte fixado; roles, policy única, colunas reader, seis tabelas de auth dependentes e ordem de rollback, com todas as flags operacionais NO-GO.
+- [x] Criado `lib/db/alt0810c35-operational-manifest.ts`: validação rigorosa, rejeição de mudança de SQL/hash/ACL/roles/deps/flags, snapshot tipado e comparação completa de rollback com digest.
+- [x] `tests/alt0810c35-manifest.test.ts` exercita manifesto adulterado, permissões/roles indevidas, policy adicional, desvio de predicado, dados e rollback incompleto.
+- [x] `scripts/alt0810c35-manifest-check.ts` executa preflight exclusivamente offline no job build, sem conexão a banco ou migration.
+- [x] `scripts/tests/alt0810c35-pg-manifest-rollback.test.ts` ensaia PostgreSQL16 descartável: role LOGIN executor, NOLOGIN reader, SELECT id/tenant_id, FORCE RLS, A/B, coluna privada negada, baseline de pg_catalog, ACLs, memberships, auth dependencies e dados; 12 mutações adversariais + restauração exata via ROLLBACK TO SAVEPOINT.
+- [x] Workflow principal recebe step C.35 em build e em PostgreSQL efêmero; `pg` permanece sem instalação no bundle de produção.
+- [x] Documento `docs/vigiaplus/alt0810c-operational-schema-readiness.md` detalha limites: hash SQL de fixture não é parecer independente; rollback de transação **não** reverte DDL/COMMIT anterior.
+- [x] **ALT-08.10C.35 certificada em CI descartável:** [workflow #543](https://github.com/OARANHA/vigiaplus/actions/runs/43573303703), run `43573303703`, HEAD `a547ef98ecefd56ae7d5c37cb9dec65cb5f0c253` — `completed/success`, **6/6 jobs GREEN**, steps offline (build) e PG16 C.35 `completed/success`. Esta certificação é limitada ao SHA e não homologa policies/Neon operacionais.
+- [ ] Auditabilidade operacional: manifesto independente com SQL/policies aprovados por tabela, ACL/ownership reais, rollback/restore após COMMIT e plano de PITR em staging **somente após autorização específica**.
+- [ ] PR #36 continua DRAFT; nenhum merge/deploy/DDL/Neon ou RLS operacional. Produção NO-GO.
+
+### ALT-08.10C.36 — pré-homologação de catálogo READ ONLY e compensação pós-COMMIT (CI descartável)
+
+- [x] Confirmação baseline: PR #36 OPEN DRAFT, CI #544 run `43573927067` do SHA `0b6a09797cc8504bd2c04b3dd261000887a1aa8a` GREEN 6/6; C35 step PG16 success.
+- [x] Plano versionado `schema/operational-rls/alt0810c36-prestaging-plan.json`: escopo exato, dependências, predicado SQL fixado, flags sem autorização de Neon/staging/produção/merge/DDL.
+- [x] Auditoria read-only `lib/db/alt0810c36-preoperational-audit.ts`: queries parametrizadas apenas em pg_catalog para 7 tabelas, ownership, ACL, roles, SET ROLE, column SELECT, FORCE RLS, policies e digest; nenhum SELECT em dados operacionais.
+- [x] Testes unitários `tests/alt0810c36-preoperational-audit.test.ts`: validação de plano, SQL somente SELECT, fail-closed de ACL/role/policy e snapshot completo.
+- [x] Teste PostgreSQL16 descartável `scripts/tests/alt0810c36-pg-postcommit-restore.test.ts`: READ ONLY impede DDL, tenant A/B, persistência de policy/ACL/role/tenant divergentes após COMMIT, rollback compensatório com erro e restauração transacional em novo COMMIT, comparando catalog/fixtures e repetindo isolamento.
+- [x] Workflow acrescenta verificador offline `scripts/alt0810c36-readonly-check.ts` em build e step C36 no PostgreSQL16 disposable; documentação viva de limites e NO-GO atualizada.
+- [x] **C.36 aprovada em CI isolado:** [workflow #555](https://github.com/OARANHA/vigiaplus/actions/runs/43575935724), run `43575935724`, SHA `3a573520ac35ee2c0ed17d24896e22ea21d0e7fa`, `completed/success`, **6/6 jobs GREEN**, passos C.36 offline/build e PG16 success; comparação ACL agora é canônica por beneficiário, concedente, privilégio e grant option. Aprovação restrita à fixture do SHA, sem certificar staging/Neon.
+- [ ] Preparar autorização independente para leitura catalog-only de esquema real e manifesto de policies/ACLs por tabela (nenhuma consulta Neon/staging até aprovação humana explícita).
+- [ ] Restaurar de backup verificado pós-COMMIT em cluster separado, testar PITR e concorrência/revogação antes de homologação operacional — não concluído pela fixture CI.
+- [ ] PR #36 DRAFT, NO-GO operacional, sem merge/deploy ou DDL/ativação de RLS no Neon. `ALT0810C32_MODE=off` não substitui rollback SQL.
+
+### ALT-08.10C.37 — homologação por backup após COMMIT em cluster separado + pacote de auditoria real (duas fases)
+
+- [x] Confirmado baseline C.36 no SHA `ff857d9b9f1be8e87c9e689ed532d6f6ca0e4b85`, CI #557 run `43576534244` 6/6 GREEN, PR #36 OPEN DRAFT.
+- [x] Auditor C.36 passa a canonizar ACLs por **nome** de grantee/grantor, privilege_type e grant option; evita igualdade falsa por OIDs divergentes entre clusters PostgreSQL reais distintos.
+- [x] Teste `scripts/tests/alt0810c37-postcommit-backup-crosscluster.test.ts`: dois clusters PG16 distintos via system_identifier, backup custom PGDMP pré-drift, validação archive/SHA/TOC e rejeição de archive adulterado; desvio de RLS/ACL/dados após COMMIT na origem; `pg_restore --single-transaction --exit-on-error` na segunda instância, compara catálogo, ACL/roles, dados e acesso A/B, sem alterar origem após restore.
+- [x] Pacote `schema/operational-rls/alt0810c37-authorized-readonly-audit.sql`: auditoria **somente de metadados** em transação READ ONLY; ainda **NÃO executada em Neon**.
+- [x] Guarda offline `lib/db/alt0810c37-audit-boundary.ts` + `tests/alt0810c37-readonly-audit.test.ts` + `scripts/alt0810c37-audit-safety-check.ts`: recusa DDL/DML/COMMIT e impede execução operacional automática.
+- [x] Steps C.37 incluídos em build offline e PostgreSQL16 descartável; documentação de autorização, privacidade, escopo e rollback atualizada.
+- [ ] **Fase 1: validar CI 6/6 no SHA exato e step cross-cluster C.37, corrigir somente falhas do runner.**
+- [ ] **Fase 2: autorização explícita para auditoria real catalog-only**, identificando projeto/branch/database de destino, schema, role read-only, janela e destino privado das evidências. Nenhuma conexão real antes da autorização.
+- [ ] Backup real/retenção, proteção de dados, PITR ou restore em ambiente isolado não são cobertos por autorização catalog-only; exigir aprovação independente e plano de operação.
+- [ ] PR #36 continua DRAFT, sem merge/deploy/DDL/Neon; produção NO-GO até revisão real dos predicados e recuperação auditada.
+
+### ALT-08.10C.38 — Neon HML operacional isolado, baseline real + RLS wave 1 (projeto autorizado)
+
+- [x] Confirmado projeto Neon `still-heart-81001946`, org única; `main` e CI/staging originais sem tabelas. Criada **apenas** nova branch HML `br-ancient-smoke-bbl8rbm3`, database `vigiaplus_hml_20261114`, PostgreSQL 18.7, sem alteração na `main`.
+- [x] Aplicados numa única transação os **186 statements** do snapshot versionado `schema/operational-bootstrap/00001_legacy_snapshot.sql` (Git blob `068db8eaf3f6dc4ad7fbcf5014ffe687d077ae15`), verificados no catálogo HML: 62 tabelas, 128 índices, 57 FK. Snapshot legado segue **não certificado para produção**.
+- [x] Criada role HML `vigia_hml_reader_20261114` NOLOGIN, NOBYPASSRLS, NOSUPERUSER; grant SELECT por colunas mínimas, 4 policies SELECT fail-closed por `app.tenant_id`, ENABLE/FORCE RLS em `reputation_targets`, `incidents`, `notification_channels`, `invoices`. `public` sem USAGE para PUBLIC; role mantém USAGE explícita.
+- [x] Homologação no banco Neon HML real com A/B sintéticos: 8 verificações tenant A/B, 4 verificações sem tenant, INSERT/memberships/coluna PIX negados; cleanup de duas linhas por tabela e duas tenants, 0 registros sintéticos remanescentes.
+- [x] Criada `vigiaplus_hml_schema_receipts` auditável (code head SHA `4ef54af26baae531f0ae0363eed2b890d8bf759c`, baseline SHA, scope `ISOLATED_HML_ONLY`, `production_ready=false`). Total agora 63 tabelas, 129 índices, 57 FKs, 4 policies, 4 FORCE RLS.
+- [x] Snapshot Neon de branch filha não permitido (`not allowed to snapshot non-root branch`); criada **branch-checkpoint sem compute** `br-soft-fire-bbvvesma` (copy-on-write, NÃO é backup físico nem PITR).
+- [x] Versionados SQL HML-only `schema/operational-homologation/alt0810c38-neon-hml-baseline-wave1.sql`, teste offline de limites `tests/alt0810c38-neon-hml-provisioning.test.ts` e documentação `docs/vigiaplus/alt0810c38-neon-isolated-homologation.md`.
+- [ ] Confirmar **CI exato do HEAD com 6/6 jobs GREEN** após documentação e testes C.38.
+- [ ] Criar matriz de autenticação/entitlements, roles LOGIN NOBYPASSRLS com credenciais seguras, policies reais de leitura e escrita por tabela; validar revogação e sessões HTTP no banco HML.
+- [ ] Conectar aplicação Next.js em homologação aprovada sem utilizar owner BYPASSRLS; preservar ambientes existentes e segredos fora do Git.
+- [ ] Gate backup/restore real e PITR com plano de dados e controles LGPD, antes de qualquer liberação operacional. PR #36 OPEN DRAFT, sem merge/deploy; produção **NO-GO**.
+
+### Entrega utilizável — aplicativo local + Academia VigiaPlus (prioridade após ALT-08.10C.38)
+
+- [x] Validado no código: login, console proprietário, administração de clientes/planos/recursos e portal cliente têm rotas Next.js implementadas (não confundir com deploy real).
+- [x] Entrada Windows `INICIAR-VIGIAPLUS.cmd` para executar localmente na porta **3199** com PGlite isolado, `DATABASE_URL` vazio, credenciais iniciais informadas pelo proprietário e sem derrubar processos que ocupam outras portas. O modo `demo` permanece somente leitura e usa outro diretório.
+- [x] Console do proprietário passou a orientar uma instalação sem clientes com três atalhos reais: cadastrar organização, configurar planos, definir permissões.
+- [x] Criada skill versionada `skills/vigiaplus-screen-academy/SKILL.md`, inventário com **91** estados/telas, capturador `scripts/capture-vigiaplus-academy.py`, perfis público/proprietário/cliente/analista, imagem de tela real e uma aula Markdown por rota/aba, tema claro/escuro quando existir. Capturas são locais em `.data`; não exportar PII.
+- [x] Guia de uso `docs/vigiaplus/aplicacao-local-academia-telas.md` com comandos Windows, login interativo, geração de prints e aulas.
+- [ ] **Usabilidade real no Windows:** executar launcher em `D:\VIGIAPLUS`, abrir `http://127.0.0.1:3199/login`, cadastrar cliente/planos e verificar fluxo completo. Não declarar aplicativo em execução antes dessa evidência.
+- [ ] **Capturas reais:** executar skill com Chromium na máquina que tem acesso ao localhost, autenticar manualmente os perfis, revisar screenshots/Markdown e corrigir telas marcadas PENDENTE.
+- [ ] **Produto online para clientes:** integrar identidade LOGIN NOBYPASSRLS e autorização completa no Neon HML, definir credenciais e hosting, aceitar revisão de política e deploy somente após autorização específica. Não usar o owner Neon BYPASSRLS para tráfego de clientes.
+- [ ] CI para HEAD atualizado deve ser classificado pelo SHA exato. Não reiniciar ciclo infinito de testes; priorizar a entrega de telas e fluxos úteis.
+- [ ] Manter PR #36 **DRAFT**, sem merge/deploy de produção até autorização.
+
+### Auditoria e harmonização UX global — fase 1 (2026-11-14)
+
+- [x] Inspecionar arquitetura de páginas/shells e registrar divergências verificadas em `docs/vigiaplus/ux-consistencia-visual-global.md` (checkout local: 73 páginas; 57 com PageHeader; 42 com .panel; 15 com inline style).
+- [x] Criar `app/vigia-design-tokens.css`: tokens semânticos compartilhados de claro/escuro, cartões, bordas, tipografia, hierarquia e foco.
+- [x] Criar `components/vigia-appearance.tsx` e usar a mesma preferência de tema persistente em proprietário, cliente e analista.
+- [x] Harmonizar `app/layout.tsx`, sidebar analítica, `PageHeader` e KPIs com a paleta e superfícies do layout Vpx.
+- [x] Atualizar o login duas colunas para a identidade verde/teal do VigiaPlus, preservando autenticação e composição.
+- [ ] Verificar CI no SHA exato da PR #36 e resolver falhas sem presumir GREEN.
+- [ ] Ligar e navegar aplicação real em localhost 3199 em dados sintéticos; fotografar as rotas de proprietário, cliente, analista, login e telas especiais em mobile/desktop e tema claro/escuro.
+- [ ] Corrigir contrastes, grids e componentes ainda específicos nas rotas do Radar (principalmente impostazioni, insights, story, tv, vigia e share). Não afirmar que todas as telas foram padronizadas sem capturas.
+- [ ] Reunificar navegação da shell legada e shell Vpx gradualmente, sem quebrar RBAC e funções existentes.
+- [ ] Só após visual QA e validação funcional, gerar aulas reais da Academia VigiaPlus.
+

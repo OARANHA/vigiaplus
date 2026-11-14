@@ -1,0 +1,116 @@
+name: ALT-08.3 Neon WebSocket E2E (manual disposable only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: alt083-neon-e2e-disposable
+  cancel-in-progress: false
+
+jobs:
+  neon-websocket-e2e:
+    name: ALT-08.3 Neon WebSocket RLS real (banco vazio descartável)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      DATABASE_URL: ""
+      DEMO_MODE: "0"
+      NODE_ENV: test
+      VIGIA_RLS_MODE: ci-experimental
+      VIGIA_ALT083_DISPOSABLE_CONFIRM: YES-EMPTY-NEON-CI-DATABASE
+      RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT083_NEON_CI_URL }}
+      ALT087_STAGING_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+      ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Recusar ausência de credencial dedicada
+        shell: bash
+        run: |
+          if [[ -z "$RLS_DATABASE_URL" ]]; then
+            echo "NO-GO: secret VIGIA_ALT083_NEON_CI_URL ausente. Não rodar em produção." >&2
+            exit 1
+          fi
+      - run: npm ci
+      - name: Neon WebSocket E2E real com RLS em banco exclusivo descartável
+        run: node --import tsx --test scripts/tests/alt083-neon-ws-e2e.test.ts
+      - name: ALT-08.4 HTTP autenticado no Neon WebSocket (CI descartável)
+        env:
+          VIGIA_ALT084_EVIDENCE_MODE: ci-read-only
+        run: bash scripts/tests/alt084-http-ci.sh
+
+      - name: ALT-08.7 staging isolado Neon WS (somente se secret dedicado configurado)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_CONFIRM: VIGIAPLUS_ISOLATED_ALT086_STAGING
+        run: node --import tsx scripts/tests/alt087-staging-ws-preflight.ts
+
+      - name: ALT-08.7 staging RLS real + migracao reversivel (somente staging exclusivo)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT087_STAGING_CONFIRM: VIGIAPLUS_ISOLATED_ALT086_STAGING
+          ALT087_MIGRATION_CONFIRM: REVERSIBLE_SYNTHETIC_SCHEMA_ONLY
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT087 NO-GO: migration secret absent, staging NOT homologated" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt087-staging-reversible-e2e.ts
+
+      - name: ALT-08.8 staging contratos operacionais RLS e rollback (sintetico)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT088_STAGING_CONFIRM: SYNTHETIC_CONTRACT_ONLY
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT088 NO-GO: staging migrator secret absent" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt088-staging-operational-rls-e2e.ts
+
+      - name: ALT-08.9 staging HTTP assinado revogacao e entitlements (harness isolado)
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT089_STAGING_CONFIRM: SIGNED_HTTP_SYNTHETIC_ONLY
+          SESSION_SECRET: ALT089_STAGING_2026_Strong_Only_Experimental
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT089 NO-GO: migrator secret absent" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt089-staging-http-auth-e2e.ts
+
+      - name: ALT-08.10 rota Next real auth memberships entitlements e RLS no mesmo Neon staging
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT087_STAGING_MIGRATOR_URL: ${{ secrets.VIGIA_ALT087_STAGING_MIGRATOR_URL }}
+          ALT0810_STAGING_CONFIRM: NEXT_REAL_ROUTE_SYNTHETIC_ONLY
+          VIGIA_ALT0810_NEXT_STAGING_MODE: isolated-next-auth
+          SESSION_SECRET: ALT0810_HARNESS_Strong_Only_For_CI_2026
+        run: |
+          if [[ -z "$ALT087_STAGING_MIGRATOR_URL" ]]; then
+            echo "ALT0810 NO-GO: staging migrator URL missing" >&2
+            exit 1
+          fi
+          node --import tsx scripts/tests/alt0810-next-http-staging-e2e.ts
+
+      - name: ALT-08.10C inventario read-only schema Neon staging sem bootstrap
+        if: ${{ env.ALT087_STAGING_URL != '' }}
+        env:
+          RLS_DATABASE_URL: ${{ secrets.VIGIA_ALT087_STAGING_URL }}
+          ALT0810C_PREFLIGHT_CONFIRM: READ_ONLY_NEON_STAGING
+        run: node --import tsx scripts/tests/alt0810c-neon-readonly-preflight.ts

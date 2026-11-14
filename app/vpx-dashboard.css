@@ -1,20 +1,20 @@
 
 /* VigiaPlus · DisputeFox-inspired information architecture, original brand and content. */
 .vpx-app{
- --vpx-page:#e6ebeb;--vpx-paper:#fafbfa;--vpx-panel:#ffffff;--vpx-elev:#f4f6f4;
- --vpx-ink:#141a19;--vpx-muted:#737d7a;--vpx-line:#e8ebe9;--vpx-btn:#090c0c;
- --vpx-primary:#a2fd53;--vpx-coral:#ff6747;--vpx-lemon:#ffed65;--vpx-cyan:#d7f3f8;
- --vpx-hero:linear-gradient(128deg,#d6f4fa 0%,#e7f5ef 52%,#f1f8d7 100%);
+ --vpx-page:var(--vigia-light-page);--vpx-paper:var(--vigia-light-paper);--vpx-panel:var(--vigia-light-panel);--vpx-elev:var(--vigia-light-elev);
+ --vpx-ink:var(--vigia-light-ink);--vpx-muted:var(--vigia-light-muted);--vpx-line:var(--vigia-light-line);--vpx-btn:#090c0c;
+ --vpx-primary:var(--vigia-light-primary);--vpx-coral:#ff6747;--vpx-lemon:#ffed65;--vpx-cyan:#d7f3f8;
+ --vpx-hero:var(--vigia-light-hero);
  --vpx-shadow:0 22px 80px rgba(33,48,45,.13);
  min-height:100vh;padding:20px;background:var(--vpx-page);color:var(--vpx-ink);
  font-family:var(--font-geist-sans),Arial,sans-serif;line-height:1.45;
  color-scheme:light;transition:background .18s,color .18s;
 }
 .vpx-app[data-vpx-theme="dark"]{
- --vpx-page:#0a1116;--vpx-paper:#111b22;--vpx-panel:#18262d;--vpx-elev:#203038;
- --vpx-ink:#f5f8f6;--vpx-muted:#b7c3c1;--vpx-line:#34444c;--vpx-btn:#eaf0ec;
- --vpx-primary:#b7f56a;--vpx-coral:#ff8b72;--vpx-lemon:#f5e57c;--vpx-cyan:#2b565d;
- --vpx-hero:linear-gradient(130deg,#22434e 0%,#233e3d 52%,#3c422b 100%);
+ --vpx-page:var(--vigia-dark-page);--vpx-paper:var(--vigia-dark-paper);--vpx-panel:var(--vigia-dark-panel);--vpx-elev:var(--vigia-dark-elev);
+ --vpx-ink:var(--vigia-dark-ink);--vpx-muted:var(--vigia-dark-muted);--vpx-line:var(--vigia-dark-line);--vpx-btn:#eaf0ec;
+ --vpx-primary:var(--vigia-dark-primary);--vpx-coral:#ff8b72;--vpx-lemon:#f5e57c;--vpx-cyan:#2b565d;
+ --vpx-hero:var(--vigia-dark-hero);
  --vpx-shadow:0 26px 100px rgba(0,0,0,.24);color-scheme:dark;
 }
 .vpx-app *{box-sizing:border-box}

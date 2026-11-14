@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "purpose": "legacy-sql-migration-inventory-only",
+  "authoritativeOperationalSchema": false,
+  "bootstrapSeparated": false,
+  "migrations": [
+    {"file": "00001_billing.sql", "gitBlobSha1": "631c9791ce6cb5cf21d44aefc61f7ebeb1bd2d78"},
+    {"file": "00002_rls.sql", "gitBlobSha1": "cb57b3ddac6ce6dc3e57ef8e3652146d71354c0d"},
+    {"file": "00003_payment_processed.sql", "gitBlobSha1": "80b1bc95b05a06ea9dfef09fb32fd01101b5ce97"},
+    {"file": "00010_auth_rate_limit.sql", "gitBlobSha1": "f138c9bd9e8d7e23efc277260819f6f56a523e71"}
+  ]
+}

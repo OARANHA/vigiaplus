@@ -5,10 +5,15 @@ import {join} from 'node:path';
 function src(path:string){return readFileSync(join(process.cwd(),path),'utf8');}
 test('dashboard claro/escuro tem a mesma árvore e escolha persistida',()=>{
  const shell=src('components/vpx-dashboard-shell.tsx');
+ const appearance=src('components/vigia-appearance.tsx');
+ const sidebar=src('components/sidebar.tsx');
  const css=src('app/vpx-dashboard.css');
  const root=src('app/layout.tsx');
  assert.match(shell,/data-vpx-theme={theme}/);
- assert.match(shell,/localStorage\.setItem\('vigiaplus-dashboard-theme'/);
+ assert.match(shell,/useVigiaAppearance/);
+ assert.match(appearance,/VIGIA_THEME_STORAGE_KEY = 'vigiaplus-dashboard-theme'/);
+ assert.match(appearance,/localStorage\.setItem\(VIGIA_THEME_STORAGE_KEY/);
+ assert.match(sidebar,/VigiaAppearanceToggle/);
  assert.match(shell,/Ativar modo escuro/);
  assert.match(shell,/Ativar modo claro/);
  assert.match(css,/data-vpx-theme="dark"/);

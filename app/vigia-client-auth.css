@@ -260,3 +260,34 @@
   .cp-billing-history-status {grid-column:1/-1;justify-self:start}
   .cp-nav nav {flex-wrap:wrap}
 }
+
+/* VigiaPlus visual system — login stays two-column but shares the same
+   ink, accent and surfaces as the owner/client/analyst dashboards. */
+.va-auth{background:var(--vigia-dark-page);color:var(--vigia-dark-ink)}
+.va-story{
+  background:
+    radial-gradient(circle at 84% 18%,rgba(183,245,106,.10),transparent 43%),
+    radial-gradient(circle at 10% 91%,rgba(38,127,129,.28),transparent 49%),
+    var(--vigia-dark-hero);
+}
+.va-story-mark{background:var(--vigia-dark-primary);color:#142116}
+.va-eyebrow{color:var(--vigia-dark-primary)}
+.va-story-content h2 em{
+  background:linear-gradient(115deg,#d3ffad,#b7f56a 57%,#8bdad6);
+  background-clip:text;-webkit-text-fill-color:transparent;
+}
+.va-story-features span{
+  background:rgba(17,27,34,.68);
+  color:var(--vigia-dark-ink);
+  border-color:var(--vigia-dark-line);
+}
+.va-story-features svg{color:var(--vigia-dark-primary)}
+.va-live-dot{background:var(--vigia-dark-primary);box-shadow:0 0 14px #b7f56a88}
+.va-login-side{background:var(--vigia-light-paper);color:var(--vigia-light-ink)}
+.va-form-logo,.va-form-kicker{color:#397c2e}
+.va-form h1{color:var(--vigia-light-ink)}
+.va-form-description{color:var(--vigia-light-muted)}
+.va-field{border-color:var(--vigia-light-line);border-radius:var(--vigia-radius-control)}
+.va-field:focus-within{border-color:#68a83d;box-shadow:0 0 0 3px #b7f56a38}
+.va-submit{background:#142116;color:var(--vigia-dark-primary);border-radius:var(--vigia-radius-control);box-shadow:0 9px 25px #1421162b}
+.va-auth :is(input,button,a):focus-visible{outline:3px solid #78bd46;outline-offset:3px}

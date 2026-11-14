@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "status": "snapshot-only-no-migration-authorization",
+  "source": "lib/db/index.ts",
+  "sourceConstant": "DDL",
+  "statementCount": 186,
+  "output": "schema/operational-bootstrap/00001_legacy_snapshot.sql",
+  "outputGitBlobSha1": "068db8eaf3f6dc4ad7fbcf5014ffe687d077ae15",
+  "includesDataUpdate": true,
+  "bootstrapSeparated": false,
+  "operationalSchemaCertified": false,
+  "migrationRunnerActivated": false
+}

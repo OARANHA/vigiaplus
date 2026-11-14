@@ -68,6 +68,18 @@ type TenantAlertRule = {id:number;type:string;silencioDe:string|null;
 type TenantAlertPolicy = {tenant:{id:number;name:string;timeZone:string;
   alertRateLimitPerHour:number;criticalBypassSilence:number};
   rules:TenantAlertRule[]};
+type WorkerOperations = {
+  worker:{status:'healthy'|'degraded'|'not_observed';configured:null;
+    lastFinishedAt:string|null;expectedMaxLagMinutes:number;
+    runs:{runId:string;startedAt:string;finishedAt:string;durationMs:number;
+      status:string;exitCode:number|null;summary:Record<string,unknown>}[]};
+  simulation:{lastFinishedAt:string|null;simulatedOnly:true;
+    runs:{runId:string;startedAt:string;finishedAt:string;
+      durationMs:number;status:string;exitCode:number|null}[]};
+  queue:{pending:number;processing:number;deadLetter:number;delayed:number;
+    slaOverdue:number;oldestReadyAt:string|null};
+  observedAt:string;
+};
 type OwnerDelivery = {id:number;eventRef:string|null;sourceProjectId:number|null;
   channel:string;destination:string;status:string;providerMessageId:string|null;
   deliveryState:string;deliveryStateAt:string|null;deliveredAt:string|null;
@@ -161,6 +173,7 @@ export function OwnerAdminWorkspace() {
   const [newClient,setNewClient]=useState({name:'',slug:'',cnpj:''});
   const [invitations,setInvitations]=useState<ClientInvitation[]>([]);
   const [deliveries,setDeliveries]=useState<OwnerDelivery[]>([]);
+  const [workerOperations,setWorkerOperations]=useState<WorkerOperations|null>(null);
   const [emailDiag,setEmailDiag]=useState<EmailDiag|null>(null);
   const [channels,setChannels]=useState<OwnerChannel[]>([]);
   const [newAlertEmail,setNewAlertEmail]=useState('');
@@ -260,6 +273,13 @@ export function OwnerAdminWorkspace() {
       .catch(e=>{setDeliveries([]);setError('Fila de alertas indisponível: '+String(e));})
       .finally(()=>setDeliveriesLoading(false));
   },[section,selectedTenant]);
+  useEffect(()=>{
+    if(section!=='crises')return;
+    // Consultar apenas na entrada da seção; sem polling contínuo.
+    void api<WorkerOperations>('/api/console/notifications/operations')
+      .then(setWorkerOperations)
+      .catch(e=>{setWorkerOperations(null);setError('Observabilidade indisponível: '+String(e));});
+  },[section]);
   useEffect(()=>{
     if(!selectedTenant){setFeatures(null);return;}
     setFeatures(null);
@@ -681,6 +701,36 @@ export function OwnerAdminWorkspace() {
           {label:'Agendamento por cliente',description:'Integração e homologação do scheduler de 15 minutos ainda pendentes.',pending:true},
         ]}/></SubPanel>}
         {section==='crises'&&<>
+          <SubPanel title="Saúde da entrega de alertas">
+            {!workerOperations?<p className="vpx-owner-muted">Sem métricas disponíveis ou execução ainda não consultada. Ausência de dados não confirma operação saudável.</p>:<>
+              <p className="vpx-owner-muted">Worker: {workerOperations.worker.status==='healthy'?'Última execução recente e concluída':
+                workerOperations.worker.status==='not_observed'?'Nenhuma execução registrada':'Execução ausente, atrasada ou com falha'}.
+                {' '}Última conclusão: {showDate(workerOperations.worker.lastFinishedAt)}.
+                {' '}Configuração real do agendador externo não verificada.</p>
+              <div className="vpx-owner-formgrid" role="status">
+                <p>Na fila: <strong>{workerOperations.queue.pending}</strong></p>
+                <p>Em processamento: <strong>{workerOperations.queue.processing}</strong></p>
+                <p>Atrasadas (mais de 10 min): <strong>{workerOperations.queue.delayed}</strong></p>
+                <p>Prazo SLA ultrapassado: <strong>{workerOperations.queue.slaOverdue}</strong></p>
+                <p>Falha definitiva: <strong>{workerOperations.queue.deadLetter}</strong></p>
+                <p>Mais antiga pronta: <strong>{showDate(workerOperations.queue.oldestReadyAt)}</strong></p>
+              </div>
+              <p className="vpx-owner-muted">Agendador em simulação: {workerOperations.simulation.runs.length
+                ? 'última passagem em '+showDate(workerOperations.simulation.lastFinishedAt)
+                : 'nenhuma passagem registrada'}. Simulação não comprova entrega de notificações.</p>
+              <p className="vpx-owner-muted">Histórico de execução (sem destinatários ou mensagens).</p>
+              <div className="vpx-owner-table-wrap"><table className="vpx-owner-table">
+                <thead><tr><th>Concluída em</th><th>Resultado</th><th>Duração</th><th>Saída</th></tr></thead>
+                <tbody>
+                  {workerOperations.worker.runs.map(run=><tr key={run.runId}>
+                    <td>{showDate(run.finishedAt)}</td><td>{run.status}</td>
+                    <td>{run.durationMs} ms</td><td>{run.exitCode??'—'}</td>
+                  </tr>)}
+                  {!workerOperations.worker.runs.length&&<tr><td colSpan={4}>Nenhuma execução registrada.</td></tr>}
+                </tbody>
+              </table></div>
+            </>}
+          </SubPanel>
           <SubPanel title="Horários, severidade e SLA por cliente">
             <p className="vpx-owner-muted">O fuso é individual. Avisos durante silêncio ficam na fila para a próxima janela; crises críticas podem atravessar o silêncio. O limite considera tentativas de envio por hora UTC.</p>
             <div className="vpx-owner-formgrid">

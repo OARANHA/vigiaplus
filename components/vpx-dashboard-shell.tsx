@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
-import {useEffect,useState,type ReactNode} from 'react';
+import {type ReactNode} from 'react';
+import {useVigiaAppearance} from '@/components/vigia-appearance';
 import {ChevronDown,LogOut,Moon,RadioTower,RefreshCw,Sun,UserRound} from 'lucide-react';
 
 export type DashboardTab={id:string;label:string};
@@ -9,11 +10,7 @@ export function VigiaDashboardShell({role,tabs,activeTab,onTab,onLogout,onRefres
  onTab:(id:string)=>void;onLogout:()=>void|Promise<void>;onRefresh:()=>void;
  children:ReactNode;extra?:ReactNode;
 }){
- const [theme,setTheme]=useState<'light'|'dark'>('light');
- useEffect(()=>{try{const t=window.localStorage.getItem('vigiaplus-dashboard-theme');
-   if(t==='light'||t==='dark')setTheme(t);}catch{}},[]);
- function toggle(){const t=theme==='light'?'dark':'light';setTheme(t);
-   try{window.localStorage.setItem('vigiaplus-dashboard-theme',t);}catch{}}
+ const {theme,toggle}=useVigiaAppearance();
  return <div className="vpx-app" data-vpx-theme={theme}>
  <div className="vpx-stage">
   <header className="vpx-topbar">

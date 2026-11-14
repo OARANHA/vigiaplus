@@ -1,5 +1,6 @@
 // Console do dono: lista de tenants
 import { NextResponse } from 'next/server';
+import { AppError } from '@/lib/tenant/errors';
 import { getDb } from '@/lib/db';
 import { tenants, subscriptions, plans } from '@/lib/db/schema';
 import { resolveTenantContext, parseRequestedTenantId, appendAudit } from '@/lib/tenant/context';
@@ -7,6 +8,7 @@ import { requireOwner } from '@/lib/tenant/rbac';
 import { eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
+  try {
   const url = new URL(request.url);
   const requestedTenantId = parseRequestedTenantId(url.searchParams, request.headers);
   const ctx = await resolveTenantContext({ surface: 'console', requestedTenantId });
@@ -33,6 +35,13 @@ export async function GET(request: Request) {
     }),
     current: ctx.tenantId,
   });
+  } catch (error) {
+    if (error instanceof AppError) {
+      return NextResponse.json({ error: error.code }, { status: error.status, headers: { 'Cache-Control': 'no-store' } });
+    }
+    console.error('VIGIAPLUS_GET_UNEXPECTED_FAILURE', error instanceof Error ? error.name : 'unknown');
+    return NextResponse.json({ error: 'INTERNAL_ERROR' }, { status: 500, headers: { 'Cache-Control': 'no-store' } });
+  }
 }
 
 /** Cadastra organização sem criar assinatura, cobrança ou acesso automaticamente. */

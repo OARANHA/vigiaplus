@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import type { PgliteDatabase } from 'drizzle-orm/pglite';
 import * as schema from './schema';
 import { resolveBootstrapAdmin, shouldSeedSampleTenants } from './bootstrap-auth';
+import { resolveDbBootstrapMode } from './bootstrap-mode';
 
 // Un solo tipo per entrambi i driver: l'API di query drizzle è identica,
 // cambia solo il trasporto (Neon HTTP in produzione, PGlite in locale).
@@ -21,6 +22,8 @@ export function getDb(): Promise<DB> {
 }
 
 async function init(): Promise<DB> {
+  // Validate before connecting: opt-in invalidity must never fall back to legacy DDL.
+  const bootstrapMode = resolveDbBootstrapMode(process.env);
   let db: DB;
   if (process.env.DATABASE_URL) {
     const { neon } = await import('@neondatabase/serverless');
@@ -37,6 +40,23 @@ async function init(): Promise<DB> {
   }
   if (process.env.DEMO_MODE === '1' && process.env.DATABASE_URL && process.env.NODE_ENV === 'production') {
     throw new Error('DEMO_MODE com banco remoto em produção é proibido para proteger dados reais');
+  }
+  if (bootstrapMode === 'preprovisioned-staging-ci') {
+    // NO DDL and NO seed in the pre-provisioned staging CI path.
+    // Require real operational identities/tenants/contract tables to exist.
+    // This SELECT cannot create or alter tables and fails if schema is missing.
+    const r = await db.execute(sql.raw(`SELECT
+      to_regclass('public.users') IS NOT NULL AS users_ready,
+      to_regclass('public.memberships') IS NOT NULL AS memberships_ready,
+      to_regclass('public.tenants') IS NOT NULL AS tenants_ready,
+      to_regclass('public.subscriptions') IS NOT NULL AS subscriptions_ready,
+      to_regclass('public.plans') IS NOT NULL AS plans_ready,
+      to_regclass('public.plan_features') IS NOT NULL AS plan_features_ready,
+      to_regclass('public.tenant_features') IS NOT NULL AS features_ready`));
+    const row = r.rows[0] as Record<string,unknown>|undefined;
+    if (!row || Object.values(row).some(value => value !== true))
+      throw Error('PREPROVISIONED_STAGING_SCHEMA_NOT_READY');
+    return db;
   }
   await ensureSchema(db);
   if (process.env.DEMO_MODE === '1') {
@@ -803,6 +823,18 @@ const DDL = [
     sent_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
   )`,
+  `CREATE TABLE IF NOT EXISTS notification_worker_runs (
+    run_id TEXT PRIMARY KEY,
+    worker TEXT NOT NULL,
+    started_at TIMESTAMPTZ NOT NULL,
+    finished_at TIMESTAMPTZ NOT NULL,
+    duration_ms INTEGER NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('success','error','timeout')),
+    exit_code INTEGER,
+    summary JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  )`,
+  `CREATE INDEX IF NOT EXISTS notification_worker_runs_recent ON notification_worker_runs (finished_at DESC)`,
   `CREATE TABLE IF NOT EXISTS notification_dispatch_attempts (
     id SERIAL PRIMARY KEY,
     tenant_id INTEGER NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -847,7 +879,7 @@ const DDL = [
   `CREATE INDEX IF NOT EXISTS invoices_tenant ON invoices (tenant_id, status, due_at)`,
 ];
 
-async function ensureSchema(db: DB) {
+export async function ensureSchema(db: DB) {
   for (const stmt of DDL) {
     await db.execute(sql.raw(stmt));
   }
