@@ -677,6 +677,6 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [x] `scripts/tests/alt0810c35-pg-manifest-rollback.test.ts` ensaia PostgreSQL16 descartável: role LOGIN executor, NOLOGIN reader, SELECT id/tenant_id, FORCE RLS, A/B, coluna privada negada, baseline de pg_catalog, ACLs, memberships, auth dependencies e dados; 12 mutações adversariais + restauração exata via ROLLBACK TO SAVEPOINT.
 - [x] Workflow principal recebe step C.35 em build e em PostgreSQL efêmero; `pg` permanece sem instalação no bundle de produção.
 - [x] Documento `docs/vigiaplus/alt0810c-operational-schema-readiness.md` detalha limites: hash SQL de fixture não é parecer independente; rollback de transação **não** reverte DDL/COMMIT anterior.
-- [ ] **Certificar CI GREEN 6/6 no SHA exato**, inclusive dois steps C.35. Se RED, corrigir código pelos logs, sem relaxar testes.
+- [x] **ALT-08.10C.35 certificada em CI descartável:** [workflow #543](https://github.com/OARANHA/vigiaplus/actions/runs/43573303703), run `43573303703`, HEAD `a547ef98ecefd56ae7d5c37cb9dec65cb5f0c253` — `completed/success`, **6/6 jobs GREEN**, steps offline (build) e PG16 C.35 `completed/success`. Esta certificação é limitada ao SHA e não homologa policies/Neon operacionais.
 - [ ] Auditabilidade operacional: manifesto independente com SQL/policies aprovados por tabela, ACL/ownership reais, rollback/restore após COMMIT e plano de PITR em staging **somente após autorização específica**.
 - [ ] PR #36 continua DRAFT; nenhum merge/deploy/DDL/Neon ou RLS operacional. Produção NO-GO.
