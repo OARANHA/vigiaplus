@@ -1,6 +1,6 @@
 /**
  * ALT-08.10C.36 — PostgreSQL 16 catalog-only pre-staging audit.
- * No operational connection, migration, table DML, or production opt-in.
+ * No operational connection, migration, table DML, or production opt-in.\n * ACLs normalize their effective grantee/grantor/privilege/grant-option; raw\n * pg_acl textual storage can differ after GRANT+REVOKE without privilege drift.
  *
  * A catalog snapshot is evidence of configuration, NOT approval of its
  * semantic security or the ability to restore a real post-COMMIT database.
@@ -117,7 +117,12 @@ export async function readC36Catalog(
     ORDER BY parent.rolname,member.rolname`,[executorRole,readerRole]);
   const ns=await rows(db,`SELECT n.nspname::text AS name,
     pg_get_userbyid(n.nspowner) AS owner,
-    COALESCE(n.nspacl::text,'') AS acl,
+    COALESCE((
+      SELECT string_agg(format('%s:%s:%s:%s',
+        g.grantee,g.grantor,g.privilege_type,g.is_grantable),
+        ',' ORDER BY g.grantee,g.grantor,g.privilege_type,g.is_grantable)
+      FROM aclexplode(CASE WHEN cardinality(n.nspacl)=0 THEN NULL::aclitem[] ELSE COALESCE(n.nspacl,acldefault('n',n.nspowner)) END) g
+    ),'') AS acl,
     EXISTS(SELECT 1 FROM aclexplode(
       CASE WHEN cardinality(n.nspacl)=0 THEN NULL::aclitem[]
         ELSE COALESCE(n.nspacl,acldefault('n',n.nspowner)) END
@@ -126,7 +131,12 @@ export async function readC36Catalog(
   const rel=await rows(db,`SELECT c.relname::text AS name,
     pg_get_userbyid(c.relowner) AS owner,c.relkind::text AS kind,
     c.relrowsecurity AS rls,c.relforcerowsecurity AS force,
-    COALESCE(c.relacl::text,'') AS acl,
+    COALESCE((
+      SELECT string_agg(format('%s:%s:%s:%s',
+        g.grantee,g.grantor,g.privilege_type,g.is_grantable),
+        ',' ORDER BY g.grantee,g.grantor,g.privilege_type,g.is_grantable)
+      FROM aclexplode(CASE WHEN cardinality(c.relacl)=0 THEN NULL::aclitem[] ELSE COALESCE(c.relacl,acldefault('r',c.relowner)) END) g
+    ),'') AS acl,
     has_any_column_privilege($3,c.oid,'SELECT') AS reader_select,
     has_any_column_privilege($3,c.oid,'INSERT') AS reader_insert,
     has_any_column_privilege($3,c.oid,'UPDATE') AS reader_update,
@@ -142,7 +152,12 @@ export async function readC36Catalog(
     [schema,tables,readerRole]);
   const columns=await rows(db,`SELECT c.relname::text AS table_name,
     a.attname::text AS name,format_type(a.atttypid,a.atttypmod) AS type,
-    COALESCE(a.attacl::text,'') AS acl,
+    COALESCE((
+      SELECT string_agg(format('%s:%s:%s:%s',
+        g.grantee,g.grantor,g.privilege_type,g.is_grantable),
+        ',' ORDER BY g.grantee,g.grantor,g.privilege_type,g.is_grantable)
+      FROM aclexplode(CASE WHEN cardinality(a.attacl)>0 THEN a.attacl ELSE NULL::aclitem[] END) g
+    ),'') AS acl,
     has_column_privilege($3,c.oid,a.attname::text,'SELECT') AS reader_select,
     has_column_privilege($3,c.oid,a.attname::text,'INSERT') AS reader_insert,
     has_column_privilege($3,c.oid,a.attname::text,'UPDATE') AS reader_update,
