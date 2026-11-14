@@ -154,3 +154,50 @@
   height: 3px;
   background: var(--vigia-primary);
 }
+
+/* Unified dashboard stage: preserve the analyst sidebar's information
+   architecture while using the same framed workspace as Vpx. */
+.vigia-legacy-shell {
+  max-width: 1540px;
+  min-height: calc(100vh - 40px);
+  margin: 20px auto;
+  background: var(--vigia-paper);
+  border: 1px solid var(--vigia-line);
+  border-radius: 24px;
+  box-shadow: 0 22px 80px rgb(0 0 0 / 13%);
+}
+.vigia-legacy-shell .vigia-legacy-sidebar {
+  border-color: var(--vigia-line);
+  background: var(--vigia-paper);
+}
+.vigia-legacy-shell .vigia-legacy-canvas {
+  min-height: calc(100vh - 42px);
+  background: var(--vigia-paper);
+  border-radius: 0 24px 24px 0;
+}
+.vigia-legacy-shell .vigia-legacy-sidebar :where(a[aria-current="page"],a[aria-current="true"]) {
+  background: var(--vigia-primary);
+  color: #132216;
+}
+.vigia-legacy-shell .vigia-legacy-sidebar :where(a[aria-current="page"],a[aria-current="true"]) svg {
+  color: #132216;
+}
+@media (max-width: 1023px) {
+  .vigia-legacy-shell .vigia-legacy-canvas {
+    min-height: calc(100vh - 110px);
+    border-radius: 0 0 24px 24px;
+  }
+}
+@media (max-width: 640px) {
+  .vigia-legacy-shell {
+    margin: 0;
+    min-height: 100vh;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .vigia-legacy-shell .vigia-legacy-canvas {
+    min-height: calc(100vh - 60px);
+    border-radius: 0;
+  }
+}
