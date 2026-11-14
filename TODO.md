@@ -663,7 +663,20 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [x] Testes unitários e PG16 descartável adversarial: tenant A/B, ausência de GUC, coluna privada sem privilégio, policies permissivas concorrentes, PUBLIC, roles herdadas, `USING(true)`, DML policy, grants por coluna e privilégio auth indireto.
 - [x] Teste de pool max=2: simultaneidade A/B, terceira conexão com timeout, estado de role/GUC limpo após rollback; teste unitário de descarte em falha de cleanup.
 - [x] Novo step `ALT-08.10C.34` no job PG16 com guarda `ALT0810C34_EPHEMERAL=1`; docs de rollback coordenado e limites atualizadas.
-- [ ] **Verificar CI 6/6 GREEN e step C.34 no SHA exato**; se RED, corrigir logs sem enfraquecer isolamento.
+- [x] **C.34 certificada em CI descartável:** #533 (run `43571609742`), SHA `9c804be802a7ca1b65c9169434302bedff34b6ab`, 6/6 jobs GREEN; step C.34 PostgreSQL16 `completed/success`. Não transfere aprovação para SHA posterior.
 - [ ] Revisar policy SQL operacional completa e registrar `expectedUsingSha256` em manifesto versionado **com aprovação independente**, não usar fingerprint gerado de fixture como prova operacional.
 - [ ] Homologação multi-host, failover, competição com revogação e migrations/restore por tabela somente em ambiente aprovado; CI descartável não comprova staging/produção.
 - [ ] Preservar PR #36 DRAFT, sem merge/deploy/publicação, sem DDL ou alterações no Neon, sem ativar RLS operacional. `ALT0810C32_MODE=off` não desfaz policies.
+
+### ALT-08.10C.35 — manifesto versionado de RLS, privilégios, dependências e rollback (CI-only)
+
+- [x] Criado `schema/operational-rls/alt0810c35-disposable-manifest.json`: predicado SQL com SHA-256 do texto-fonte fixado; roles, policy única, colunas reader, seis tabelas de auth dependentes e ordem de rollback, com todas as flags operacionais NO-GO.
+- [x] Criado `lib/db/alt0810c35-operational-manifest.ts`: validação rigorosa, rejeição de mudança de SQL/hash/ACL/roles/deps/flags, snapshot tipado e comparação completa de rollback com digest.
+- [x] `tests/alt0810c35-manifest.test.ts` exercita manifesto adulterado, permissões/roles indevidas, policy adicional, desvio de predicado, dados e rollback incompleto.
+- [x] `scripts/alt0810c35-manifest-check.ts` executa preflight exclusivamente offline no job build, sem conexão a banco ou migration.
+- [x] `scripts/tests/alt0810c35-pg-manifest-rollback.test.ts` ensaia PostgreSQL16 descartável: role LOGIN executor, NOLOGIN reader, SELECT id/tenant_id, FORCE RLS, A/B, coluna privada negada, baseline de pg_catalog, ACLs, memberships, auth dependencies e dados; 12 mutações adversariais + restauração exata via ROLLBACK TO SAVEPOINT.
+- [x] Workflow principal recebe step C.35 em build e em PostgreSQL efêmero; `pg` permanece sem instalação no bundle de produção.
+- [x] Documento `docs/vigiaplus/alt0810c-operational-schema-readiness.md` detalha limites: hash SQL de fixture não é parecer independente; rollback de transação **não** reverte DDL/COMMIT anterior.
+- [ ] **Certificar CI GREEN 6/6 no SHA exato**, inclusive dois steps C.35. Se RED, corrigir código pelos logs, sem relaxar testes.
+- [ ] Auditabilidade operacional: manifesto independente com SQL/policies aprovados por tabela, ACL/ownership reais, rollback/restore após COMMIT e plano de PITR em staging **somente após autorização específica**.
+- [ ] PR #36 continua DRAFT; nenhum merge/deploy/DDL/Neon ou RLS operacional. Produção NO-GO.
