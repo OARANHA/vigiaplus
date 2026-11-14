@@ -30,6 +30,9 @@ jobs:
       - name: ALT-08.10C manifesto offline de migrações (sem banco)
         run: node --import tsx scripts/schema-manifest-check.ts
 
+      - name: "ALT-08.10C.35 manifesto imutavel de predicate, ACL e rollback (offline)"
+        run: node --import tsx scripts/alt0810c35-manifest-check.ts
+
       - name: ALT-08.10C.3 snapshot DDL de bootstrap (sem banco)
         run: node --import tsx scripts/bootstrap-snapshot-check.ts
 
@@ -247,6 +250,11 @@ jobs:
           ALT0810C34_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c34-pg-policy-pool.test.ts
+      - name: "ALT-08.10C.35 manifesto versionado PG16, drift e rollback transacional"
+        env:
+          ALT0810C35_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c35-pg-manifest-rollback.test.ts
       - name: "ALT-08.10C.32 rota versionada real, ativacao e rollback PG16"
         env:
           ALT0810C32_EPHEMERAL: "1"
