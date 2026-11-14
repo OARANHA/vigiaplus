@@ -33,6 +33,12 @@ jobs:
       - name: "ALT-08.10C.35 manifesto imutavel de predicate, ACL e rollback (offline)"
         run: node --import tsx scripts/alt0810c35-manifest-check.ts
 
+      - name: "ALT-08.10C.36 plano de auditoria catalog-only e NO-GO (offline)"
+        env:
+          DATABASE_URL: ""
+          RLS_DATABASE_URL: ""
+        run: node --import tsx scripts/alt0810c36-readonly-check.ts
+
       - name: ALT-08.10C.3 snapshot DDL de bootstrap (sem banco)
         run: node --import tsx scripts/bootstrap-snapshot-check.ts
 
@@ -255,6 +261,11 @@ jobs:
           ALT0810C35_EPHEMERAL: "1"
           RLS_DATABASE_URL: ""
         run: node --import tsx --test scripts/tests/alt0810c35-pg-manifest-rollback.test.ts
+      - name: "ALT-08.10C.36 catalog-only READ ONLY e restauração após COMMIT (PG16 isolado)"
+        env:
+          ALT0810C36_EPHEMERAL: "1"
+          RLS_DATABASE_URL: ""
+        run: node --import tsx --test scripts/tests/alt0810c36-pg-postcommit-restore.test.ts
       - name: "ALT-08.10C.32 rota versionada real, ativacao e rollback PG16"
         env:
           ALT0810C32_EPHEMERAL: "1"
