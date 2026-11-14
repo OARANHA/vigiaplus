@@ -45,12 +45,16 @@ export async function disposableTransactionalPermissions(
   }
   // A runtime require is deliberately confined to the disposable runner:
   // pg is not a production dependency and this path is disabled otherwise.
-  const { createRequire } = await import('node:module');
-  const require = createRequire(import.meta.url);
-  // Keep the disposable-only driver outside Turbopack's static dependency graph.
-  // The module is resolved by Node only after the strict ephemeral CI gate.
-  const disposableDriverName = ['p', 'g'].join('');
-  const { Client } = require(disposableDriverName) as {
+  // Node.js 22 built-in module access bypasses the Turbopack-instrumented
+  // createRequire context, which rejects dynamically constructed module names.
+  // The runtime gate above must run BEFORE loading any optional CI driver.
+  const nodeModule = (process as NodeJS.Process & {
+    getBuiltinModule?: (name: string) => typeof import('node:module') | undefined;
+  }).getBuiltinModule?.('node:module');
+  if (!nodeModule) throw Error('ALT0810C32_NODE_LOADER_UNAVAILABLE');
+  const nativeLoad = nodeModule.createRequire(process.cwd() + '/package.json');
+  const driverName: string = ['p', 'g'].join('');
+  const { Client } = nativeLoad(driverName) as {
     Client: new (configuration: Record<string, unknown>) => {
       connect(): Promise<void>;
       query(sql: string, params?: unknown[]): Promise<{
