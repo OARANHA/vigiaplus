@@ -65,9 +65,9 @@ export async function preflightTenantRls(
       c.relrowsecurity AND c.relforcerowsecurity AS force_rls,
       c.relowner <> rr.oid AS owner_separated,
       has_schema_privilege($2,$3,'USAGE') AS schema_usage,
-      has_table_privilege($2,format('%I.%I',$3,$4),'SELECT') AS evidence_read,
-      NOT has_table_privilege($2,format('%I.%I',$3,$4),'INSERT') AS no_insert,
-      NOT has_table_privilege($2,format('%I.%I',$3,$4),'UPDATE') AS no_update,
+      has_any_column_privilege($2,c.oid,'SELECT') AS evidence_read,
+      NOT has_any_column_privilege($2,c.oid,'INSERT') AS no_insert,
+      NOT has_any_column_privilege($2,c.oid,'UPDATE') AS no_update,
       NOT has_table_privilege($2,format('%I.%I',$3,$4),'DELETE') AS no_delete,
       EXISTS (
         SELECT 1 FROM pg_policies p
@@ -82,9 +82,9 @@ export async function preflightTenantRls(
         ]) AS auth_table(name)
         JOIN pg_class ac ON ac.relname=auth_table.name
         JOIN pg_namespace an ON an.oid=ac.relnamespace AND an.nspname=$3
-        WHERE has_table_privilege($2,ac.oid,'SELECT')
-           OR has_table_privilege($2,ac.oid,'INSERT')
-           OR has_table_privilege($2,ac.oid,'UPDATE')
+        WHERE has_any_column_privilege($2,ac.oid,'SELECT')
+           OR has_any_column_privilege($2,ac.oid,'INSERT')
+           OR has_any_column_privilege($2,ac.oid,'UPDATE')
            OR has_table_privilege($2,ac.oid,'DELETE')
       ) AS no_auth_access
     FROM pg_roles er
