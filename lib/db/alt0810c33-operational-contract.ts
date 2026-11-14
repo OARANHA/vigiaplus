@@ -62,6 +62,7 @@ export async function preflightTenantRls(
       NOT er.rolsuper AND NOT er.rolbypassrls AND er.rolcanlogin AS safe_executor,
       NOT rr.rolsuper AND NOT rr.rolbypassrls AND NOT rr.rolcanlogin AS safe_reader,
       pg_has_role($1, $2, 'MEMBER') AS reader_granted,
+      pg_has_role($1, $2, 'SET') AS reader_set_allowed,
       c.relrowsecurity AND c.relforcerowsecurity AS force_rls,
       c.relowner <> rr.oid AS owner_separated,
       has_schema_privilege($2,$3,'USAGE') AS schema_usage,
