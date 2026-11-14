@@ -680,3 +680,16 @@ Nota: `scripts/migrate.ts --check` ainda chama `getDb()` e pode executar bootstr
 - [x] **ALT-08.10C.35 certificada em CI descartável:** [workflow #543](https://github.com/OARANHA/vigiaplus/actions/runs/43573303703), run `43573303703`, HEAD `a547ef98ecefd56ae7d5c37cb9dec65cb5f0c253` — `completed/success`, **6/6 jobs GREEN**, steps offline (build) e PG16 C.35 `completed/success`. Esta certificação é limitada ao SHA e não homologa policies/Neon operacionais.
 - [ ] Auditabilidade operacional: manifesto independente com SQL/policies aprovados por tabela, ACL/ownership reais, rollback/restore após COMMIT e plano de PITR em staging **somente após autorização específica**.
 - [ ] PR #36 continua DRAFT; nenhum merge/deploy/DDL/Neon ou RLS operacional. Produção NO-GO.
+
+### ALT-08.10C.36 — pré-homologação de catálogo READ ONLY e compensação pós-COMMIT (CI descartável)
+
+- [x] Confirmação baseline: PR #36 OPEN DRAFT, CI #544 run `43573927067` do SHA `0b6a09797cc8504bd2c04b3dd261000887a1aa8a` GREEN 6/6; C35 step PG16 success.
+- [x] Plano versionado `schema/operational-rls/alt0810c36-prestaging-plan.json`: escopo exato, dependências, predicado SQL fixado, flags sem autorização de Neon/staging/produção/merge/DDL.
+- [x] Auditoria read-only `lib/db/alt0810c36-preoperational-audit.ts`: queries parametrizadas apenas em pg_catalog para 7 tabelas, ownership, ACL, roles, SET ROLE, column SELECT, FORCE RLS, policies e digest; nenhum SELECT em dados operacionais.
+- [x] Testes unitários `tests/alt0810c36-preoperational-audit.test.ts`: validação de plano, SQL somente SELECT, fail-closed de ACL/role/policy e snapshot completo.
+- [x] Teste PostgreSQL16 descartável `scripts/tests/alt0810c36-pg-postcommit-restore.test.ts`: READ ONLY impede DDL, tenant A/B, persistência de policy/ACL/role/tenant divergentes após COMMIT, rollback compensatório com erro e restauração transacional em novo COMMIT, comparando catalog/fixtures e repetindo isolamento.
+- [x] Workflow acrescenta verificador offline `scripts/alt0810c36-readonly-check.ts` em build e step C36 no PostgreSQL16 disposable; documentação viva de limites e NO-GO atualizada.
+- [ ] **Verificar todos os seis jobs GREEN e os steps C36 do SHA exato, corrigindo somente falhas demonstradas por logs.**
+- [ ] Preparar autorização independente para leitura catalog-only de esquema real e manifesto de policies/ACLs por tabela (nenhuma consulta Neon/staging até aprovação humana explícita).
+- [ ] Restaurar de backup verificado pós-COMMIT em cluster separado, testar PITR e concorrência/revogação antes de homologação operacional — não concluído pela fixture CI.
+- [ ] PR #36 DRAFT, NO-GO operacional, sem merge/deploy ou DDL/ativação de RLS no Neon. `ALT0810C32_MODE=off` não substitui rollback SQL.
